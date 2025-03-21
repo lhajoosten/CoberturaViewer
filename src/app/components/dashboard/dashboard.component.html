@@ -1,0 +1,12 @@
+<div class="dashboard-container">
+    <header>
+        <h1>Cobertura Coverage Viewer</h1>
+    </header>
+
+    <app-file-uploader></app-file-uploader>
+
+    <div *ngIf="hasCoverageData" class="coverage-data">
+        <app-coverage-summary></app-coverage-summary>
+        <app-package-list></app-package-list>
+    </div>
+</div>

@@ -1,0 +1,18 @@
+<div class="uploader-container">
+    <h2>Upload Cobertura Coverage XML</h2>
+
+    <div class="uploader-box" [class.loading]="isLoading">
+        <input type="file" id="file-upload" accept=".xml" (change)="onFileSelected($event)" [disabled]="isLoading" />
+        <label for="file-upload" class="custom-file-upload">
+            <i class="fa fa-cloud-upload"></i> Select Cobertura XML File
+        </label>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-indicator">
+        <span>Loading...</span>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+    </div>
+</div>

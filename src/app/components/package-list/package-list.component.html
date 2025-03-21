@@ -1,0 +1,59 @@
+<div *ngIf="packages.length > 0" class="packages-container">
+    <h2>Package Coverage</h2>
+
+    <div class="packages-list">
+        <div *ngFor="let pkg of packages" class="package-item">
+            <div class="package-header" (click)="togglePackage(pkg.name)">
+                <div class="package-name">
+                    <i class="fa" [ngClass]="isPackageExpanded(pkg.name) ? 'fa-folder-open' : 'fa-folder'"></i>
+                    {{ pkg.name }}
+                </div>
+                <div class="package-metrics">
+                    <span class="coverage-rate" [ngClass]="getColorClass(pkg.lineRate)">
+                        {{ pkg.lineRate.toFixed(2) }}%
+                    </span>
+                    <div class="progress-bar">
+                        <div class="progress" [style.width.%]="pkg.lineRate" [ngClass]="getColorClass(pkg.lineRate)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="isPackageExpanded(pkg.name)" class="package-classes">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Line Coverage</th>
+                            <th>Branch Coverage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let cls of pkg.classes">
+                            <td>{{ cls.name }}</td>
+                            <td>
+                                <div class="inline-metric">
+                                    <span [ngClass]="getColorClass(cls.lineRate)">{{ cls.lineRate.toFixed(2) }}%</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" [style.width.%]="cls.lineRate"
+                                            [ngClass]="getColorClass(cls.lineRate)"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="inline-metric">
+                                    <span [ngClass]="getColorClass(cls.branchRate)">{{ cls.branchRate.toFixed(2)
+                                        }}%</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" [style.width.%]="cls.branchRate"
+                                            [ngClass]="getColorClass(cls.branchRate)"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
