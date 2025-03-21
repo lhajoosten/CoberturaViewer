@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:github": "ng build --base-href=/CoberturaViewer/ --output-path=docs && powershell -Command \"New-Item -Path 'docs/.nojekyll' -ItemType File -Force\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
