@@ -38,7 +38,8 @@
           },
           "configurations": {
             "production": {
-              "baseHref": "/cobertura-viewer/",
+              "baseHref": "/CoberturaViewer/",
+              "optimization": true,
               "budgets": [
                 {
                   "type": "initial",
