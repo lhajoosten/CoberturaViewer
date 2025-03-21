@@ -1,12 +1,54 @@
 <div class="dashboard-container">
-    <header>
-        <h1>Cobertura Coverage Viewer</h1>
+    <header class="app-header">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-shield-alt"></i>
+                Cobertura Coverage Viewer
+            </h1>
+            <div class="actions">
+                <a href="https://github.com/lhajoosten/CoberturaViewer" target="_blank" class="btn btn-outline">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
     </header>
 
-    <app-file-uploader></app-file-uploader>
+    <main class="main-content">
+        <app-file-uploader *ngIf="!hasCoverageData"></app-file-uploader>
 
-    <div *ngIf="hasCoverageData" class="coverage-data">
-        <app-coverage-summary></app-coverage-summary>
-        <app-package-list></app-package-list>
-    </div>
+        <div *ngIf="hasCoverageData" class="coverage-data">
+            <div class="actions-bar">
+                <button class="btn btn-outline" (click)="resetData()">
+                    <i class="fas fa-upload"></i> Upload New File
+                </button>
+                <button class="btn btn-primary" (click)="downloadReportPDF()">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </button>
+            </div>
+
+            <app-coverage-summary></app-coverage-summary>
+
+            <div class="analytics-tabs">
+                <div class="tab-headers">
+                    <button *ngFor="let tab of tabs" class="tab-btn" [class.active]="activeTab === tab.id"
+                        (click)="setActiveTab(tab.id)">
+                        <i [class]="tab.icon"></i> {{ tab.label }}
+                    </button>
+                </div>
+
+                <div class="tab-content">
+                    <ng-container [ngSwitch]="activeTab">
+                        <app-package-list *ngSwitchCase="'packages'"></app-package-list>
+                        <app-coverage-treemap *ngSwitchCase="'treemap'"></app-coverage-treemap>
+                        <app-coverage-trends *ngSwitchCase="'trends'"></app-coverage-trends>
+                        <app-coverage-insights *ngSwitchCase="'insights'"></app-coverage-insights>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div>© 2025 Cobertura Viewer. Open Source under MIT License.</div>
+    </footer>
 </div>

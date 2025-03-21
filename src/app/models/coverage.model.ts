@@ -31,3 +31,23 @@ export interface CoverageData {
     summary: CoverageSummary;
     packages: PackageInfo[];
 }
+
+export interface CoverageInsight {
+    type: 'success' | 'warning' | 'danger' | 'info';
+    title: string;
+    description: string;
+    icon: string;
+}
+
+export interface CoverageMetrics {
+    totalPackages: number;
+    totalClasses: number;
+    totalLines: number;
+    coveredLines: number;
+    uncoveredLines: number;
+    fullyTestedClasses: number;
+    partiallyTestedClasses: number;
+    untestedClasses: number;
+    lowCoverageClasses: string[];
+    highImpactClasses: string[];
+}

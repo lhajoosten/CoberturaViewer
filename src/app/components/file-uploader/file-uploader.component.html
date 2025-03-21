@@ -1,18 +1,53 @@
-<div class="uploader-container">
-    <h2>Upload Cobertura Coverage XML</h2>
+<div class="uploader-container card">
+    <div class="uploader-header">
+        <h2>Upload Cobertura Coverage XML</h2>
+        <p>
+            Drop your Cobertura XML file below to visualize your code coverage in an interactive dashboard.
+        </p>
+    </div>
 
-    <div class="uploader-box" [class.loading]="isLoading">
+    <div class="uploader-box" [class.loading]="isLoading" [class.dragover]="isDragOver" (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
         <input type="file" id="file-upload" accept=".xml" (change)="onFileSelected($event)" [disabled]="isLoading" />
-        <label for="file-upload" class="custom-file-upload">
-            <i class="fa fa-cloud-upload"></i> Select Cobertura XML File
-        </label>
+
+        <div class="upload-icon">
+            <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+
+        <div class="upload-text">
+            <label for="file-upload" class="btn btn-primary">
+                <i class="fas fa-file-upload"></i> Select XML File
+            </label>
+            <span class="or-text">or drag & drop file here</span>
+        </div>
     </div>
 
     <div *ngIf="isLoading" class="loading-indicator">
-        <span>Loading...</span>
+        <div class="spinner"></div>
+        <span>Processing file...</span>
     </div>
 
     <div *ngIf="errorMessage" class="error-message">
+        <i class="fas fa-exclamation-circle"></i>
         {{ errorMessage }}
+    </div>
+
+    <div class="sample-data" *ngIf="!isLoading && !errorMessage">
+        <button (click)="loadSampleData()" class="btn btn-outline">
+            <i class="fas fa-vial"></i> Try with Sample Data
+        </button>
+    </div>
+
+    <div class="info-section">
+        <h3>About Cobertura XML Files</h3>
+        <p>
+            Cobertura XML is a standard format for code coverage reports. You can generate these files using:
+        </p>
+        <ul>
+            <li>JaCoCo with Maven or Gradle</li>
+            <li>Istanbul/NYC for JavaScript projects</li>
+            <li>Coverage.py for Python</li>
+            <li>And many other test coverage tools</li>
+        </ul>
     </div>
 </div>

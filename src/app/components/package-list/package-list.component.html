@@ -1,20 +1,45 @@
-<div *ngIf="packages.length > 0" class="packages-container">
-    <h2>Package Coverage</h2>
+<div *ngIf="packages.length > 0" class="packages-container card">
+    <div class="packages-header">
+        <h2>Package & Class Breakdown</h2>
+        <div class="search-filter">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search packages or classes..." [(ngModel)]="searchTerm"
+                    (keyup)="filterPackages()">
+            </div>
+            <div class="filter-options">
+                <label class="filter-toggle">
+                    <input type="checkbox" [(ngModel)]="showLowCoverageOnly" (change)="filterPackages()">
+                    <span>Show low coverage only</span>
+                </label>
+            </div>
+        </div>
+    </div>
 
-    <div class="packages-list">
-        <div *ngFor="let pkg of packages" class="package-item">
+    <div class="packages-content" *ngIf="filteredPackages.length > 0">
+        <div *ngFor="let pkg of filteredPackages" class="package-item">
             <div class="package-header" (click)="togglePackage(pkg.name)">
                 <div class="package-name">
-                    <i class="fa" [ngClass]="isPackageExpanded(pkg.name) ? 'fa-folder-open' : 'fa-folder'"></i>
-                    {{ pkg.name }}
+                    <i class="fas" [ngClass]="isPackageExpanded(pkg.name) ? 'fa-folder-open' : 'fa-folder'"></i>
+                    <span>{{ pkg.name || 'Default Package' }}</span>
+                    <span class="class-count">{{ pkg.classes.length }} classes</span>
                 </div>
                 <div class="package-metrics">
-                    <span class="coverage-rate" [ngClass]="getColorClass(pkg.lineRate)">
-                        {{ pkg.lineRate.toFixed(2) }}%
-                    </span>
-                    <div class="progress-bar">
-                        <div class="progress" [style.width.%]="pkg.lineRate" [ngClass]="getColorClass(pkg.lineRate)">
+                    <div class="coverage-metric">
+                        <div class="metric-label">Line:</div>
+                        <div class="metric-value" [ngClass]="getColorClass(pkg.lineRate)">
+                            {{ pkg.lineRate.toFixed(1) }}%
                         </div>
+                    </div>
+                    <div class="coverage-metric">
+                        <div class="metric-label">Branch:</div>
+                        <div class="metric-value" [ngClass]="getColorClass(pkg.branchRate)">
+                            {{ pkg.branchRate.toFixed(1) }}%
+                        </div>
+                    </div>
+                    <div class="expand-icon">
+                        <i class="fas"
+                            [ngClass]="isPackageExpanded(pkg.name) ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                     </div>
                 </div>
             </div>
@@ -26,34 +51,46 @@
                             <th>Class</th>
                             <th>Line Coverage</th>
                             <th>Branch Coverage</th>
+                            <th>Lines</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let cls of pkg.classes">
-                            <td>{{ cls.name }}</td>
-                            <td>
-                                <div class="inline-metric">
-                                    <span [ngClass]="getColorClass(cls.lineRate)">{{ cls.lineRate.toFixed(2) }}%</span>
-                                    <div class="progress-bar">
-                                        <div class="progress" [style.width.%]="cls.lineRate"
-                                            [ngClass]="getColorClass(cls.lineRate)"></div>
-                                    </div>
+                            <td class="class-name">
+                                <i class="fas fa-file-code"></i>
+                                {{ cls.name }}
+                            </td>
+                            <td class="coverage-cell">
+                                <div class="coverage-badge" [ngClass]="getColorClass(cls.lineRate)">
+                                    {{ cls.lineRate.toFixed(1) }}%
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" [style.width.%]="cls.lineRate"
+                                        [ngClass]="getColorClass(cls.lineRate)"></div>
                                 </div>
                             </td>
-                            <td>
-                                <div class="inline-metric">
-                                    <span [ngClass]="getColorClass(cls.branchRate)">{{ cls.branchRate.toFixed(2)
-                                        }}%</span>
-                                    <div class="progress-bar">
-                                        <div class="progress" [style.width.%]="cls.branchRate"
-                                            [ngClass]="getColorClass(cls.branchRate)"></div>
-                                    </div>
+                            <td class="coverage-cell">
+                                <div class="coverage-badge" [ngClass]="getColorClass(cls.branchRate)">
+                                    {{ cls.branchRate.toFixed(1) }}%
                                 </div>
+                                <div class="progress-bar">
+                                    <div class="progress" [style.width.%]="cls.branchRate"
+                                        [ngClass]="getColorClass(cls.branchRate)"></div>
+                                </div>
+                            </td>
+                            <td class="lines-count">
+                                {{ cls.lines.length }}
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+    </div>
+
+    <div class="empty-results" *ngIf="filteredPackages.length === 0">
+        <i class="fas fa-search"></i>
+        <p>No packages or classes found matching your search criteria.</p>
+        <button class="btn btn-outline" (click)="resetFilters()">Reset filters</button>
     </div>
 </div>

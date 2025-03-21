@@ -1,0 +1,118 @@
+<div class="insights-container card">
+  <h2>Coverage Insights & Analysis</h2>
+
+  <div *ngIf="!coverageData" class="loading-state">
+    No coverage data available.
+  </div>
+
+  <div *ngIf="coverageData" class="insights-content">
+    <div class="metrics-cards">
+      <div class="metric-card">
+        <div class="metric-icon">
+          <i class="fas fa-folder"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ metrics.totalPackages }}</div>
+          <div class="metric-label">Packages</div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">
+          <i class="fas fa-file-code"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ metrics.totalClasses }}</div>
+          <div class="metric-label">Classes</div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">
+          <i class="fas fa-code"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ metrics.totalLines }}</div>
+          <div class="metric-label">Lines of Code</div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon covered">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ metrics.coveredLines }}</div>
+          <div class="metric-label">Covered Lines</div>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon uncovered">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="metric-content">
+          <div class="metric-value">{{ metrics.uncoveredLines }}</div>
+          <div class="metric-label">Uncovered Lines</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="class-coverage-breakdown">
+      <h3>Classes Coverage Breakdown</h3>
+      <div class="coverage-bars">
+        <div class="coverage-bar-container">
+          <div class="coverage-bar">
+            <div class="bar-segment excellent"
+              [style.width.%]="(metrics.fullyTestedClasses / metrics.totalClasses) * 100"
+              title="Fully tested: {{ metrics.fullyTestedClasses }} classes"></div>
+            <div class="bar-segment average"
+              [style.width.%]="(metrics.partiallyTestedClasses / metrics.totalClasses) * 100"
+              title="Partially tested: {{ metrics.partiallyTestedClasses }} classes"></div>
+            <div class="bar-segment poor" [style.width.%]="(metrics.untestedClasses / metrics.totalClasses) * 100"
+              title="Untested: {{ metrics.untestedClasses }} classes"></div>
+          </div>
+          <div class="coverage-labels">
+            <div class="label">
+              <span class="dot excellent"></span>
+              <span>Fully tested ({{ ((metrics.fullyTestedClasses / metrics.totalClasses) * 100).toFixed(1) }}%)</span>
+            </div>
+            <div class="label">
+              <span class="dot average"></span>
+              <span>Partially tested ({{ ((metrics.partiallyTestedClasses / metrics.totalClasses) * 100).toFixed(1)
+                }}%)</span>
+            </div>
+            <div class="label">
+              <span class="dot poor"></span>
+              <span>Untested ({{ ((metrics.untestedClasses / metrics.totalClasses) * 100).toFixed(1) }}%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insights-list">
+      <h3>Key Insights</h3>
+      <div class="insight-card" *ngFor="let insight of insights" [ngClass]="insight.type">
+        <div class="insight-icon">
+          <i [class]="insight.icon"></i>
+        </div>
+        <div class="insight-content">
+          <h4>{{ insight.title }}</h4>
+          <p>{{ insight.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="high-impact-classes" *ngIf="metrics.highImpactClasses.length > 0">
+      <h3>High Impact Classes</h3>
+      <p class="description">
+        These classes have a large code base with low test coverage.
+        Improving these would have the biggest impact on overall coverage.
+      </p>
+      <ul>
+        <li *ngFor="let className of metrics.highImpactClasses">{{ className }}</li>
+      </ul>
+    </div>
+  </div>
+</div>

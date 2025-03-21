@@ -1,0 +1,199 @@
+.treemap-container {
+  padding: 1.5rem;
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .treemap-description {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+.treemap-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+
+  .filter-slider {
+    flex: 1;
+    min-width: 250px;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .coverage-slider {
+        // -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 5px;
+        outline: none;
+
+        &::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: var(--primary-color);
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        &::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: var(--primary-color);
+          cursor: pointer;
+          border: 2px solid white;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  .coverage-legend {
+    display: flex;
+    gap: 1rem;
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+
+      .color-box {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+
+        &.excellent {
+          background-color: var(--excellent-color);
+        }
+        &.good {
+          background-color: var(--good-color);
+        }
+        &.average {
+          background-color: var(--average-color);
+        }
+        &.poor {
+          background-color: var(--poor-color);
+        }
+      }
+    }
+  }
+}
+
+.treemap-visualization {
+  height: 600px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8fafc;
+  position: relative;
+}
+
+.hover-info {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--surface-color);
+
+  .info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    span {
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+
+      &.excellent {
+        background-color: rgba(12, 206, 107, 0.2);
+        color: var(--excellent-color);
+      }
+      &.good {
+        background-color: rgba(76, 217, 100, 0.2);
+        color: var(--good-color);
+      }
+      &.average {
+        background-color: rgba(255, 180, 0, 0.2);
+        color: var(--average-color);
+      }
+      &.poor {
+        background-color: rgba(255, 71, 87, 0.2);
+        color: var(--poor-color);
+      }
+    }
+  }
+
+  .info-details {
+    font-size: 0.9rem;
+
+    .info-row {
+      display: flex;
+      margin-bottom: 0.5rem;
+
+      .info-label {
+        flex: 0 0 80px;
+        color: var(--text-muted);
+      }
+
+      .info-value {
+        flex: 1;
+
+        &.path {
+          font-family: monospace;
+          word-break: break-all;
+        }
+      }
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+  font-style: italic;
+}
