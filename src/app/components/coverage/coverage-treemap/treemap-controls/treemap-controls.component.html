@@ -1,89 +1,88 @@
-<div class="treemap-controls">
-    <div class="control-grid">
-        <!-- Min Coverage slider row -->
-        <div class="control-item">
-            <label for="min-coverage">Min Coverage:</label>
-            <input id="min-coverage" type="range" [ngModel]="minCoverage" min="0" max="100" step="5"
-                (ngModelChange)="onMinCoverageChange($event)">
-            <span class="value-display">{{minCoverage}}%</span>
+<div class="treemap-controls" [class.expanded]="isExpanded">
+    <div class="controls-header">
+        <div class="title-row">
+            <h3>Coverage Settings</h3>
+            <div class="controls-actions">
+                <button *ngIf="hasActiveFilters" class="clear-button" (click)="onClearFilters()">
+                    Clear All
+                </button>
+                <button class="toggle-button" (click)="toggleExpanded()">
+                    {{ isExpanded ? 'Hide Filters' : 'Show Filters' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-content" [class.visible]="isExpanded">
+        <!-- Quick Search -->
+        <div class="control-group">
+            <label for="searchTerm">Search Classes</label>
+            <input type="text" id="searchTerm" [value]="searchTerm" (input)="onSearchTermChange($event)"
+                placeholder="Search by class name...">
         </div>
 
-        <!-- Package selection row -->
-        <div class="control-item">
-            <label for="package-select">Package:</label>
-            <select id="package-select" [ngModel]="selectedPackage" (ngModelChange)="onSelectedPackageChange($event)">
+        <!-- Package Filter -->
+        <div class="control-group">
+            <label for="packageFilter">Package</label>
+            <select id="packageFilter" [value]="selectedPackage" (change)="onSelectedPackageChange($event)">
                 <option value="">All Packages</option>
-                <option *ngFor="let pkg of packageList" [value]="pkg">{{pkg}}</option>
+                <option *ngFor="let pkg of packageList" [value]="pkg">
+                    {{ pkg }}
+                </option>
             </select>
         </div>
 
-        <!-- Group small nodes checkbox -->
-        <div class="control-item checkbox">
-            <input type="checkbox" id="group-small-nodes" [ngModel]="groupSmallNodes"
-                (ngModelChange)="onGroupSmallNodesChange($event)">
-            <label for="group-small-nodes">Group small nodes</label>
+        <!-- Min Coverage Filter -->
+        <div class="control-group">
+            <label for="minCoverage">
+                Min Coverage: {{ minCoverage }}%
+            </label>
+            <input type="range" id="minCoverage" [value]="minCoverage" (input)="onMinCoverageChange($event)" min="0"
+                max="100" step="5">
         </div>
 
-        <!-- Search field -->
-        <div class="control-item search">
-            <input type="text" placeholder="Search classes..." [ngModel]="searchTerm"
-                (ngModelChange)="onSearchTermChange($event)">
-            <button *ngIf="searchTerm" class="search-clear" (click)="onResetSearch()">✕</button>
+        <!-- Min Lines Filter -->
+        <div class="control-group">
+            <label for="minLines">
+                Min Lines: {{ minLines }}
+            </label>
+            <input type="range" id="minLines" [value]="minLines" (input)="onMinLinesChange($event)" min="0" max="100"
+                step="5">
         </div>
-    </div>
 
-    <!-- Advanced Filters toggle -->
-    <div class="advanced-toggle">
-        <button (click)="onToggleFilters()">
-            Advanced Filters {{ showFilters ? '▲' : '▼' }}
-        </button>
-    </div>
+        <!-- Sort Order -->
+        <div class="control-group">
+            <label for="sortBy">Sort By</label>
+            <select id="sortBy" [value]="sortBy" (change)="onSortByChange($event)">
+                <option *ngFor="let option of sortOptions" [value]="option.value">
+                    {{ option.label }}
+                </option>
+            </select>
+        </div>
 
-    <!-- Advanced filters panel -->
-    <div *ngIf="showFilters" class="advanced-panel">
-        <div class="section">
-            <h4>Display Options</h4>
-            <div class="option-group">
-                <div class="option checkbox">
-                    <input type="checkbox" id="show-labels" [ngModel]="showLabels"
-                        (ngModelChange)="onShowLabelsChange($event)">
-                    <label for="show-labels">Show labels</label>
-                </div>
+        <div class="control-group toggles">
+            <!-- Group Small Nodes Toggle -->
+            <div class="toggle-control">
+                <input type="checkbox" id="groupSmallNodes" [checked]="groupSmallNodes"
+                    (change)="onToggleGrouping($event)">
+                <label for="groupSmallNodes">Group Small Classes</label>
+            </div>
 
-                <div class="option">
-                    <label for="color-mode">Color Mode:</label>
-                    <select id="color-mode" [ngModel]="colorMode" (ngModelChange)="onColorModeChange($event)">
-                        <option value="default">Default</option>
-                        <option value="colorblind">Colorblind-friendly</option>
-                    </select>
-                </div>
+            <!-- Show Labels Toggle -->
+            <div class="toggle-control">
+                <input type="checkbox" id="showLabels" [checked]="showLabels" (change)="onToggleLabels($event)">
+                <label for="showLabels">Show Labels</label>
             </div>
         </div>
 
-        <div class="section">
-            <h4>Additional Filters</h4>
-            <div class="option-group">
-                <div class="option">
-                    <label for="min-lines">Minimum Lines:</label>
-                    <input id="min-lines" type="number" [ngModel]="minLines" min="0"
-                        (ngModelChange)="onMinLinesChange($event)">
-                </div>
-
-                <div class="option">
-                    <label for="sort-by">Sort By:</label>
-                    <select id="sort-by" [ngModel]="sortBy" (ngModelChange)="onSortByChange($event)">
-                        <option value="size">Size</option>
-                        <option value="coverage">Coverage</option>
-                        <option value="name">Name</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="actions">
-            <button class="clear-button" [disabled]="!hasActiveFilters" (click)="onClearFilters()">
-                Clear All Filters
-            </button>
+        <!-- Color Scheme -->
+        <div class="control-group">
+            <label for="colorMode">Color Scheme</label>
+            <select id="colorMode" [value]="colorMode" (change)="onColorModeChange($event)">
+                <option *ngFor="let option of colorModeOptions" [value]="option.value">
+                    {{ option.label }}
+                </option>
+            </select>
         </div>
     </div>
 </div>

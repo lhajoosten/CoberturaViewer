@@ -1,12 +1,12 @@
+import { Component, OnInit, OnDestroy, Input } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, Input, HostListener } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { trigger, style, transition, animate } from '@angular/animations';
 import { Subscription } from "rxjs";
-import { CoverageData, TreeNode } from "../../../../models/coverage.model";
+import { Coverage } from "../../../../models/coverage.model";
 import { CoverageDataService } from "../../../../services/coverage-data.service";
 import { CoverageStoreService } from "../../../../services/coverage-store.service";
-import { ThemeService } from "../../../../services/utils/theme.service";
+import { TreemapLayoutService } from "../../../../services/utils/treemap-layout.service";
 import { TreemapControlsComponent } from "../treemap-controls/treemap-controls.component";
 import { TreemapDetailsComponent } from "../treemap-details/treemap-details.component";
 import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-visualization.component";
@@ -45,325 +45,245 @@ import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-
         ])
     ]
 })
-export class CoverageTreemapComponent implements OnInit, OnDestroy, AfterViewInit {
+export class CoverageTreemapComponent implements OnInit, OnDestroy {
+    // Theme & loading states
     @Input() isDarkTheme = false;
-    private themeSubscription: Subscription | null = null;
+    isLoading = true;
+    colorMode: 'default' | 'colorblind' = 'default';
 
-    // Core data properties
-    coverageData: CoverageData | null = null;
-    hierarchyData: TreeNode | null = null;
-    filteredData: TreeNode | null = null;
-    isLoading = false;
-    hasData = false;
-
-    // Visualization state
-    isZoomed = false;
-    snapshots: any[] = [];
-
-    // User interface options
+    // Filter states
     minCoverage = 0;
+    selectedPackage = '';
+    groupSmallNodes = false;
     searchTerm = '';
     showFilters = false;
-    selectedPackage = '';
-    packageList: string[] = [];
-    minLines = 0;
-    sortBy: 'size' | 'coverage' | 'name' = 'size';
-
-    // Display configuration
-    colorMode: 'default' | 'colorblind' = 'default';
-    themeDark = false;
     showLabels = true;
-    groupSmallNodes = false; // Default to enabled
+    minLines = 0;
+    sortBy = 'size';
+    hasActiveFilters = false;
 
-    // Selected node details
-    selectedNode: any = null;
-    inFocusMode = false;
-    focusedNode: any = null;
-    navigationPath: any[] = [];
-    similarClasses: any[] = [];
+    // Data
+    originalData: Coverage[] = [];
+    filteredData: Coverage[] = [];
+    packageList: string[] = [];
+    coverageRanges: any[] = [];
 
-    // Coverage legend ranges
-    coverageRanges = [
-        { min: 90, max: 100, label: '90-100%', color: '#4caf50' }, // Green
-        { min: 75, max: 89.99, label: '75-89%', color: '#8bc34a' }, // Light green
-        { min: 50, max: 74.99, label: '50-74%', color: '#ffb400' }, // Yellow
-        { min: 0, max: 49.99, label: '0-49%', color: '#f44336' }   // Red
-    ];
+    // For node selection
+    selectedNode: Coverage | null = null;
+    similarClasses: Coverage[] = [];
+
+    // Subscriptions
+    private subscriptions: Subscription = new Subscription();
 
     constructor(
-        private coverageStore: CoverageStoreService,
         private coverageDataService: CoverageDataService,
-        private themeService: ThemeService
+        private coverageStoreService: CoverageStoreService,
+        private treemapLayoutService: TreemapLayoutService
     ) { }
 
+    get hasData(): boolean {
+        return this.filteredData && this.filteredData.length > 0;
+    }
+
     ngOnInit(): void {
-        this.loadCoverageHistory();
+        // Set default coverage ranges from service
+        this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges();
 
-        // Subscribe to coverage data
-        this.coverageStore.getCoverageData().subscribe(data => {
-            this.isLoading = true;
-            this.coverageData = data;
-            this.hasData = !!data;
+        // Check for dark theme preference
+        this.checkThemePreference();
 
-            if (data) {
-                // Process data
-                this.initializePackageList();
-                this.saveCoverageSnapshot();
+        // Load coverage data
+        this.loadCoverageData();
+    }
 
-                // Transform data to hierarchy
-                this.hierarchyData = this.coverageDataService.transformToHierarchy(data);
-                this.updateFilteredData();
+    ngOnDestroy(): void {
+        // Clean up subscriptions
+        this.subscriptions.unsubscribe();
+    }
 
-                setTimeout(() => {
-                    this.isLoading = false;
-                }, 0);
-            } else {
+    private checkThemePreference(): void {
+        // Check if user prefers dark theme
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        this.isDarkTheme = prefersDark;
+
+        // Update color ranges based on theme
+        this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
+    }
+
+    private loadCoverageData(): void {
+        this.isLoading = true;
+
+        // Subscribe to the coverage data from the store service
+        // This will update whenever a new report is uploaded
+        const subscription = this.coverageStoreService.getCoverageData().subscribe({
+            next: (coverageData) => {
+                if (coverageData) {
+                    // Transform the CoverageData to the format needed for the treemap
+                    this.originalData = this.coverageDataService.transformToHierarchy(coverageData);
+
+                    // Build package list
+                    this.extractPackageList();
+
+                    // Apply initial filters
+                    this.applyFilters();
+                } else {
+                    // No data available
+                    this.originalData = [];
+                    this.filteredData = [];
+                }
+
                 this.isLoading = false;
             }
         });
 
-        // Subscribe to theme changes
-        this.themeSubscription = this.themeService.darkTheme$.subscribe(isDark => {
-            this.isDarkTheme = isDark;
-            this.themeDark = isDark;
+        this.subscriptions.add(subscription);
+    }
+
+    private extractPackageList(): void {
+        const uniquePackages = new Set<string>();
+
+        this.originalData.forEach(item => {
+            if (item.packageName) {
+                uniquePackages.add(item.packageName);
+            }
         });
+
+        this.packageList = Array.from(uniquePackages).sort();
     }
 
-    ngAfterViewInit(): void {
-        // Nothing to do here since visualization is now handled by child component
-    }
+    private applyFilters(): void {
+        let data = [...this.originalData];
 
-    ngOnDestroy(): void {
-        if (this.themeSubscription) {
-            this.themeSubscription.unsubscribe();
-        }
-    }
-
-    /**
-     * Update filtered data based on current filters
-     */
-    private updateFilteredData(): void {
-        if (!this.hierarchyData) return;
-
-        // Apply filters to data
-        let filteredData = this.hierarchyData;
-
-        // Filter by coverage
+        // 1. Filter by min coverage
         if (this.minCoverage > 0) {
-            filteredData = this.coverageDataService.filterByCoverage(filteredData, this.minCoverage);
+            data = data.filter(item => item.coverage >= this.minCoverage);
         }
 
-        // Apply search if needed
+        // 2. Filter by selected package
+        if (this.selectedPackage) {
+            data = data.filter(item => item.packageName === this.selectedPackage);
+        }
+
+        // 3. Search term filter
         if (this.searchTerm) {
-            this.coverageDataService.applySearch(filteredData, this.searchTerm);
+            const term = this.searchTerm.toLowerCase();
+            data = data.filter(item => {
+                const className = item.className.toLowerCase();
+                const packageName = item.packageName?.toLowerCase() || '';
+                return className.includes(term) || packageName.includes(term);
+            });
         }
 
-        // Store filtered data
-        this.filteredData = filteredData;
+        // 4. Min lines filter
+        if (this.minLines > 0) {
+            data = data.filter(item => item.linesValid >= this.minLines);
+        }
+
+        // 5. Group small nodes
+        if (this.groupSmallNodes) {
+            data = this.treemapLayoutService.groupSmallNodes(data, 10);
+        }
+
+        // 6. Sorting
+        switch (this.sortBy) {
+            case 'coverage':
+                data.sort((a, b) => b.coverage - a.coverage);
+                break;
+            case 'name':
+                data.sort((a, b) => a.className.localeCompare(b.className));
+                break;
+            case 'size':
+            default:
+                data.sort((a, b) => b.linesValid - a.linesValid);
+                break;
+        }
+
+        this.filteredData = data;
+
+        // Update hasActiveFilters flag
+        this.hasActiveFilters = this.minCoverage > 0 ||
+            !!this.selectedPackage ||
+            !!this.searchTerm ||
+            this.groupSmallNodes ||
+            this.minLines > 0 ||
+            this.sortBy !== 'size';
     }
 
-    /**
-     * Initialize package list from coverage data
-     */
-    private initializePackageList(): void {
-        if (!this.coverageData) return;
+    // Handler for node selection
+    onNodeSelected(node: Coverage): void {
+        this.selectedNode = node;
 
-        this.packageList = this.coverageData.packages
-            .map(pkg => pkg.name || 'Default Package')
-            .filter((value, index, self) => self.indexOf(value) === index)
-            .sort();
+        // Find similar classes in the same package
+        if (node.packageName) {
+            this.similarClasses = this.filteredData.filter(item =>
+                item.packageName === node.packageName &&
+                item.className !== node.className
+            ).slice(0, 10); // Limit to 10 similar classes
+        } else {
+            this.similarClasses = [];
+        }
     }
 
-    /**
-     * Update visualization based on current filters
-     */
-    updateVisualization(): void {
-        this.updateFilteredData();
-    }
-
-    /**
-     * Search functionality
-     */
-    onSearchTermChange(term: string): void {
-        this.searchTerm = term;
-        this.updateVisualization();
-    }
-
-    onResetSearch(): void {
-        this.searchTerm = '';
-        this.updateVisualization();
-    }
-
-    /**
-     * Filter by coverage
-     */
+    // Control change handlers
     onMinCoverageChange(value: number): void {
         this.minCoverage = value;
-        this.updateVisualization();
+        this.applyFilters();
     }
 
-    /**
-     * Toggle small node grouping
-     */
+    onSelectedPackageChange(value: string): void {
+        this.selectedPackage = value;
+        this.applyFilters();
+    }
+
     onGroupSmallNodesChange(value: boolean): void {
         this.groupSmallNodes = value;
+        this.applyFilters();
     }
 
-    /**
-     * Set color scheme for colorblind users
-     */
-    onColorModeChange(mode: 'default' | 'colorblind'): void {
-        this.colorMode = mode;
+    onSearchTermChange(value: string): void {
+        this.searchTerm = value;
+        this.applyFilters();
     }
 
-    /**
-     * Toggle node labels
-     */
     onShowLabelsChange(value: boolean): void {
         this.showLabels = value;
     }
 
-    /**
-     * Toggle filter panel
-     */
-    onShowFiltersChange(value: boolean): void {
-        this.showFilters = value;
+    onColorModeChange(value: string): void {
+        this.colorMode = value as 'default' | 'colorblind';
+
+        // Update color ranges if color mode changes
+        if (value === 'colorblind') {
+            this.coverageRanges = this.treemapLayoutService.getColorblindCoverageRanges();
+        } else {
+            this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
+        }
     }
 
-    /**
-     * Change package filter
-     */
-    onSelectedPackageChange(value: string): void {
-        this.selectedPackage = value;
-        this.updateVisualization();
-    }
-
-    /**
-     * Change minimum lines filter
-     */
     onMinLinesChange(value: number): void {
         this.minLines = value;
-        this.updateVisualization();
+        this.applyFilters();
     }
 
-    /**
-     * Change sort method
-     */
     onSortByChange(value: string): void {
-        this.sortBy = value as 'size' | 'coverage' | 'name';
-        this.updateVisualization();
+        this.sortBy = value;
+        this.applyFilters();
     }
 
-    /**
-     * Clear all filters
-     */
-    onClearFilters(): void {
+    onClearAllFilters(): void {
+        // Reset all filters to default values
         this.minCoverage = 0;
         this.selectedPackage = '';
-        this.minLines = 0;
+        this.groupSmallNodes = false;
         this.searchTerm = '';
-        this.updateVisualization();
+        this.minLines = 0;
+        this.sortBy = 'size';
+
+        // Apply the reset filters
+        this.applyFilters();
     }
 
-    /**
-     * Select a node for detailed view
-     */
-    onNodeSelected(node: any): void {
-        this.selectedNode = node;
-
-        // Find similar classes
-        if (node && !node.data.isNamespace) {
-            this.findSimilarClasses(node);
-        }
-    }
-
-    /**
-     * Clear selected node
-     */
-    onCloseDetails(): void {
-        this.selectedNode = null;
-    }
-
-    /**
-     * Get color class for CSS styling
-     */
-    getCoverageClass(coverage: number): string {
-        if (coverage >= 90) return 'excellent';
-        if (coverage >= 75) return 'good';
-        if (coverage >= 50) return 'average';
-        return 'poor';
-    }
-
-    /**
-     * Format coverage as text
-     */
-    getCoverageText(coverage: number): string {
-        return `${coverage.toFixed(1)}%`;
-    }
-
-    /**
-     * Find classes with similar coverage
-     */
-    findSimilarClasses(node: any): void {
-        if (!node || !this.coverageData) {
-            this.similarClasses = [];
-            return;
-        }
-
-        const nodeCoverage = node.data.coverage;
-        const similarThreshold = 5; // Within 5% coverage
-
-        // Flatten all classes
-        let allClasses: any[] = [];
-        this.coverageData.packages.forEach(pkg => {
-            pkg.classes.forEach(cls => {
-                allClasses.push({
-                    name: cls.name,
-                    path: `${pkg.name || 'Default Package'}.${cls.name}`,
-                    coverage: cls.lineRate,
-                    package: pkg.name
-                });
-            });
-        });
-
-        // Find classes with similar coverage
-        this.similarClasses = allClasses
-            .filter(cls =>
-                // Not the same class
-                cls.path !== node.data.path &&
-                // Similar coverage (within threshold)
-                Math.abs(cls.coverage - nodeCoverage) <= similarThreshold)
-            .sort((a, b) => Math.abs(a.coverage - nodeCoverage) - Math.abs(b.coverage - nodeCoverage))
-            .slice(0, 5); // Top 5 similar classes
-    }
-
-    /**
-     * Select a similar node
-     */
-    onSelectSimilarNode(item: any): void {
-        // Implementation would need to find the node in the hierarchy
-        // This is a simplified version
-        this.onNodeSelected({
-            data: {
-                name: item.name,
-                path: item.path,
-                coverage: item.coverage,
-                isNamespace: false
-            }
-        });
-    }
-
-    // History tracking methods (simplified)
-    saveCoverageSnapshot(): void {
-        // Implementation would save current coverage data to history
-    }
-
-    loadCoverageHistory(): void {
-        // Implementation would load saved coverage history
-    }
-
-    clearHistory(): void {
-        localStorage.removeItem('coverage-history');
-        this.snapshots = [];
+    onToggleFilters(expanded: boolean): void {
+        this.showFilters = expanded;
     }
 }
