@@ -1,262 +1,181 @@
 .treemap-controls {
-  background-color: #f3f4f6;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background-color: var(--app-card-bg, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: all 0.3s ease;
 
-  /* Main controls grid */
-  .control-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-  }
-
-  /* Control items */
-  .control-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    label {
-      min-width: 100px;
-      font-size: 13px;
-      color: #555;
-    }
-
-    input[type="range"] {
-      flex: 1;
-      min-width: 100px;
-    }
-
-    select {
-      flex: 1;
-      padding: 3px 6px;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      background-color: white;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 4px 8px;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-    }
-
-    input[type="number"] {
-      width: 80px;
-      padding: 3px 6px;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-    }
-
-    .value-display {
-      min-width: 40px;
-      font-size: 13px;
-      color: #555;
-      text-align: right;
-    }
-
-    &.checkbox {
-      min-width: 150px;
-
-      label {
-        min-width: auto;
-      }
-    }
-
-    &.search {
-      position: relative;
-
-      input {
-        width: 100%;
-        padding-right: 25px;
-      }
-
-      .search-clear {
-        position: absolute;
-        right: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: none;
-        background: none;
-        color: #999;
-        cursor: pointer;
-        font-size: 12px;
-        padding: 0;
-
-        &:hover {
-          color: #333;
-        }
-      }
-    }
-  }
-
-  /* Advanced toggle */
-  .advanced-toggle {
-    margin-top: 10px;
-    display: flex;
-    justify-content: flex-start;
-
-    button {
-      background: none;
-      border: none;
-      color: #555;
-      cursor: pointer;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 3px;
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-    }
-  }
-
-  /* Advanced panel */
-  .advanced-panel {
-    margin-top: 10px;
-    border-top: 1px dashed #ccc;
-    padding-top: 10px;
-
-    .section {
-      margin-bottom: 16px;
-
-      h4 {
-        margin: 0 0 8px 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-      }
-
-      .option-group {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 8px;
-      }
-
-      .option {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        label {
-          min-width: 90px;
-          font-size: 13px;
-          color: #555;
-        }
-
-        select,
-        input {
-          padding: 5px 14px;
-          border: 2px solid #ccc;
-          border-radius: 8px;
-        }
-
-        &.checkbox {
-          label {
-            min-width: auto;
-          }
-        }
-      }
-    }
-
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 12px;
-
-      .clear-button {
-        padding: 4px 10px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        background-color: #f8f8f8;
-        color: #333;
-        cursor: pointer;
-        font-size: 13px;
-
-        &:hover:not(:disabled) {
-          background-color: #eee;
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      }
-    }
+  &.expanded {
+    margin-bottom: 20px;
   }
 }
 
-/* Dark theme support */
-:host-context(.dark-theme) .treemap-controls {
-  background-color: #2a2a2a;
-  border-color: #444;
-  color: #e0e0e0;
+.controls-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--app-border-color, #eaeaea);
+  background-color: var(--app-card-header-bg, #f9fafb);
+}
 
-  .control-item {
-    label,
-    .value-display {
-      color: #bbb;
-    }
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-    input[type="range"] {
-      background-color: #3a3a3a;
-    }
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--app-text-color, #333);
+  }
+}
 
-    select,
-    input[type="text"],
-    input[type="number"] {
-      background-color: #333;
-      border-color: #555;
-      color: #e0e0e0;
-    }
+.controls-actions {
+  display: flex;
+  gap: 10px;
+}
 
-    &.search .search-clear {
-      color: #888;
+.toggle-button,
+.clear-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--app-border-color, #ddd);
+  background-color: var(--app-button-bg, #f5f5f5);
+  color: var(--app-text-color, #333);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
 
-      &:hover {
-        color: #ccc;
-      }
+  &:hover {
+    background-color: var(--app-button-hover-bg, #e5e5e5);
+  }
+}
+
+.clear-button {
+  background-color: transparent;
+  color: var(--app-danger-color, #e53e3e);
+  border-color: var(--app-danger-light, #fbd5d5);
+
+  &:hover {
+    background-color: var(--app-danger-light, #fbd5d5);
+  }
+}
+
+.controls-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+
+  &.visible {
+    max-height: 800px;
+    padding: 16px;
+  }
+}
+
+.control-group {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--app-text-color, #4a5568);
+  }
+
+  input[type="text"],
+  select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--app-border-color, #e2e8f0);
+    font-size: 14px;
+    color: var(--app-text-color, #1a202c);
+
+    &:focus {
+      outline: none;
+      border-color: var(--app-primary-color, #4299e1);
+      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
     }
   }
 
-  .advanced-toggle button {
-    color: #bbb;
+  input[type="range"] {
+    width: 100%;
+    margin: 8px 0;
+  }
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.toggle-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  label {
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
+// Dark theme support
+:host-context(.dark-theme) {
+  .treemap-controls {
+    background-color: var(--app-dark-card-bg, #1e293b);
+    border: 1px solid var(--app-dark-border, #2d3748);
+  }
+
+  .controls-header {
+    background-color: var(--app-dark-card-header-bg, #1a202c);
+    border-color: var(--app-dark-border, #2d3748);
+
+    h3 {
+      color: var(--app-dark-text, #e2e8f0);
+    }
+  }
+
+  .toggle-button,
+  .clear-button {
+    background-color: var(--app-dark-button-bg, #2d3748);
+    border-color: var(--app-dark-border, #4a5568);
+    color: var(--app-dark-text, #e2e8f0);
 
     &:hover {
-      background-color: rgba(255, 255, 255, 0.05);
+      background-color: var(--app-dark-button-hover-bg, #4a5568);
     }
   }
 
-  .advanced-panel {
-    border-color: #444;
+  .clear-button {
+    color: var(--app-danger-light, #feb2b2);
+    border-color: var(--app-danger-dark, #822727);
 
-    .section h4 {
-      color: #ddd;
+    &:hover {
+      background-color: var(--app-danger-dark, #822727);
+    }
+  }
+
+  .control-group {
+    label {
+      color: var(--app-dark-text-muted, #a0aec0);
     }
 
-    .option label {
-      color: #bbb;
-    }
+    input[type="text"],
+    select {
+      background-color: var(--app-dark-input-bg, #2d3748);
+      border-color: var(--app-dark-border, #4a5568);
+      color: var(--app-dark-text, #e2e8f0);
 
-    .option select,
-    .option input {
-      background-color: #333;
-      border-color: #555;
-      color: #e0e0e0;
-    }
-
-    .actions .clear-button {
-      background-color: #333;
-      border-color: #555;
-      color: #e0e0e0;
-
-      &:hover:not(:disabled) {
-        background-color: #444;
+      &:focus {
+        border-color: var(--app-primary-color, #4299e1);
       }
     }
   }

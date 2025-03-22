@@ -1,52 +1,56 @@
-<div class="node-details" *ngIf="selectedNode" [@slideInOut]>
-    <!-- Node details content -->
-    <div class="details-content">
-        <!-- Class name -->
-        <div class="class-name">
-            {{ selectedNode.data.name }}
-        </div>
-
-        <!-- Coverage info -->
-        <div class="details-section">
-            <div class="detail-row">
-                <span class="label">Coverage:</span>
-                <span class="value">{{ getCoverageText(selectedNode.data.coverage) }}</span>
-            </div>
-
-            <div class="detail-row">
-                <span class="label">Branch Coverage:</span>
-                <span class="value">{{ getCoverageText(selectedNode.data.branchRate || 0) }}</span>
-            </div>
-
-            <div class="detail-row">
-                <span class="label">Lines:</span>
-                <span class="value">{{ selectedNode.data.linesValid || 0 }}</span>
-            </div>
-        </div>
-
-        <!-- File path -->
-        <div class="details-section file-section" *ngIf="selectedNode.data.filename">
-            <div class="detail-row">
-                <span class="label">File:</span>
-            </div>
-            <div class="file-path">{{ selectedNode.data.filename }}</div>
-        </div>
-
-        <!-- Similar classes -->
-        <div class="details-section similar-classes"
-            *ngIf="!selectedNode.data.isNamespace && similarClasses.length > 0">
-            <div class="section-header">Similar Coverage Classes</div>
-            <ul class="similar-list">
-                <li *ngFor="let similar of similarClasses" (click)="onSelectSimilarNode(similar)">
-                    <span class="coverage-badge" [ngClass]="getCoverageClass(similar.coverage)">
-                        {{ getCoverageText(similar.coverage) }}
-                    </span>
-                    <span class="similar-name">{{ similar.name }}</span>
-                </li>
-            </ul>
-        </div>
+<div class="details-panel" *ngIf="selectedNode">
+    <div class="details-header">
+        <h3>Class Details</h3>
+        <button class="close-button" (click)="onClose()">×</button>
     </div>
 
-    <!-- Close button -->
-    <button class="close-btn" (click)="onClose()">✕</button>
+    <div class="details-content">
+        <div class="class-info">
+            <h4 class="class-name">{{ selectedNode.className }}</h4>
+            <div class="package-name">{{ selectedNode.packageName }}</div>
+
+            <div class="coverage-indicator">
+                <div class="coverage-label">Coverage</div>
+                <div class="coverage-value" [ngClass]="getCoverageClass(selectedNode.coverage)">
+                    {{ selectedNode.coverage.toFixed(1) }}%
+                </div>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label">Lines of Code</div>
+                    <div class="metric-value">{{ selectedNode.linesValid }}</div>
+                </div>
+
+                <div class="metric" *ngIf="selectedNode.linesCovered !== undefined">
+                    <div class="metric-label">Covered Lines</div>
+                    <div class="metric-value">{{ selectedNode.linesCovered.toFixed(0) }}</div>
+                </div>
+
+                <div class="metric" *ngIf="selectedNode.branchRate !== undefined">
+                    <div class="metric-label">Branch Coverage</div>
+                    <div class="metric-value" [ngClass]="getCoverageClass(selectedNode.branchRate || 0)">
+                        {{ selectedNode.branchRate.toFixed(1) }}%
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-file" *ngIf="selectedNode.filename">
+                <div class="file-label">File:</div>
+                <div class="file-path">{{ selectedNode.filename }}</div>
+            </div>
+        </div>
+
+        <div class="similar-classes" *ngIf="similarClasses.length > 0">
+            <h4>Similar Classes in Package</h4>
+            <div class="similar-list">
+                <div class="similar-item" *ngFor="let item of similarClasses" (click)="onSelectNode(item)">
+                    <div class="similar-name">{{ item.className }}</div>
+                    <div class="similar-coverage" [ngClass]="getCoverageClass(item.coverage)">
+                        {{ item.coverage.toFixed(1) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

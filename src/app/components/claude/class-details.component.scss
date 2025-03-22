@@ -1,0 +1,45 @@
+.class-details {
+  background-color: white;
+  border-radius: 4px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+
+  h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+  }
+
+  .filename {
+    color: var(--light-text);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  .lines-container {
+    max-height: 400px;
+    overflow-y: auto;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th,
+      td {
+        padding: 0.25rem 0.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        font-family: monospace;
+      }
+
+      th {
+        background-color: #f9f9f9;
+        font-weight: 500;
+        color: var(--light-text);
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+    }
+  }
+}

@@ -1,42 +1,40 @@
-<div class="coverage-treemap-container" [class.dark-theme]="themeDark">
-    <!-- Simplified controls that match your screenshot -->
-    <app-treemap-controls [minCoverage]="minCoverage" [selectedPackage]="selectedPackage" [packageList]="packageList"
-        [groupSmallNodes]="groupSmallNodes" [searchTerm]="searchTerm" [showFilters]="showFilters"
-        [showLabels]="showLabels" [colorMode]="colorMode" [minLines]="minLines" [sortBy]="sortBy"
-        (minCoverageChange)="onMinCoverageChange($event)" (selectedPackageChange)="onSelectedPackageChange($event)"
-        (groupSmallNodesChange)="onGroupSmallNodesChange($event)" (searchTermChange)="onSearchTermChange($event)"
-        (showFiltersChange)="onShowFiltersChange($event)" (showLabelsChange)="onShowLabelsChange($event)"
-        (colorModeChange)="onColorModeChange($event)" (minLinesChange)="onMinLinesChange($event)"
-        (sortByChange)="onSortByChange($event)" (clearFilters)="onClearFilters()" (searchReset)="onResetSearch()">
+<div class="coverage-treemap-container" [class.dark-theme]="isDarkTheme">
+    <!-- Controls Component -->
+    <app-treemap-controls [minCoverage]="minCoverage" (minCoverageChange)="onMinCoverageChange($event)"
+        [selectedPackage]="selectedPackage" (selectedPackageChange)="onSelectedPackageChange($event)"
+        [groupSmallNodes]="groupSmallNodes" (groupSmallNodesChange)="onGroupSmallNodesChange($event)"
+        [searchTerm]="searchTerm" (searchTermChange)="onSearchTermChange($event)" [showFilters]="showFilters"
+        [showLabels]="showLabels" (showLabelsChange)="onShowLabelsChange($event)" [colorMode]="colorMode"
+        (colorModeChange)="onColorModeChange($event)" [minLines]="minLines" (minLinesChange)="onMinLinesChange($event)"
+        [sortBy]="sortBy" (sortByChange)="onSortByChange($event)" [hasActiveFilters]="hasActiveFilters"
+        [packageList]="packageList" (clearFilters)="onClearAllFilters()" (toggleFilters)="onToggleFilters($event)">
     </app-treemap-controls>
 
     <!-- Loading indicator -->
     <div class="loading-overlay" *ngIf="isLoading">
         <div class="spinner"></div>
-        <div>Loading coverage data...</div>
+        <div class="loading-text">Loading coverage data...</div>
     </div>
 
-    <!-- Main treemap visualization -->
+    <!-- Main Visualization -->
     <div class="visualization-container">
-        <app-treemap-visualization *ngIf="filteredData" [data]="filteredData" [isDarkTheme]="themeDark"
-            [showLabels]="showLabels" [groupSmallNodes]="groupSmallNodes" [colorMode]="colorMode"
-            [coverageRanges]="coverageRanges" (nodeSelected)="onNodeSelected($event)">
+        <app-treemap-visualization *ngIf="filteredData && filteredData.length > 0" [data]="filteredData"
+            [isDarkTheme]="isDarkTheme" [showLabels]="showLabels" [groupSmallNodes]="groupSmallNodes"
+            [colorMode]="colorMode" [coverageRanges]="coverageRanges" (nodeSelected)="onNodeSelected($event)">
         </app-treemap-visualization>
 
+        <!-- No data message -->
         <div class="no-data-message" *ngIf="!hasData && !isLoading">
             <div class="message-content">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
                 <h3>No coverage data available</h3>
                 <p>No code coverage data has been loaded. Run your tests with coverage enabled to see results here.</p>
             </div>
         </div>
     </div>
 
-    <!-- Selected node detail panel -->
-    <app-treemap-details [selectedNode]="selectedNode" [similarClasses]="similarClasses"
-        (closeDetails)="onCloseDetails()" (selectSimilarNode)="onSelectSimilarNode($event)">
+    <!-- Details panel (shown when a node is selected) -->
+    <app-treemap-details *ngIf="selectedNode" [@slideInOut] [selectedNode]="selectedNode"
+        [similarClasses]="similarClasses" (closeDetails)="selectedNode = null"
+        (selectSimilarNode)="onNodeSelected($event)">
     </app-treemap-details>
 </div>
