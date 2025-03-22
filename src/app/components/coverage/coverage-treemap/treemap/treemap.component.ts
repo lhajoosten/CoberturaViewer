@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, ElementRef, ViewChild } from "@angular/core";
+import { Component, OnInit, OnDestroy, Input, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { trigger, style, transition, animate } from '@angular/animations';
@@ -10,7 +10,6 @@ import { TreemapLayoutService } from "../../../../services/utils/treemap-layout.
 import { TreemapControlsComponent } from "../treemap-controls/treemap-controls.component";
 import { TreemapDetailsComponent } from "../treemap-details/treemap-details.component";
 import { ThemeService } from "../../../../services/utils/theme.service";
-import { TreemapConfig } from "../../../../models/treemap-config.model";
 import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-visualization.component";
 
 @Component({
