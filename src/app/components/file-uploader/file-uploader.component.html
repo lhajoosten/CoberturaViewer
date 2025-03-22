@@ -1,13 +1,10 @@
-<div class="uploader-container card">
-    <div class="uploader-header">
-        <h2>Upload Cobertura Coverage XML</h2>
-        <p>
-            Drop your Cobertura XML file below to visualize your code coverage in an interactive dashboard.
-        </p>
-    </div>
+<div class="uploader-container card" [class.dark-theme]="isDarkTheme">
+    <h2>Upload Coverage Report</h2>
+    <p class="uploader-description">
+        Drop your Cobertura XML file below or select from your device to analyze coverage.
+    </p>
 
-    <div class="uploader-box" [class.loading]="isLoading" [class.dragover]="isDragOver" (dragover)="onDragOver($event)"
-        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+    <div class="drop-zone" [class.active]="isDragOver" [class.loading]="isLoading">
         <input type="file" id="file-upload" accept=".xml" (change)="onFileSelected($event)" [disabled]="isLoading" />
 
         <div class="upload-icon">
@@ -15,39 +12,61 @@
         </div>
 
         <div class="upload-text">
-            <label for="file-upload" class="btn btn-primary">
-                <i class="fas fa-file-upload"></i> Select XML File
+            <h3>Drop Cobertura XML File Here</h3>
+            <p>or</p>
+            <label for="file-upload" class="upload-button">
+                Choose File
             </label>
-            <span class="or-text">or drag & drop file here</span>
+        </div>
+
+        <div class="loading-spinner" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <span>Processing...</span>
         </div>
     </div>
 
-    <div *ngIf="isLoading" class="loading-indicator">
-        <div class="spinner"></div>
-        <span>Processing file...</span>
+    <div class="error-container" *ngIf="errorMessage">
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ errorMessage }}</span>
+        </div>
     </div>
 
-    <div *ngIf="errorMessage" class="error-message">
-        <i class="fas fa-exclamation-circle"></i>
-        {{ errorMessage }}
+    <div class="history-container" *ngIf="previousFiles.length > 0">
+        <h3>Recent Files</h3>
+        <ul class="history-list">
+            <li *ngFor="let file of previousFiles">
+                <button (click)="loadFromHistory(file)" class="history-button">
+                    <i class="fas fa-file-code"></i>
+                    <span>{{ file }}</span>
+                </button>
+            </li>
+        </ul>
     </div>
 
-    <div class="sample-data" *ngIf="!isLoading && !errorMessage">
-        <button (click)="loadSampleData()" class="btn btn-outline">
-            <i class="fas fa-vial"></i> Try with Sample Data
+    <div class="sample-container">
+        <button (click)="loadSampleData()" class="sample-button">
+            <i class="fas fa-vial"></i>
+            <span>Load Sample Data</span>
         </button>
+        <p class="sample-note">
+            No Cobertura XML file available? Try with our sample data.
+        </p>
     </div>
 
-    <div class="info-section">
+    <div class="info-container">
         <h3>About Cobertura XML Files</h3>
         <p>
-            Cobertura XML is a standard format for code coverage reports. You can generate these files using:
+            Cobertura XML is a standardized format for code coverage reports that can be generated from:
         </p>
         <ul>
-            <li>JaCoCo with Maven or Gradle</li>
-            <li>Istanbul/NYC for JavaScript projects</li>
-            <li>Coverage.py for Python</li>
-            <li>And many other test coverage tools</li>
+            <li><strong>Java:</strong> JaCoCo, Cobertura Maven/Gradle plugins</li>
+            <li><strong>JavaScript/TypeScript:</strong> Istanbul, nyc</li>
+            <li><strong>.NET:</strong> OpenCover, Coverlet</li>
+            <li><strong>Python:</strong> coverage.py with cobertura plugin</li>
         </ul>
+        <p>
+            Many CI/CD systems and code analysis tools also support exporting coverage in Cobertura format.
+        </p>
     </div>
 </div>

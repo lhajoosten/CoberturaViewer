@@ -1,3 +1,46 @@
-<div class="app-container">
+<div class="app-container" [class.dark-theme]="isDarkTheme">
+  <header class="app-header">
+    <div class="header-content">
+      <!-- Logo and brand at flex-start -->
+      <div class="logo">
+        <h1>Coverage Explorer</h1>
+      </div>
+
+      <!-- Navigation centered -->
+      <nav class="main-nav">
+        <div class="nav-links">
+          <a [routerLink]="['/']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+            <i class="fas fa-home"></i> Home
+          </a>
+          <a [routerLink]="['/history']" routerLinkActive="active" class="nav-link">
+            <i class="fas fa-history"></i> History
+          </a>
+          <a [routerLink]="['/insights']" routerLinkActive="active" class="nav-link">
+            <i class="fas fa-lightbulb"></i> Insights
+          </a>
+        </div>
+      </nav>
+
+      <!-- Actions at flex-end -->
+      <div class="header-actions">
+        <button class="compare-btn" (click)="startComparison()">
+          <i class="fas fa-exchange-alt"></i> Compare Reports
+        </button>
+      </div>
+    </div>
+  </header>
+
   <router-outlet></router-outlet>
+  <app-theme-toggle></app-theme-toggle>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="copyright">© 2025 Cobertura Coverage Explorer</div>
+      <div class="footer-links">
+        <a href="https://github.com/lhajoosten/CoberturaViewer" target="_blank">
+          <i class="fab fa-github"></i> GitHub
+        </a>
+      </div>
+    </div>
+  </footer>
 </div>

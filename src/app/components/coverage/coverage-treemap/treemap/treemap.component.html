@@ -1,0 +1,42 @@
+<div class="coverage-treemap-container" [class.dark-theme]="themeDark">
+    <!-- Simplified controls that match your screenshot -->
+    <app-treemap-controls [minCoverage]="minCoverage" [selectedPackage]="selectedPackage" [packageList]="packageList"
+        [groupSmallNodes]="groupSmallNodes" [searchTerm]="searchTerm" [showFilters]="showFilters"
+        [showLabels]="showLabels" [colorMode]="colorMode" [minLines]="minLines" [sortBy]="sortBy"
+        (minCoverageChange)="onMinCoverageChange($event)" (selectedPackageChange)="onSelectedPackageChange($event)"
+        (groupSmallNodesChange)="onGroupSmallNodesChange($event)" (searchTermChange)="onSearchTermChange($event)"
+        (showFiltersChange)="onShowFiltersChange($event)" (showLabelsChange)="onShowLabelsChange($event)"
+        (colorModeChange)="onColorModeChange($event)" (minLinesChange)="onMinLinesChange($event)"
+        (sortByChange)="onSortByChange($event)" (clearFilters)="onClearFilters()" (searchReset)="onResetSearch()">
+    </app-treemap-controls>
+
+    <!-- Loading indicator -->
+    <div class="loading-overlay" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <div>Loading coverage data...</div>
+    </div>
+
+    <!-- Main treemap visualization -->
+    <div class="visualization-container">
+        <app-treemap-visualization *ngIf="filteredData" [data]="filteredData" [isDarkTheme]="themeDark"
+            [showLabels]="showLabels" [groupSmallNodes]="groupSmallNodes" [colorMode]="colorMode"
+            [coverageRanges]="coverageRanges" (nodeSelected)="onNodeSelected($event)">
+        </app-treemap-visualization>
+
+        <div class="no-data-message" *ngIf="!hasData && !isLoading">
+            <div class="message-content">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <h3>No coverage data available</h3>
+                <p>No code coverage data has been loaded. Run your tests with coverage enabled to see results here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected node detail panel -->
+    <app-treemap-details [selectedNode]="selectedNode" [similarClasses]="similarClasses"
+        (closeDetails)="onCloseDetails()" (selectSimilarNode)="onSelectSimilarNode($event)">
+    </app-treemap-details>
+</div>

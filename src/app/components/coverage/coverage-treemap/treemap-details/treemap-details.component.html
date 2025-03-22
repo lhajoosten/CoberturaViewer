@@ -1,0 +1,52 @@
+<div class="node-details" *ngIf="selectedNode" [@slideInOut]>
+    <!-- Node details content -->
+    <div class="details-content">
+        <!-- Class name -->
+        <div class="class-name">
+            {{ selectedNode.data.name }}
+        </div>
+
+        <!-- Coverage info -->
+        <div class="details-section">
+            <div class="detail-row">
+                <span class="label">Coverage:</span>
+                <span class="value">{{ getCoverageText(selectedNode.data.coverage) }}</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">Branch Coverage:</span>
+                <span class="value">{{ getCoverageText(selectedNode.data.branchRate || 0) }}</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">Lines:</span>
+                <span class="value">{{ selectedNode.data.linesValid || 0 }}</span>
+            </div>
+        </div>
+
+        <!-- File path -->
+        <div class="details-section file-section" *ngIf="selectedNode.data.filename">
+            <div class="detail-row">
+                <span class="label">File:</span>
+            </div>
+            <div class="file-path">{{ selectedNode.data.filename }}</div>
+        </div>
+
+        <!-- Similar classes -->
+        <div class="details-section similar-classes"
+            *ngIf="!selectedNode.data.isNamespace && similarClasses.length > 0">
+            <div class="section-header">Similar Coverage Classes</div>
+            <ul class="similar-list">
+                <li *ngFor="let similar of similarClasses" (click)="onSelectSimilarNode(similar)">
+                    <span class="coverage-badge" [ngClass]="getCoverageClass(similar.coverage)">
+                        {{ getCoverageText(similar.coverage) }}
+                    </span>
+                    <span class="similar-name">{{ similar.name }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Close button -->
+    <button class="close-btn" (click)="onClose()">✕</button>
+</div>

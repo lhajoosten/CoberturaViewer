@@ -1,0 +1,17 @@
+<div class="treemap-container" #container [class.dark-theme]="isDarkTheme"></div>
+<div class="tooltip" #tooltip [style.left.px]="tooltipX" [style.top.px]="tooltipY"
+    [style.opacity]="showTooltip ? 1 : 0">
+    <div *ngIf="tooltipNode" class="tooltip-content">
+        <div class="tooltip-title">{{ tooltipNode?.data?.fullName || tooltipNode?.data?.name }}</div>
+        <div class="tooltip-row">
+            <span>Coverage:</span>
+            <span class="coverage-badge {{ getCoverageClass(tooltipNode?.data?.coverage) }}">
+                {{ formatCoverage(tooltipNode?.data?.coverage) }}
+            </span>
+        </div>
+        <div *ngIf="!tooltipNode?.data?.isNamespace" class="tooltip-row">
+            <span>Lines:</span>
+            <span>{{ tooltipNode?.data?.linesValid || 0 }}</span>
+        </div>
+    </div>
+</div>

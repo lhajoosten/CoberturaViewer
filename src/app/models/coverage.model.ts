@@ -1,6 +1,9 @@
 export interface CoverageSummary {
     lineRate: number;
     branchRate: number;
+    methodRate: number;
+    classRate: number;
+    complexity: number;
     linesValid: number;
     linesCovered: number;
     timestamp: string;
@@ -50,4 +53,42 @@ export interface CoverageMetrics {
     untestedClasses: number;
     lowCoverageClasses: string[];
     highImpactClasses: string[];
+}
+
+export interface ClassRisk {
+    name: string;
+    path: string;
+    coverage: number;
+    linesValid: number;
+    branchRate: number;
+    riskScore: number;
+}
+
+export interface HistoryEntry {
+    date: Date;
+    data: CoverageData;
+}
+
+export interface ChartMetric {
+    id: string;
+    label: string;
+    color: string;
+    enabled: boolean;
+    accessor: (entry: any, index?: number, array?: any[]) => number;
+}
+
+export interface TimeRange {
+    value: string;
+    label: string;
+    days: number;
+}
+
+export interface TreeNode {
+    name: string;
+    fullPath?: string;
+    isNamespace: boolean;
+    coverage: number;
+    value: number;
+    children: TreeNode[];
+    [key: string]: any; // For additional properties
 }

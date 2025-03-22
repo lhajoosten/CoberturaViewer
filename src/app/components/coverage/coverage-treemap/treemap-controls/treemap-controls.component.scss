@@ -1,0 +1,263 @@
+.treemap-controls {
+  background-color: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+
+  /* Main controls grid */
+  .control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  /* Control items */
+  .control-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    label {
+      min-width: 100px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    select {
+      flex: 1;
+      padding: 3px 6px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background-color: white;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 4px 8px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      padding: 3px 6px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    .value-display {
+      min-width: 40px;
+      font-size: 13px;
+      color: #555;
+      text-align: right;
+    }
+
+    &.checkbox {
+      min-width: 150px;
+
+      label {
+        min-width: auto;
+      }
+    }
+
+    &.search {
+      position: relative;
+
+      input {
+        width: 100%;
+        padding-right: 25px;
+      }
+
+      .search-clear {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: none;
+        color: #999;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 0;
+
+        &:hover {
+          color: #333;
+        }
+      }
+    }
+  }
+
+  /* Advanced toggle */
+  .advanced-toggle {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-start;
+
+    button {
+      background: none;
+      border: none;
+      color: #555;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+
+  /* Advanced panel */
+  .advanced-panel {
+    margin-top: 10px;
+    border-top: 1px dashed #ccc;
+    padding-top: 10px;
+
+    .section {
+      margin-bottom: 16px;
+
+      h4 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .option-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px;
+      }
+
+      .option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        label {
+          min-width: 90px;
+          font-size: 13px;
+          color: #555;
+        }
+
+        select,
+        input {
+          padding: 5px 14px;
+          border: 2px solid #ccc;
+          border-radius: 8px;
+        }
+
+        &.checkbox {
+          label {
+            min-width: auto;
+          }
+        }
+      }
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+
+      .clear-button {
+        padding: 4px 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background-color: #f8f8f8;
+        color: #333;
+        cursor: pointer;
+        font-size: 13px;
+
+        &:hover:not(:disabled) {
+          background-color: #eee;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+/* Dark theme support */
+:host-context(.dark-theme) .treemap-controls {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+
+  .control-item {
+    label,
+    .value-display {
+      color: #bbb;
+    }
+
+    input[type="range"] {
+      background-color: #3a3a3a;
+    }
+
+    select,
+    input[type="text"],
+    input[type="number"] {
+      background-color: #333;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+
+    &.search .search-clear {
+      color: #888;
+
+      &:hover {
+        color: #ccc;
+      }
+    }
+  }
+
+  .advanced-toggle button {
+    color: #bbb;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .advanced-panel {
+    border-color: #444;
+
+    .section h4 {
+      color: #ddd;
+    }
+
+    .option label {
+      color: #bbb;
+    }
+
+    .option select,
+    .option input {
+      background-color: #333;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+
+    .actions .clear-button {
+      background-color: #333;
+      border-color: #555;
+      color: #e0e0e0;
+
+      &:hover:not(:disabled) {
+        background-color: #444;
+      }
+    }
+  }
+}

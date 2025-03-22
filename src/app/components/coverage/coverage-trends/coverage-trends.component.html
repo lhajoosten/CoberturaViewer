@@ -1,0 +1,161 @@
+<div class="trends-container card" [class.dark-theme]="isDarkTheme">
+    <h2>Coverage History & Trends</h2>
+
+    <div class="history-empty" *ngIf="!hasHistory">
+        <div class="empty-state">
+            <i class="fas fa-history"></i>
+            <h3>No coverage history available</h3>
+            <p>Upload multiple coverage reports over time to track trends.</p>
+        </div>
+
+        <div class="demo-data">
+            <button class="btn btn-outline" (click)="loadDemoData()">
+                <i class="fas fa-magic"></i> Load Demo Data
+            </button>
+        </div>
+    </div>
+
+    <div class="history-dashboard" *ngIf="hasHistory">
+        <!-- Dashboard Header with Controls -->
+        <div class="dashboard-header">
+            <div class="time-range-control">
+                <label>Time Range:</label>
+                <select [(ngModel)]="timeRange" (change)="updateTimeRange()">
+                    <option *ngFor="let range of timeRanges" [value]="range.value">{{ range.label }}</option>
+                </select>
+            </div>
+
+            <div class="metrics-toggle">
+                <label>Metrics:</label>
+                <div class="metrics-buttons">
+                    <button *ngFor="let metric of metrics" class="metric-toggle" [class.active]="metric.enabled"
+                        [style.borderColor]="metric.color" (click)="toggleMetric(metric.id)">
+                        {{ metric.label }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="view-options">
+                <label>
+                    <input type="checkbox" [(ngModel)]="showTarget" (change)="renderCharts()">
+                    Target Line
+                </label>
+
+                <div class="target-input" *ngIf="showTarget">
+                    <input type="number" min="0" max="100" [(ngModel)]="targetCoverage"
+                        (change)="updateTargetCoverage()">%
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards Row -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-title">Current Line Coverage</div>
+                <div class="stat-value"
+                    [ngClass]="getCoverageClass(filteredHistory[filteredHistory.length-1]!.data!.summary!.lineRate || 0)">
+                    {{ (filteredHistory[filteredHistory.length-1]!.data!.summary!.lineRate || 0).toFixed(2) }}%
+                </div>
+                <div class="stat-change" [class.positive]="coverageVelocity > 0"
+                    [class.negative]="coverageVelocity < 0">
+                    {{ coverageVelocity > 0 ? '+' : '' }}{{ coverageVelocity.toFixed(2) }}% per week
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Current Branch Coverage</div>
+                <div class="stat-value"
+                    [ngClass]="getCoverageClass(filteredHistory[filteredHistory.length-1]!.data!.summary!.branchRate || 0)">
+                    {{ (filteredHistory[filteredHistory.length-1]!.data!.summary!.branchRate || 0).toFixed(2) }}%
+                </div>
+                <div class="stat-detail">
+                    {{ filteredHistory[filteredHistory.length-1]!.data!.summary!.linesCovered || 0 }} / {{
+                    filteredHistory[filteredHistory.length-1]!.data!.summary!.linesCovered || 0 }} lines
+                </div>
+            </div>
+
+            <div class="stat-card" *ngIf="showTarget && coverageVelocity">
+                <div class="stat-title">Target Projection ({{ targetCoverage }}%)</div>
+                <div class="stat-value">
+                    {{ projectionsData.weeksToTarget !== null ? projectionsData.weeksToTarget + ' weeks' : 'N/A' }}
+                </div>
+                <div class="stat-detail">
+                    Est. date: {{ projectionsData.estimatedDateString }}
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Coverage Quality</div>
+                <div class="stat-value quality-indicator">
+                    <i class="fas" [ngClass]="{
+                         'fa-smile': averageCoverage >= 80,
+                         'fa-meh': averageCoverage >= 50 && averageCoverage < 80,
+                         'fa-frown': averageCoverage < 50
+                       }" [ngStyle]="{'color': getCoverageColor(averageCoverage)}"></i>
+                </div>
+                <div class="stat-detail">
+                    {{ coverageVelocity > 0 ? 'Improving' : coverageVelocity < 0 ? 'Declining' : 'Stable' }} </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="chart-grid">
+                <!-- Main Trend Chart -->
+                <div class="chart-container main-chart">
+                    <h3>Coverage Trends</h3>
+                    <div #lineChart class="chart-area"></div>
+                </div>
+
+                <!-- Velocity Chart -->
+                <div class="chart-container velocity-chart">
+                    <h3>Weekly Velocity</h3>
+                    <div #velocityChart class="chart-area"></div>
+                </div>
+
+                <!-- Distribution Chart -->
+                <div class="chart-container distribution-chart">
+                    <h3>Coverage Distribution</h3>
+                    <div #coverageDistributionChart class="chart-area"></div>
+                </div>
+            </div>
+
+            <!-- Coverage History Table -->
+            <div class="history-table-container">
+                <h3>Coverage History</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Line Coverage</th>
+                            <th>Branch Coverage</th>
+                            <th>Lines Covered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let entry of filteredHistory">
+                            <td>{{ entry.date | date:'medium' }}</td>
+                            <td [ngClass]="getCoverageClass(entry.data.summary.lineRate)">
+                                {{ entry.data.summary.lineRate.toFixed(2) }}%
+                            </td>
+                            <td [ngClass]="getCoverageClass(entry.data.summary.branchRate)">
+                                {{ entry.data.summary.branchRate.toFixed(2) }}%
+                            </td>
+                            <td>
+                                {{ entry.data.summary.linesCovered }} / {{ entry.data.summary.linesValid }}
+                            </td>
+                            <td>
+                                <button class="btn-icon" (click)="loadHistoryEntry(entry)"
+                                    title="View this coverage report">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon" (click)="removeHistoryEntry(entry)" title="Remove this entry">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
