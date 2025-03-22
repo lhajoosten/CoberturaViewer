@@ -6,21 +6,6 @@
         <h1>Coverage Explorer</h1>
       </div>
 
-      <!-- Navigation centered -->
-      <nav class="main-nav">
-        <div class="nav-links">
-          <a [routerLink]="['/']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
-            <i class="fas fa-home"></i> Home
-          </a>
-          <a [routerLink]="['/history']" routerLinkActive="active" class="nav-link">
-            <i class="fas fa-history"></i> History
-          </a>
-          <a [routerLink]="['/insights']" routerLinkActive="active" class="nav-link">
-            <i class="fas fa-lightbulb"></i> Insights
-          </a>
-        </div>
-      </nav>
-
       <!-- Actions at flex-end -->
       <div class="header-actions">
         <button class="compare-btn" (click)="startComparison()">

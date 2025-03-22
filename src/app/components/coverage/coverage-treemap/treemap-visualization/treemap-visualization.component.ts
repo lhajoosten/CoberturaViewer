@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, Output, EventEmitter, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TreeNode } from '../../../../models/coverage.model';
 import { TreemapLayoutService } from '../../../../services/utils/treemap-layout.service';
@@ -24,6 +24,13 @@ export class TreemapVisualizationComponent implements OnInit, OnChanges, OnDestr
     @Input() minNodeSize = 10;
 
     @Output() nodeSelected = new EventEmitter<any>();
+
+    @HostListener('window:resize')
+    onWindowResize() {
+        if (this.treemap) {
+            this.updateVisualization();
+        }
+    }
 
     // Tooltip state
     tooltipNode: any = null;
@@ -141,14 +148,9 @@ export class TreemapVisualizationComponent implements OnInit, OnChanges, OnDestr
     }
 
     private getConfig(): TreemapConfig {
-        // Get container dimensions
         const element = this.container.nativeElement;
-        const fullWidth = element.clientWidth > 50 ? element.clientWidth : 800;
-
-        const controlsGap = 20;
-        const width = fullWidth - controlsGap;
-
-        const height = element.clientHeight > 500 ? element.clientHeight : 700;
+        const width = Math.max(element.clientWidth, 400); // Minimum width
+        const height = Math.max(element.clientHeight, 600); // Minimum height
 
         return {
             width,
