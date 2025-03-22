@@ -1,0 +1,235 @@
+.insights-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  transition: var(--transition-base);
+  height: 100%;
+  overflow: auto;
+}
+
+.insights-content {
+  padding: var(--space-lg);
+}
+
+// Metrics grid - using the global metric-card styles with specific layout
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+// Insights list
+.insights-list {
+  margin-bottom: var(--space-xl);
+
+  h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+  }
+
+  .insight-card {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background-color: var(--card-header-bg);
+    border-radius: var(--border-radius-lg);
+    margin-bottom: var(--space-md);
+    border-left: 4px solid var(--primary-color);
+    box-shadow: var(--shadow-sm);
+
+    &.success {
+      border-color: var(--excellent-color);
+    }
+    &.warning {
+      border-color: var(--average-color);
+    }
+    &.danger {
+      border-color: var(--poor-color);
+    }
+    &.info {
+      border-color: var(--info-color);
+    }
+
+    .insight-icon {
+      font-size: var(--font-size-xl);
+
+      .success & {
+        color: var(--excellent-color);
+      }
+      .warning & {
+        color: var(--average-color);
+      }
+      .danger & {
+        color: var(--poor-color);
+      }
+      .info & {
+        color: var(--info-color);
+      }
+    }
+
+    .insight-content {
+      flex: 1;
+
+      h4 {
+        margin: 0 0 var(--space-sm);
+        font-size: var(--font-size-lg);
+        font-weight: 500;
+      }
+
+      p {
+        margin: 0;
+        font-size: var(--font-size-base);
+        color: var(--text-muted);
+      }
+    }
+  }
+}
+
+// High risk classes section
+.high-risk-classes {
+  margin-bottom: var(--space-xl);
+
+  h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+  }
+
+  .section-description {
+    font-size: var(--font-size-base);
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+  }
+
+  .risk-table-wrapper {
+    overflow-x: auto;
+  }
+
+  // Using our global data-table class with specific styles
+  .risk-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: var(--space-sm) var(--space-md);
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--card-header-bg);
+      font-weight: 500;
+      font-size: var(--font-size-base);
+      color: var(--text-muted);
+    }
+
+    td {
+      font-size: var(--font-size-base);
+      border-bottom: 1px solid var(--border-color);
+
+      &.class-name {
+        font-family: monospace;
+      }
+    }
+
+    .risk-indicator {
+      max-width: 100px;
+      height: 6px;
+      background-color: var(--border-color);
+      border-radius: 3px;
+      overflow: hidden;
+
+      .risk-bar {
+        height: 100%;
+        background-color: var(--poor-color);
+        border-radius: 3px;
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Coverage distribution - uses our global legend class
+.coverage-distribution {
+  margin-bottom: var(--space-xl);
+
+  h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+  }
+
+  .distribution-chart {
+    display: flex;
+    height: 36px;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--space-md);
+
+    .chart-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: var(--font-size-base);
+
+      &.excellent {
+        background-color: var(--excellent-color);
+      }
+      &.good {
+        background-color: var(--good-color);
+      }
+      &.average {
+        background-color: var(--average-color);
+      }
+      &.poor {
+        background-color: var(--poor-color);
+      }
+    }
+  }
+}
+
+// Recommendations
+.recommendations {
+  h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+  }
+
+  .recommendation-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .recommendation-item {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background-color: var(--card-header-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+
+    .recommendation-number {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--border-radius-round);
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: var(--font-size-base);
+      flex-shrink: 0;
+    }
+
+    .recommendation-text {
+      font-size: var(--font-size-base);
+    }
+  }
+}

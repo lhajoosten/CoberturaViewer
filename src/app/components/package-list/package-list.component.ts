@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CoverageStoreService } from '../../services/coverage-store.service';
 import { PackageInfo } from '../../models/coverage.model';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-package-list',
@@ -11,7 +12,10 @@ import { PackageInfo } from '../../models/coverage.model';
     templateUrl: './package-list.component.html',
     styleUrls: ['./package-list.component.scss']
 })
-export class PackageListComponent implements OnInit {
+export class PackageListComponent implements OnInit, OnDestroy {
+    @Input() isDarkTheme = false;
+    private themeSubscription: Subscription | null = null;
+
     packages: PackageInfo[] = [];
     filteredPackages: PackageInfo[] = [];
     expandedPackages: Set<string> = new Set();
@@ -25,6 +29,12 @@ export class PackageListComponent implements OnInit {
             this.packages = data?.packages || [];
             this.filterPackages();
         });
+    }
+
+    ngOnDestroy(): void {
+        if (this.themeSubscription) {
+            this.themeSubscription.unsubscribe();
+        }
     }
 
     togglePackage(packageName: string): void {

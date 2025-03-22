@@ -1,4 +1,4 @@
-<div *ngIf="packages.length > 0" class="packages-container card">
+<div *ngIf="packages.length > 0" class="packages-container card" [class.dark-theme]="isDarkTheme">
     <div class="packages-header">
         <h2>Package & Class Breakdown</h2>
         <div class="search-filter">

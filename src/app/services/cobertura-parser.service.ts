@@ -28,6 +28,9 @@ export class CoberturaParserService {
             const summary: CoverageSummary = {
                 lineRate: this.parseRate(coverageElement.getAttribute('line-rate')),
                 branchRate: this.parseRate(coverageElement.getAttribute('branch-rate')),
+                methodRate: this.parseRate(coverageElement.getAttribute('methods')),
+                classRate: this.parseRate(coverageElement.getAttribute('classes')),
+                complexity: parseInt(coverageElement.getAttribute('complexity') || '0'),
                 linesValid: parseInt(coverageElement.getAttribute('lines-valid') || '0'),
                 linesCovered: parseInt(coverageElement.getAttribute('lines-covered') || '0'),
                 timestamp: coverageElement.getAttribute('timestamp') || ''

@@ -1,0 +1,57 @@
+<div class="sunburst-container card" [class.dark-theme]="isDarkTheme">
+    <div class="toolbar">
+        <h2>Coverage Hierarchy</h2>
+        <div class="toolbar-actions">
+            <button (click)="resetView()" class="toolbar-btn" title="Reset View">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button (click)="exportAsPNG()" class="toolbar-btn" title="Export as PNG">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="sunburst-content">
+        <div class="breadcrumbs" *ngIf="breadcrumbs.length > 1">
+            <span *ngFor="let crumb of breadcrumbs; let i = index" class="breadcrumb-item"
+                [class.active]="i === breadcrumbs.length - 1" (click)="navigateToBreadcrumb(i)">{{ crumb.name }}</span>
+        </div>
+
+        <div #sunburstContainer class="sunburst-visualization">
+            <!-- D3 visualization will render here -->
+            <div class="loading-overlay" *ngIf="isLoading">
+                <div class="spinner"></div>
+                <span>Loading coverage data...</span>
+            </div>
+        </div>
+
+        <div class="selection-info" *ngIf="currentNode">
+            <div class="selection-name">{{ currentNode.data.name }}</div>
+            <div class="selection-coverage" [ngClass]="getCoverageClass(currentNode.data.coverage)">
+                {{ currentNode.data.coverage.toFixed(2) }}% Coverage
+            </div>
+            <div class="selection-details">
+                {{ currentNode.data.linesValid || 0 }} lines of code
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="color-box excellent"></div>
+            <span>90-100%</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box good"></div>
+            <span>75-90%</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box average"></div>
+            <span>50-75%</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box poor"></div>
+            <span>0-50%</span>
+        </div>
+    </div>
+</div>
