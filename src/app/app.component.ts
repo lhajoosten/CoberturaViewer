@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { ThemeService } from './services/utils/theme.service';
 import { ThemeToggleComponent } from './components/theme-toggle.component';
 import { Subscription } from 'rxjs';
@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterModule, ThemeToggleComponent],
+  imports: [CommonModule, RouterOutlet, ThemeToggleComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

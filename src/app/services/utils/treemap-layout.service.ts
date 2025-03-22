@@ -53,9 +53,6 @@ export class TreemapLayoutService {
         // Apply zoom behavior
         svg.call(zoom as any);
 
-        // Add zoom controls
-        this.addZoomControls(svg, zoom, config);
-
         // Create a reference object to store methods that can be called by the host component
         const treemapInstance = {
             svg,
@@ -159,7 +156,7 @@ export class TreemapLayoutService {
 
             // Apply the treemap layout with reduced width
             const treemap = d3.treemap()
-                .size([treemapWidth, config.height])
+                .size([config.width - 10, config.height]) // Slight adjustment to leave room for legend
                 .paddingOuter(3)
                 .paddingInner(2)
                 .paddingTop(config.showLabels ? 20 : 2)
@@ -314,9 +311,6 @@ export class TreemapLayoutService {
             // Add coverage legend
             this.addCoverageLegend(svg, config);
 
-            // Make sure zoom controls are re-added as well
-            this.addZoomControls(svg, d3.zoom, config);
-
         } catch (error) {
             console.error('Error updating visualization:', error);
         }
@@ -388,230 +382,49 @@ export class TreemapLayoutService {
         }
     }
 
-    private addZoomControls(svg: any, zoom: any, config: TreemapConfig): void {
-        // Remove any existing zoom controls
-        svg.selectAll('.zoom-controls').remove();
-
-        // Position the controls just to the right of the treemap content
-        const treemapWidth = config.width - 60; // Same as controlsSpace from above
-        const controlsY = 50;
-        const buttonSpacing = 45;
-
-        // Create control panel
-        const controlPanel = svg.append('g')
-            .attr('class', 'zoom-controls')
-            .attr('transform', `translate(${treemapWidth + 20}, ${controlsY})`)
-
-        // Modern translucent glass-like background for controls
-        const borderColor = config.themeDark
-            ? 'rgba(80, 80, 100, 0.4)'
-            : 'rgba(180, 180, 200, 0.5)';
-
-        // Helper function to create consistent buttons with enhanced visuals
-        const createButton = (yOffset: number, icon: string, clickHandler: () => void, tooltip: string): void => {
-            const buttonGroup = controlPanel.append('g')
-                .attr('class', 'control-button')
-                .attr('transform', `translate(0, ${yOffset})`)
-                .style('cursor', 'pointer')
-                .on('click', clickHandler);
-
-            // Button background with subtle gradient
-            const buttonRadius = 18;
-            const buttonFill = config.themeDark
-                ? 'url(#darkButtonGradient)'
-                : 'url(#lightButtonGradient)';
-
-            buttonGroup.append('circle')
-                .attr('cx', -20)
-                .attr('cy', 0)
-                .attr('r', buttonRadius)
-                .attr('fill', buttonFill)
-                .attr('stroke', config.themeDark ? '#444' : '#ddd')
-                .attr('stroke-width', 1);
-
-            // Button icon - using SVG elements instead of text for better appearance
-            const iconColor = config.themeDark ? '#ffffff' : '#333';
-
-            if (icon === '+') {
-                // Plus icon
-                buttonGroup.append('line')
-                    .attr('x1', -28)
-                    .attr('y1', 0)
-                    .attr('x2', -12)
-                    .attr('y2', 0)
-                    .attr('stroke', iconColor)
-                    .attr('stroke-width', 2)
-                    .attr('stroke-linecap', 'round');
-
-                buttonGroup.append('line')
-                    .attr('x1', -20)
-                    .attr('y1', -8)
-                    .attr('x2', -20)
-                    .attr('y2', 8)
-                    .attr('stroke', iconColor)
-                    .attr('stroke-width', 2)
-                    .attr('stroke-linecap', 'round');
-            } else if (icon === '-') {
-                // Minus icon
-                buttonGroup.append('line')
-                    .attr('x1', -28)
-                    .attr('y1', 0)
-                    .attr('x2', -12)
-                    .attr('y2', 0)
-                    .attr('stroke', iconColor)
-                    .attr('stroke-width', 2)
-                    .attr('stroke-linecap', 'round');
-            } else if (icon === 'reset') {
-                // Diamond icon
-                buttonGroup.append('path')
-                    .attr('d', 'M-20,-10 L-10,0 L-20,10 L-30,0 Z')
-                    .attr('fill', 'none')
-                    .attr('stroke', iconColor)
-                    .attr('stroke-width', 2)
-                    .attr('stroke-linejoin', 'round');
-            }
-
-            // Tooltip
-            const tooltipBg = config.themeDark ? '#222' : '#fff';
-            const tooltipText = config.themeDark ? '#fff' : '#333';
-
-            const tooltipGroup = buttonGroup.append('g')
-                .attr('class', 'tooltip')
-                .style('opacity', 0)
-                .attr('pointer-events', 'none');
-
-            tooltipGroup.append('rect')
-                .attr('x', -90)
-                .attr('y', -12)
-                .attr('width', 65)
-                .attr('height', 24)
-                .attr('rx', 4)
-                .attr('ry', 4)
-                .attr('fill', tooltipBg)
-                .attr('stroke', borderColor)
-                .attr('stroke-width', 1);
-
-            tooltipGroup.append('text')
-                .attr('x', -58)
-                .attr('y', 0)
-                .attr('text-anchor', 'middle')
-                .attr('dominant-baseline', 'middle')
-                .attr('fill', tooltipText)
-                .style('font-size', '11px')
-                .style('font-family', 'Arial, sans-serif')
-                .text(tooltip);
-
-            // Hover effects with animations
-            buttonGroup
-                .on('mouseover', function (this: SVGGElement) {
-                    d3.select(this).select('circle')
-                        .transition()
-                        .duration(200)
-                        .attr('r', buttonRadius * 1.1)
-                        .attr('stroke-width', 2);
-
-                    d3.select(this).select('.tooltip')
-                        .transition()
-                        .duration(200)
-                        .style('opacity', 0.9);
-                })
-                .on('mouseout', function (this: SVGGElement) {
-                    d3.select(this).select('circle')
-                        .transition()
-                        .duration(200)
-                        .attr('r', buttonRadius)
-                        .attr('stroke-width', 1);
-
-                    d3.select(this).select('.tooltip')
-                        .transition()
-                        .duration(200)
-                        .style('opacity', 0);
-                });
-        };
-
-        // Define gradients for buttons
-        const defs = svg.append('defs');
-
-        // Light theme gradient
-        const lightGradient = defs.append('radialGradient')
-            .attr('id', 'lightButtonGradient')
-            .attr('cx', '0.5')
-            .attr('cy', '0.5')
-            .attr('r', '0.5')
-            .attr('fx', '0.4')
-            .attr('fy', '0.4');
-
-        lightGradient.append('stop')
-            .attr('offset', '0%')
-            .attr('stop-color', '#ffffff');
-
-        lightGradient.append('stop')
-            .attr('offset', '100%')
-            .attr('stop-color', '#f0f0f0');
-
-        // Dark theme gradient
-        const darkGradient = defs.append('radialGradient')
-            .attr('id', 'darkButtonGradient')
-            .attr('cx', '0.5')
-            .attr('cy', '0.5')
-            .attr('r', '0.5')
-            .attr('fx', '0.4')
-            .attr('fy', '0.4');
-
-        darkGradient.append('stop')
-            .attr('offset', '0%')
-            .attr('stop-color', '#444');
-
-        darkGradient.append('stop')
-            .attr('offset', '100%')
-            .attr('stop-color', '#333');
-
-        // Create the buttons with smoother zoom behaviors
-        createButton(buttonSpacing, '+', () => {
-            svg.transition()
-                .duration(400)
-                .ease(d3.easeCubicOut)
-                .call(zoom.scaleBy, 1.4);
-        }, 'Zoom In');
-
-        createButton(buttonSpacing * 2, '-', () => {
-            svg.transition()
-                .duration(400)
-                .ease(d3.easeCubicOut)
-                .call(zoom.scaleBy, 0.7);
-        }, 'Zoom Out');
-
-        createButton(buttonSpacing * 3, 'reset', () => {
-            svg.transition()
-                .duration(600)
-                .ease(d3.easeCubicInOut)
-                .call(zoom.transform, d3.zoomIdentity);
-        }, 'Reset View');
-    }
-
-    /**
-     * Adds coverage legend to the visualization
-     */
-    // Fix for legend positioning in the treemap-layout.service.ts
     private addCoverageLegend(svg: any, config: TreemapConfig): void {
-        const treemapWidth = config.width - 80; // Same as controlsSpace from above
+        // Clear any existing legends
+        svg.selectAll('.coverage-legend').remove();
+
+        // Calculate proper positioning to keep legend inside viewable area
+        // Use a percentage-based approach for more consistent positioning
+        const rightMargin = 20; // pixels from right edge
+        const legendX = config.width - rightMargin - 80; // 80px is approximate legend width
+
+        // Bottom positioning with padding
+        const bottomPadding = 20;
+        const legendY = config.height - bottomPadding - (config.coverageRanges.length * 22);
+
+        // Create legend group
         const legendGroup = svg.append('g')
             .attr('class', 'coverage-legend')
-            .attr('transform', `translate(${treemapWidth + 10}, ${config.height - 160 - (config.coverageRanges.length * 22)})`);
+            .attr('transform', `translate(${legendX}, ${legendY})`);
 
-        // Add legend title with better spacing
+        // Add semi-transparent background for better readability
+        legendGroup.append('rect')
+            .attr('x', -5)
+            .attr('y', -25)
+            .attr('width', 85) // Slightly wider to fit all content
+            .attr('height', (config.coverageRanges.length * 22) + 35)
+            .attr('fill', config.themeDark ? 'rgba(20,20,20,0.7)' : 'rgba(255,255,255,0.7)')
+            .attr('rx', 5)
+            .attr('ry', 5)
+            .attr('stroke', config.themeDark ? 'rgba(80,80,100,0.3)' : 'rgba(180,180,200,0.5)')
+            .attr('stroke-width', 1);
+
+        // Add legend title and items as before
         legendGroup.append('text')
             .attr('x', 0)
-            .attr('y', -15) // Move further up to avoid overlap
+            .attr('y', -10)
             .attr('font-size', '13px')
             .attr('font-weight', 'bold')
             .attr('fill', config.themeDark ? '#eee' : '#333')
             .text('Coverage');
 
-        // Add legend items with improved spacing
+        // Add legend items
         config.coverageRanges.forEach((range, i) => {
             const item = legendGroup.append('g')
-                .attr('transform', `translate(0, ${i * 22})`); // Increase spacing between items
+                .attr('transform', `translate(0, ${i * 22})`);
 
             // Color box
             item.append('rect')
@@ -621,14 +434,30 @@ export class TreemapLayoutService {
                 .attr('rx', 2)
                 .attr('ry', 2);
 
-            // Label with adjusted positioning
+            // Label
             item.append('text')
-                .attr('x', 22) // Move text slightly further from the color box
+                .attr('x', 22)
                 .attr('y', 12)
                 .attr('font-size', '12px')
                 .attr('fill', config.themeDark ? '#eee' : '#333')
                 .text(range.label);
         });
+
+        // Add a debug check to ensure legend stays in bounds
+        const rightEdge = legendX + 85;
+        if (rightEdge > config.width) {
+            console.warn('Legend may be cut off:', {
+                configWidth: config.width,
+                legendRight: rightEdge,
+                overflow: rightEdge - config.width
+            });
+
+            // Emergency repositioning if legend would overflow
+            if (rightEdge > config.width) {
+                const adjustment = rightEdge - config.width + 10;
+                legendGroup.attr('transform', `translate(${legendX - adjustment}, ${legendY})`);
+            }
+        }
     }
 
     /**
