@@ -538,60 +538,93 @@ export class TreemapLayoutService {
         return result;
     }
 
-    // // Utility function to get color based on coverage percentage
-    // getCoverageColor(coverage: number, isDarkTheme: boolean = false): string {
-    //     if (coverage >= 90) return '#4CAF50'; // Green for high coverage
-    //     if (coverage >= 75) return '#8BC34A'; // Light green for good coverage
-    //     if (coverage >= 50) return '#FFC107'; // Yellow for moderate coverage
-    //     if (coverage >= 25) return '#FF9800'; // Orange for low coverage
-    //     return '#F44336';                     // Red for very low coverage
-    // }
-
-    // // Get text color that contrasts with the background
-    // getTextColor(backgroundColor: string): string {
-    //     // Convert hex to RGB
-    //     const r = parseInt(backgroundColor.slice(1, 3), 16);
-    //     const g = parseInt(backgroundColor.slice(3, 5), 16);
-    //     const b = parseInt(backgroundColor.slice(5, 7), 16);
-
-    //     // Calculate luminance (simplified)
-    //     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    //     // Use white text on dark backgrounds, black text on light backgrounds
-    //     return luminance > 0.5 ? '#000000' : '#FFFFFF';
-    // }
-
-    /**
-    * Gets coverage color based on value and color mode
-    */
-    private getCoverageColor(coverage: number, config: TreemapConfig): string {
+    getCoverageColor(coverage: number, config: TreemapConfig): string {
         if (config.colorMode === 'colorblind') {
             // Colorblind-friendly palette
             if (coverage >= 90) return '#018571'; // Teal
             if (coverage >= 75) return '#80cdc1'; // Light teal
             if (coverage >= 50) return '#dfc27d'; // Tan
-            return '#a6611a'; // Brown
+            if (coverage >= 25) return '#a6611a'; // Brown
+            return '#d01c8b'; // Purple for very low coverage
         } else {
-            // Standard color palette based on coverage ranges
-            const range = config.coverageRanges.find(r =>
-                coverage >= r.min && coverage <= r.max
-            );
-            return range ? range.color : '#f44336'; // Default to red if no range matches
+            // Try to use the coverage ranges from config first
+            if (config.coverageRanges && config.coverageRanges.length > 0) {
+                const range = config.coverageRanges.find(r =>
+                    coverage >= r.min && coverage <= r.max
+                );
+                if (range) return range.color;
+            }
+
+            // Fallback to CSS variables if available
+            try {
+                if (coverage >= 90) return getComputedStyle(document.documentElement).getPropertyValue('--excellent-color').trim() || '#4caf50';
+                if (coverage >= 75) return getComputedStyle(document.documentElement).getPropertyValue('--good-color').trim() || '#8bc34a';
+                if (coverage >= 50) return getComputedStyle(document.documentElement).getPropertyValue('--average-color').trim() || '#ffb400';
+                if (coverage >= 25) return getComputedStyle(document.documentElement).getPropertyValue('--poor-color').trim() || '#f44336';
+                return getComputedStyle(document.documentElement).getPropertyValue('--poor-color').trim() || '#f44336';
+            } catch (e) {
+                // If CSS variables fail, use hardcoded colors
+                if (coverage >= 90) return '#4caf50'; // Green
+                if (coverage >= 75) return '#8bc34a'; // Light green
+                if (coverage >= 50) return '#ffb400'; // Yellow/orange
+                if (coverage >= 25) return '#ff9800'; // Orange
+                return '#f44336';    // Red
+            }
+        }
+    }
+
+    getTextColor(coverage: number, config: TreemapConfig): string {
+        // Get the background color to determine text color
+        const backgroundColor = this.getCoverageColor(coverage, config);
+
+        // Try to use design system text colors
+        if (config.themeDark) {
+            try {
+                return getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#ffffff';
+            } catch (e) {
+                return '#ffffff';
+            }
+        }
+
+        // Calculate contrast ratio to determine optimal text color
+        try {
+            // Convert hex to RGB
+            const rgb = this.hexToRgb(backgroundColor);
+            if (!rgb) return config.themeDark ? '#ffffff' : '#000000';
+
+            // Calculate luminance - this is a better way to determine text color
+            // Using the formula: (0.299*R + 0.587*G + 0.114*B)
+            const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+
+            // Use white text for dark backgrounds, black text for light backgrounds
+            // 0.5 is the threshold - below 0.5 is considered dark
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        } catch (e) {
+            // Fallback to the previous logic
+            if (coverage >= 90) return config.themeDark ? '#fff' : '#000';
+            if (coverage >= 75) return config.themeDark ? '#fff' : '#222';
+            if (coverage >= 50) return '#333';
+            return '#ffffff';
         }
     }
 
     /**
-     * Gets text color based on background color
+     * Helper method to convert hex color to RGB
      */
-    private getTextColor(coverage: number, config: TreemapConfig): string {
-        // For high coverage (green backgrounds), use darker text
-        if (coverage >= 90) return config.themeDark ? '#fff' : '#000';
-        // For medium-high coverage (light green), use dark text
-        if (coverage >= 75) return config.themeDark ? '#fff' : '#222';
-        // For medium coverage (yellow), use dark text
-        if (coverage >= 50) return '#333';
-        // For low coverage (red backgrounds), use light text
-        return '#ffffff';
+    private hexToRgb(hex: string): { r: number, g: number, b: number } | null {
+        // Remove # if present
+        hex = hex.replace(/^#/, '');
+
+        // Parse hex
+        const bigint = parseInt(hex, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+
+        // Check for valid values
+        if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+
+        return { r, g, b };
     }
 
     // Default coverage ranges for the visualization

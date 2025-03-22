@@ -5,43 +5,17 @@
   width: 100%;
   height: 100%;
   min-height: 600px;
-  background-color: var(--app-background, #f8fafc);
-  color: var(--app-text-color, #2d3748);
-  font-family: var(
-    --app-font-family,
-    "Segoe UI",
-    Tahoma,
-    Geneva,
-    Verdana,
-    sans-serif
-  );
-
-  &.dark-theme {
-    background-color: var(--app-dark-background, #171923);
-    color: var(--app-dark-text, #e2e8f0);
-
-    --app-card-bg: #1e293b;
-    --app-card-header-bg: #1a202c;
-    --app-border-color: #2d3748;
-    --app-button-bg: #2d3748;
-    --app-button-hover-bg: #4a5568;
-    --app-text-color: #e2e8f0;
-    --app-text-muted: #a0aec0;
-    --app-hover-bg: #2d3748;
-    --app-danger-color: #fc8181;
-    --app-danger-light: #feb2b2;
-    --app-danger-dark: #822727;
-    --app-code-bg: #2d3748;
-  }
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .visualization-container {
   flex: 1;
   position: relative;
   width: 100%;
-  height: calc(100% - 50px); /* Adjust for controls height */
+  height: calc(100% - 50px);
   min-height: 400px;
-  padding: 16px;
+  padding: var(--space-md);
   overflow: hidden;
   display: flex;
 }
@@ -50,10 +24,9 @@
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 8px;
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
 
-  /* Make sure the TreemapVisualizationComponent gets full height */
   app-treemap-visualization {
     display: block;
     width: 100%;
@@ -63,10 +36,10 @@
 
 .zoom-controls {
   position: absolute;
-  bottom: 16px;
-  right: 16px;
+  bottom: var(--space-md);
+  right: var(--space-md);
   display: flex;
-  gap: 8px;
+  gap: var(--space-xs);
   z-index: 10;
 }
 
@@ -76,26 +49,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--app-card-bg, #ffffff);
-  border: 1px solid var(--app-border-color, #e2e8f0);
-  border-radius: 50%;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-round);
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: var(--app-text-color, #2d3748);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-color);
 
   &:hover {
-    background-color: var(--app-hover-bg, #f7fafc);
-  }
-
-  .dark-theme & {
-    background-color: var(--app-dark-card-bg, #1e293b);
-    border-color: var(--app-dark-border, #4a5568);
-    color: var(--app-dark-text, #e2e8f0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-    &:hover {
-      background-color: var(--app-dark-hover-bg, #2d3748);
-    }
+    background-color: var(--hover-color);
   }
 }
 
@@ -112,8 +74,8 @@
   align-items: center;
   z-index: 1000;
 
-  .dark-theme & {
-    background-color: rgba(26, 32, 44, 0.8);
+  html.dark-theme & {
+    background-color: rgba(0, 0, 0, 0.7);
   }
 }
 
@@ -121,10 +83,10 @@
   width: 50px;
   height: 50px;
   border: 5px solid rgba(0, 0, 0, 0.1);
-  border-top-color: var(--app-primary-color, #4299e1);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
   animation: spin 1s ease-in-out infinite;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 
   @keyframes spin {
     to {
@@ -132,20 +94,16 @@
     }
   }
 
-  .dark-theme & {
+  html.dark-theme & {
     border-color: rgba(255, 255, 255, 0.1);
-    border-top-color: var(--app-primary-color, #4299e1);
+    border-top-color: var(--primary-color);
   }
 }
 
 .loading-text {
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 500;
-  color: var(--app-text-color, #2d3748);
-
-  .dark-theme & {
-    color: var(--app-dark-text, #e2e8f0);
-  }
+  color: var(--text-color);
 }
 
 .no-data-message {
@@ -157,40 +115,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px;
+  padding: var(--space-xl);
 
   .message-content {
     max-width: 500px;
     text-align: center;
-    padding: 32px;
-    background-color: var(--app-card-bg, #ffffff);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: var(--space-xl);
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
 
     h3 {
-      font-size: 20px;
+      font-size: var(--font-size-xl);
       font-weight: 600;
-      margin-bottom: 16px;
-      color: var(--app-text-color, #2d3748);
+      margin-bottom: var(--space-md);
+      color: var(--text-color);
     }
 
     p {
-      font-size: 16px;
+      font-size: var(--font-size-md);
       line-height: 1.5;
-      color: var(--app-text-muted, #718096);
-    }
-
-    .dark-theme & {
-      background-color: var(--app-dark-card-bg, #1e293b);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-
-      h3 {
-        color: var(--app-dark-text, #e2e8f0);
-      }
-
-      p {
-        color: var(--app-dark-text-muted, #a0aec0);
-      }
+      color: var(--text-muted);
     }
   }
 }

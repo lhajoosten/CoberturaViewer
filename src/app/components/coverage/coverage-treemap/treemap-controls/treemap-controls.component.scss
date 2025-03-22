@@ -1,27 +1,16 @@
 .treemap-controls {
-  background-color: var(--app-card-bg, #ffffff);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--space-md);
   overflow: hidden;
-  transition: all 0.3s ease;
-
-  &.dark-theme {
-    background-color: var(--app-dark-card-bg, #1e293b);
-    border: 1px solid var(--app-dark-border, #2d3748);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
+  transition: var(--transition-base);
 }
 
 .controls-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--app-border-color, #eaeaea);
-  background-color: var(--app-card-header-bg, #f9fafb);
-
-  .dark-theme & {
-    background-color: var(--app-dark-card-header-bg, #1a202c);
-    border-bottom-color: var(--app-dark-border, #2d3748);
-  }
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-header-bg);
 }
 
 .title-row {
@@ -31,70 +20,47 @@
 
   h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: var(--font-size-md);
     font-weight: 600;
-    color: var(--app-text-color, #333);
-
-    .dark-theme & {
-      color: var(--app-dark-text, #e2e8f0);
-    }
+    color: var(--text-color);
   }
 }
 
 .controls-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--space-xs);
 }
 
 .toggle-button,
 .clear-button {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid var(--app-border-color, #ddd);
-  background-color: var(--app-button-bg, #f5f5f5);
-  color: var(--app-text-color, #333);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  color: var(--text-color);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
+  gap: var(--space-xs);
+  transition: var(--transition-fast);
 
   i {
-    font-size: 14px;
+    font-size: var(--font-size-base);
   }
 
   &:hover {
-    background-color: var(--app-button-hover-bg, #e5e5e5);
-  }
-
-  .dark-theme & {
-    background-color: var(--app-dark-button-bg, #2d3748);
-    border-color: var(--app-dark-border, #4a5568);
-    color: var(--app-dark-text, #e2e8f0);
-
-    &:hover {
-      background-color: var(--app-dark-button-hover-bg, #4a5568);
-    }
+    background-color: var(--hover-color);
   }
 }
 
 .clear-button {
   background-color: transparent;
-  color: var(--app-danger-color, #e53e3e);
-  border-color: var(--app-danger-light, #fbd5d5);
+  color: var(--poor-color);
+  border-color: var(--poor-color);
 
   &:hover {
-    background-color: var(--app-danger-light, #fbd5d5);
-  }
-
-  .dark-theme & {
-    color: var(--app-danger-light, #feb2b2);
-    border-color: var(--app-danger-dark, #822727);
-
-    &:hover {
-      background-color: var(--app-danger-dark, #822727);
-    }
+    background-color: rgba(244, 67, 54, 0.1);
   }
 }
 
@@ -102,22 +68,22 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease, padding 0.3s ease;
-  padding: 0 16px;
+  padding: 0 var(--space-md);
 
   &.visible {
     max-height: 800px;
-    padding: 16px;
+    padding: var(--space-md);
   }
 }
 
 .controls-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-sm);
   }
 
   &.toggles-row {
@@ -131,75 +97,53 @@
   label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    font-size: 14px;
-    color: var(--app-text-color, #4a5568);
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-color);
 
     i {
       width: 16px;
       text-align: center;
-      color: var(--app-text-muted, #718096);
-    }
-
-    .dark-theme & {
-      color: var(--app-dark-text-muted, #a0aec0);
-
-      i {
-        color: var(--app-dark-text-muted, #a0aec0);
-      }
+      color: var(--text-muted);
     }
   }
 
   input[type="text"],
   select {
     width: 100%;
-    padding: 8px 12px;
-    border-radius: 4px;
-    border: 1px solid var(--app-border-color, #e2e8f0);
-    font-size: 14px;
-    color: var(--app-text-color, #1a202c);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+    font-size: var(--font-size-sm);
+    color: var(--text-color);
 
     &:focus {
       outline: none;
-      border-color: var(--app-primary-color, #4299e1);
-      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
-    }
-
-    .dark-theme & {
-      background-color: var(--app-dark-input-bg, #2d3748);
-      border-color: var(--app-dark-border, #4a5568);
-      color: var(--app-dark-text, #e2e8f0);
-
-      &:focus {
-        border-color: var(--app-primary-color, #4299e1);
-      }
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
     }
   }
 
   &.range-control {
     input[type="range"] {
       width: 100%;
-      margin: 8px 0 4px;
+      margin: var(--space-xs) 0;
 
       &::-webkit-slider-thumb {
-        background: var(--app-primary-color, #4299e1);
+        background: var(--primary-color);
       }
 
       &::-moz-range-thumb {
-        background: var(--app-primary-color, #4299e1);
+        background: var(--primary-color);
       }
     }
 
     .range-markers {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
-      color: var(--app-text-muted, #718096);
-
-      .dark-theme & {
-        color: var(--app-dark-text-muted, #a0aec0);
-      }
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
     }
   }
 }
@@ -207,7 +151,7 @@
 .toggle-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-md);
   flex: 2;
 
   @media (max-width: 768px) {
@@ -218,8 +162,8 @@
 .toggle-control {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
 
   input[type="checkbox"] {
     width: 16px;
@@ -232,22 +176,14 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: var(--app-text-color, #4a5568);
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-color);
 
     i {
       width: 16px;
       text-align: center;
-      color: var(--app-text-muted, #718096);
-    }
-
-    .dark-theme & {
-      color: var(--app-dark-text-muted, #a0aec0);
-
-      i {
-        color: var(--app-dark-text-muted, #a0aec0);
-      }
+      color: var(--text-muted);
     }
   }
 }
