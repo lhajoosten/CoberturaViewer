@@ -1,92 +1,139 @@
+.treemap-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background-color: var(--app-card-bg, #ffffff);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &.dark-theme {
+    background-color: var(--app-dark-card-bg, #1e293b);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
 :host {
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.treemap-container {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 4px;
-}
-
-/* Treemap node styles */
-:host ::ng-deep {
-  /* Node styles based on depth */
-  .node {
-    cursor: pointer;
-
-    &.depth-1 > rect {
-      stroke-width: 2px;
-    }
-
-    &.namespace > rect {
-      stroke-width: 1.5px;
-    }
-
-    &.class > rect {
-      stroke-width: 1px;
-    }
-  }
-
-  /* Aggregation indicators */
-  .aggregation-indicator {
-    cursor: pointer;
-    transition: r 0.2s ease;
-
-    &:hover {
-      r: 14;
-    }
-  }
+  position: relative;
 }
 
 .tooltip {
-  position: absolute;
-  z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.75);
+  position: fixed; /* Fixed position to follow cursor */
+  background-color: rgba(20, 20, 20, 0.9);
   color: white;
-  border-radius: 3px;
-  padding: 6px 10px;
+  padding: 12px;
+  border-radius: 6px;
   pointer-events: none;
-  max-width: 250px;
-  min-width: 150px;
-  font-size: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.15s ease;
+  z-index: 1000;
+  max-width: 260px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translate(
+    -50%,
+    -100%
+  ); /* Center horizontally and position above cursor */
+  transition: opacity 0.2s;
+  font-size: 14px;
 
-  .tooltip-title {
-    font-weight: 600;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  &:after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(20, 20, 20, 0.9);
+  }
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tooltip-title {
+  font-weight: bold;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 15px;
+}
+
+.tooltip-package {
+  color: #a0aec0;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  span:first-child {
+    color: #a0aec0;
   }
 
-  .tooltip-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 3px;
+  span:last-child {
+    font-weight: 500;
 
-    .label {
-      margin-right: 10px;
-      color: #ddd;
+    &.excellent {
+      color: #48bb78;
     }
 
-    .value {
-      font-weight: 500;
+    &.good {
+      color: #68d391;
+    }
+
+    &.moderate {
+      color: #f6e05e;
+    }
+
+    &.poor {
+      color: #fc8181;
     }
   }
+}
 
-  /* Light theme version */
-  :host-context(:not(.dark-theme)) & {
-    background-color: rgba(0, 0, 0, 0.85);
-    color: white;
+// Style the SVG elements created by D3
+:host ::ng-deep {
+  .treemap-svg {
+    overflow: visible;
+  }
 
-    .tooltip-row {
-      .label {
-        color: #ddd;
-      }
+  .node text {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  .node rect {
+    cursor: pointer;
+    transition: stroke 0.2s ease;
+  }
+
+  .zoom-container {
+    transition: transform 0.3s ease-out;
+  }
+
+  .coverage-legend {
+    font-size: 12px;
+
+    rect {
+      stroke: none;
+    }
+
+    text {
+      fill: currentColor;
     }
   }
 }
