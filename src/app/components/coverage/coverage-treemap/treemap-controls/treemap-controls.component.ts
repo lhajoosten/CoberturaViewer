@@ -1,6 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ThemeService } from '../../../../services/utils/theme.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-treemap-controls',
@@ -9,7 +11,7 @@ import { FormsModule } from '@angular/forms';
     templateUrl: './treemap-controls.component.html',
     styleUrls: ['./treemap-controls.component.scss']
 })
-export class TreemapControlsComponent implements OnInit {
+export class TreemapControlsComponent implements OnInit, OnDestroy {
     // Filter inputs and outputs
     @Input() minCoverage = 0;
     @Output() minCoverageChange = new EventEmitter<number>();
@@ -39,6 +41,7 @@ export class TreemapControlsComponent implements OnInit {
     @Input() packageList: string[] = [];
     @Input() hasActiveFilters = false;
     @Input() showFilters = false;
+    @Input() isDarkTheme = false;
 
     // Actions
     @Output() clearFilters = new EventEmitter<void>();
@@ -46,11 +49,12 @@ export class TreemapControlsComponent implements OnInit {
 
     // UI state
     isExpanded = false;
+    private themeSubscription: Subscription | null = null;
 
     // Available sort options
     sortOptions = [
-        { value: 'size', label: 'Size (Lines of Code)' },
-        { value: 'coverage', label: 'Coverage Percentage' },
+        { value: 'size', label: 'Lines of Code' },
+        { value: 'coverage', label: 'Coverage' },
         { value: 'name', label: 'Class Name' }
     ];
 
@@ -60,9 +64,22 @@ export class TreemapControlsComponent implements OnInit {
         { value: 'colorblind', label: 'Colorblind Friendly' }
     ];
 
+    constructor(private themeService: ThemeService) { }
+
     ngOnInit(): void {
         // Initialize with filters expanded if there are active filters
-        this.isExpanded = this.hasActiveFilters;
+        this.isExpanded = this.hasActiveFilters || this.showFilters;
+
+        // Subscribe to theme changes
+        this.themeSubscription = this.themeService.darkTheme$.subscribe(isDark => {
+            this.isDarkTheme = isDark;
+        });
+    }
+
+    ngOnDestroy(): void {
+        if (this.themeSubscription) {
+            this.themeSubscription.unsubscribe();
+        }
     }
 
     // Toggle the expanded state of filters
@@ -71,12 +88,7 @@ export class TreemapControlsComponent implements OnInit {
         this.toggleFilters.emit(this.isExpanded);
     }
 
-    // Helper method to update and emit a new value
-    updateValue(value: any, emitter: EventEmitter<any>): void {
-        emitter.emit(value);
-    }
-
-    // Specific handlers for certain types of controls
+    // Specific handlers for different types of controls
     onMinCoverageChange(event: Event): void {
         const value = +(event.target as HTMLInputElement).value;
         this.minCoverageChange.emit(value);

@@ -16,25 +16,35 @@
         <div class="loading-text">Loading coverage data...</div>
     </div>
 
-    <!-- Main Visualization -->
+    <!-- Main Visualization Container -->
     <div class="visualization-container">
-        <app-treemap-visualization *ngIf="filteredData && filteredData.length > 0" [data]="filteredData"
-            [isDarkTheme]="isDarkTheme" [showLabels]="showLabels" [groupSmallNodes]="groupSmallNodes"
-            [colorMode]="colorMode" [coverageRanges]="coverageRanges" (nodeSelected)="onNodeSelected($event)">
-        </app-treemap-visualization>
+        <!-- Treemap D3 Visualization -->
+        <div class="treemap-wrapper" *ngIf="hasData">
+            <app-treemap-visualization [data]="filteredData" [isDarkTheme]="isDarkTheme" [showLabels]="showLabels"
+                [groupSmallNodes]="groupSmallNodes" [colorMode]="colorMode" [coverageRanges]="coverageRanges"
+                (nodeSelected)="onNodeSelected($event)">
+            </app-treemap-visualization>
+
+            <!-- Zoom Controls -->
+            <div class="zoom-controls">
+                <button class="zoom-button" (click)="resetZoom()" title="Reset zoom">
+                    <i class="fas fa-compress-arrows-alt"></i>
+                </button>
+            </div>
+        </div>
 
         <!-- No data message -->
         <div class="no-data-message" *ngIf="!hasData && !isLoading">
             <div class="message-content">
                 <h3>No coverage data available</h3>
-                <p>No code coverage data has been loaded. Run your tests with coverage enabled to see results here.</p>
+                <p>No code coverage data has been loaded. Upload a Cobertura XML file to see results.</p>
             </div>
         </div>
     </div>
 
-    <!-- Details panel (shown when a node is selected) -->
+    <!-- Details panel when a node is selected -->
     <app-treemap-details *ngIf="selectedNode" [@slideInOut] [selectedNode]="selectedNode"
-        [similarClasses]="similarClasses" (closeDetails)="selectedNode = null"
-        (selectSimilarNode)="onNodeSelected($event)">
+        [selectedClass]="selectedClass" [similarClasses]="similarClasses" [isDarkTheme]="isDarkTheme"
+        (closeDetails)="closeDetails()" (selectSimilarNode)="onSelectSimilarClass($event)">
     </app-treemap-details>
 </div>

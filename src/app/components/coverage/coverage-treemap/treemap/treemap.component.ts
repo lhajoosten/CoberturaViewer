@@ -1,14 +1,16 @@
-import { Component, OnInit, OnDestroy, Input } from "@angular/core";
+import { Component, OnInit, OnDestroy, Input, ElementRef, ViewChild } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { trigger, style, transition, animate } from '@angular/animations';
 import { Subscription } from "rxjs";
-import { Coverage } from "../../../../models/coverage.model";
+import { ClassInfo, Coverage, CoverageData } from "../../../../models/coverage.model";
 import { CoverageDataService } from "../../../../services/coverage-data.service";
 import { CoverageStoreService } from "../../../../services/coverage-store.service";
 import { TreemapLayoutService } from "../../../../services/utils/treemap-layout.service";
 import { TreemapControlsComponent } from "../treemap-controls/treemap-controls.component";
 import { TreemapDetailsComponent } from "../treemap-details/treemap-details.component";
+import { ThemeService } from "../../../../services/utils/theme.service";
+import { TreemapConfig } from "../../../../models/treemap-config.model";
 import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-visualization.component";
 
 @Component({
@@ -33,23 +35,23 @@ import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-
                 animate('300ms ease-in', style({ transform: 'translateX(100%)' }))
             ])
         ]),
-        trigger('slideDown', [
+        trigger('fadeInOut', [
             transition(':enter', [
-                style({ maxHeight: '0', opacity: 0, overflow: 'hidden' }),
-                animate('300ms ease-out', style({ maxHeight: '1000px', opacity: 1 }))
+                style({ opacity: 0 }),
+                animate('300ms ease-out', style({ opacity: 1 }))
             ]),
             transition(':leave', [
-                style({ maxHeight: '1000px', opacity: 1, overflow: 'hidden' }),
-                animate('300ms ease-in', style({ maxHeight: '0', opacity: 0 }))
+                animate('300ms ease-in', style({ opacity: 0 }))
             ])
         ])
     ]
 })
 export class CoverageTreemapComponent implements OnInit, OnDestroy {
-    // Theme & loading states
     @Input() isDarkTheme = false;
+    @ViewChild(TreemapVisualizationComponent) treemapVisualization!: TreemapVisualizationComponent;
+
+    // Theme & loading states
     isLoading = true;
-    colorMode: 'default' | 'colorblind' = 'default';
 
     // Filter states
     minCoverage = 0;
@@ -58,6 +60,7 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     searchTerm = '';
     showFilters = false;
     showLabels = true;
+    colorMode: 'default' | 'colorblind' = 'default';
     minLines = 0;
     sortBy = 'size';
     hasActiveFilters = false;
@@ -65,11 +68,16 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     // Data
     originalData: Coverage[] = [];
     filteredData: Coverage[] = [];
+    hierarchicalData: any = null; // The actual D3 hierarchy data
     packageList: string[] = [];
     coverageRanges: any[] = [];
 
+    // Current coverage data
+    private currentCoverageData: CoverageData | null = null;
+
     // For node selection
     selectedNode: Coverage | null = null;
+    selectedClass: ClassInfo | null = null;
     similarClasses: Coverage[] = [];
 
     // Subscriptions
@@ -78,7 +86,8 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     constructor(
         private coverageDataService: CoverageDataService,
         private coverageStoreService: CoverageStoreService,
-        private treemapLayoutService: TreemapLayoutService
+        private treemapLayoutService: TreemapLayoutService,
+        private themeService: ThemeService
     ) { }
 
     get hasData(): boolean {
@@ -86,11 +95,16 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        // Set default coverage ranges from service
-        this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges();
+        // Subscribe to theme changes
+        this.subscriptions.add(
+            this.themeService.darkTheme$.subscribe(isDark => {
+                this.isDarkTheme = isDark;
+                this.updateTreemapWithTheme();
+            })
+        );
 
-        // Check for dark theme preference
-        this.checkThemePreference();
+        // Set default coverage ranges from service
+        this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
 
         // Load coverage data
         this.loadCoverageData();
@@ -101,24 +115,24 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
         this.subscriptions.unsubscribe();
     }
 
-    private checkThemePreference(): void {
-        // Check if user prefers dark theme
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.isDarkTheme = prefersDark;
-
-        // Update color ranges based on theme
-        this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
+    private updateTreemapWithTheme(): void {
+        // Update coverage ranges based on theme
+        this.coverageRanges = this.colorMode === 'colorblind'
+            ? this.treemapLayoutService.getColorblindCoverageRanges()
+            : this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
     }
 
     private loadCoverageData(): void {
         this.isLoading = true;
 
         // Subscribe to the coverage data from the store service
-        // This will update whenever a new report is uploaded
         const subscription = this.coverageStoreService.getCoverageData().subscribe({
             next: (coverageData) => {
                 if (coverageData) {
-                    // Transform the CoverageData to the format needed for the treemap
+                    // Store the current coverage data
+                    this.currentCoverageData = coverageData;
+
+                    // Transform the CoverageData to flat Coverage array
                     this.originalData = this.coverageDataService.transformToHierarchy(coverageData);
 
                     // Build package list
@@ -207,20 +221,64 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
             this.groupSmallNodes ||
             this.minLines > 0 ||
             this.sortBy !== 'size';
-    }
 
+        // Reset selected node when filters change
+        this.selectedNode = null;
+        this.selectedClass = null;
+    }
     // Handler for node selection
     onNodeSelected(node: Coverage): void {
         this.selectedNode = node;
 
-        // Find similar classes in the same package
-        if (node.packageName) {
-            this.similarClasses = this.filteredData.filter(item =>
-                item.packageName === node.packageName &&
-                item.className !== node.className
-            ).slice(0, 10); // Limit to 10 similar classes
+        // Find the actual class info to show details
+        if (this.selectedNode && !this.selectedNode.isNamespace) {
+            this.findClassDetails(this.selectedNode);
+        }
+
+        // Find similar classes if we have a selected node
+        if (this.selectedNode && this.selectedNode.packageName) {
+            this.findSimilarClasses();
         } else {
             this.similarClasses = [];
+        }
+    }
+
+    private async findClassDetails(node: Coverage): Promise<void> {
+        // Find the actual class details from the current coverage data
+        if (!this.currentCoverageData) return;
+
+        for (const pkg of this.currentCoverageData.packages) {
+            if (pkg.name === node.packageName) {
+                for (const cls of pkg.classes) {
+                    if (cls.name === node.className) {
+                        this.selectedClass = cls;
+                        return;
+                    }
+                }
+            }
+        }
+
+        this.selectedClass = null;
+    }
+
+    private findSimilarClasses(): void {
+        if (!this.selectedNode || !this.selectedNode.packageName) {
+            this.similarClasses = [];
+            return;
+        }
+
+        // Find classes in the same package with similar coverage
+        this.similarClasses = this.filteredData.filter(item =>
+            item.packageName === this.selectedNode!.packageName &&
+            item.className !== this.selectedNode!.className &&
+            Math.abs(item.coverage - this.selectedNode!.coverage) < 15 // Within 15% coverage
+        ).slice(0, 5); // Limit to 5 similar classes
+    }
+
+    // Public method to allow refreshing the treemap from outside
+    public refreshVisualization(): void {
+        if (!this.isLoading) {
+            this.applyFilters();
         }
     }
 
@@ -285,5 +343,25 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
 
     onToggleFilters(expanded: boolean): void {
         this.showFilters = expanded;
+    }
+
+    // Method to close class details panel
+    closeDetails(): void {
+        this.selectedNode = null;
+        this.selectedClass = null;
+        this.similarClasses = [];
+    }
+
+    // Handle click on a similar class
+    onSelectSimilarClass(node: Coverage): void {
+        this.selectedNode = node;
+        this.findClassDetails(node);
+    }
+
+    // Reset zoom to show the entire treemap
+    resetZoom(): void {
+        if (this.treemapVisualization) {
+            this.treemapVisualization.resetZoom();
+        }
     }
 }
