@@ -68,7 +68,7 @@ export class TreemapControlsComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         // Initialize with filters expanded if there are active filters
-        this.isExpanded = this.hasActiveFilters || this.showFilters;
+        //this.isExpanded = this.hasActiveFilters || this.showFilters;
 
         // Subscribe to theme changes
         this.themeSubscription = this.themeService.darkTheme$.subscribe(isDark => {

@@ -1,5 +1,3 @@
-/* Updated styles for app.component.scss */
-
 .app-container {
   display: flex;
   flex-direction: column;
@@ -7,19 +5,20 @@
   width: 100%;
   box-sizing: border-box;
   position: relative;
-  /* Use consistent padding that matches the dashboard width */
   padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: var(--transition-base);
 }
 
 .app-content-wrapper {
-  max-width: 1600px; /* Match your desired dashboard width */
+  max-width: 1600px;
   width: 100%;
   margin: 0 auto;
   padding: 0 max(1rem, min(25rem, 5%));
   box-sizing: border-box;
 }
 
-/* Fixed header */
 .app-header {
   position: sticky;
   top: 0;
@@ -35,16 +34,15 @@
   justify-content: space-between;
   height: 4rem;
   background-color: var(--surface-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius-lg);
   padding: 0 var(--space-lg);
   box-shadow: var(--shadow);
-  max-width: 1600px; /* Match your desired dashboard width */
+  max-width: 1600px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Main content area */
 .main-content {
   flex: 1;
   width: 100%;
@@ -52,7 +50,6 @@
   flex-direction: column;
 }
 
-/* Fixed footer */
 .app-footer {
   position: sticky;
   bottom: 0;
@@ -67,10 +64,10 @@
   justify-content: space-between;
   align-items: center;
   background-color: var(--surface-color);
-  border-radius: 8px;
+  border-radius: var(--border-radius-lg);
   padding: var(--space-lg);
   box-shadow: var(--shadow);
-  max-width: 1600px; /* Match your desired dashboard width */
+  max-width: 1600px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -99,35 +96,31 @@
   }
 }
 
-/* Router outlet styling */
 router-outlet + * {
   flex: 1;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Theme toggle positioning */
 app-theme-toggle {
   position: fixed;
   right: 20px;
-  bottom: 80px; /* Position it above the footer */
-  z-index: 200; /* Ensure it appears above other elements */
+  bottom: 80px;
+  z-index: 200;
 }
-
-/* Add these styles to your app.component.scss file */
 
 .compare-btn {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 8px 16px;
+  padding: var(--space-sm) var(--space-md);
   background-color: var(--primary-color);
-  color: white;
+  color: var(--text-on-primary);
   border: none;
   border-radius: var(--border-radius-md);
   font-weight: 500;
   font-size: var(--font-size-base);
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   cursor: pointer;
   box-shadow: var(--shadow-sm);
 
@@ -147,7 +140,6 @@ app-theme-toggle {
   }
 }
 
-/* Add a slight animation to the icon */
 .compare-btn:hover i {
   animation: spin-half 0.5s ease;
 }
@@ -164,16 +156,6 @@ app-theme-toggle {
   }
 }
 
-/* For dark theme specific styling */
-.dark-theme .compare-btn {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  }
-}
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .compare-btn {
     padding: 6px 12px;
@@ -183,13 +165,13 @@ app-theme-toggle {
 
 @media (max-width: 480px) {
   .compare-btn {
-    padding: 8px;
+    padding: var(--space-sm);
     border-radius: 50%;
     aspect-ratio: 1/1;
     justify-content: center;
 
     span {
-      display: none; /* Hide text on small screens */
+      display: none;
     }
 
     i {
@@ -199,7 +181,6 @@ app-theme-toggle {
   }
 }
 
-/* Responsive adjustments */
 @media (max-width: 1440px) {
   .app-content-wrapper {
     padding: 0 max(1rem, min(15rem, 10%));
@@ -271,6 +252,6 @@ app-theme-toggle {
   }
 
   .compare-btn span {
-    display: none; /* Hide button text on very small screens */
+    display: none;
   }
 }

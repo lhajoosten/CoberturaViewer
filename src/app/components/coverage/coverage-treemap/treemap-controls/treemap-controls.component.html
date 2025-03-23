@@ -1,4 +1,5 @@
 <div class="treemap-controls" [class.expanded]="isExpanded">
+    <!-- Header with title and main actions -->
     <div class="controls-header">
         <div class="title-row">
             <h3><i class="fas fa-sliders-h"></i> Coverage Settings</h3>
@@ -14,86 +15,118 @@
         </div>
     </div>
 
+    <!-- Filters that are always visible -->
+    <div class="quick-filters">
+        <div class="filter-row">
+            <!-- Search input -->
+            <div class="filter-item search-container">
+                <i class="fas fa-search filter-icon"></i>
+                <input type="text" id="searchTerm" class="search-input" [value]="searchTerm"
+                    (input)="onSearchTermChange($event)" placeholder="Search Classes">
+            </div>
+
+            <!-- Package dropdown -->
+            <div class="filter-item package-container">
+                <i class="fas fa-archive filter-icon"></i>
+                <select id="packageFilter" class="package-select" [value]="selectedPackage"
+                    (change)="onSelectedPackageChange($event)">
+                    <option value="">All Packages</option>
+                    <option *ngFor="let pkg of packageList" [value]="pkg">{{ pkg }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced filters (expandable) -->
     <div class="controls-content" [class.visible]="isExpanded">
-        <!-- Quick Search -->
-        <div class="control-group">
-            <label for="searchTerm"><i class="fas fa-search"></i> Search Classes</label>
-            <input type="text" id="searchTerm" [value]="searchTerm" (input)="onSearchTermChange($event)"
-                placeholder="Search by class name...">
-        </div>
-
-        <!-- Package Filter -->
-        <div class="control-group">
-            <label for="packageFilter"><i class="fas fa-archive"></i> Package</label>
-            <select id="packageFilter" [value]="selectedPackage" (change)="onSelectedPackageChange($event)">
-                <option value="">All Packages</option>
-                <option *ngFor="let pkg of packageList" [value]="pkg">
-                    {{ pkg }}
-                </option>
-            </select>
-        </div>
-
-        <!-- Min Coverage Filter -->
-        <div class="control-group">
-            <label for="minCoverage">
-                <i class="fas fa-chart-pie"></i> Min Coverage: {{ minCoverage }}%
-            </label>
-            <input type="range" id="minCoverage" [value]="minCoverage" (input)="onMinCoverageChange($event)" min="0"
-                max="100" step="5">
-        </div>
-
-        <!-- Min Lines Filter -->
-        <div class="control-group">
-            <label for="minLines">
-                <i class="fas fa-code"></i> Min Lines: {{ minLines }}
-            </label>
-            <input type="range" id="minLines" [value]="minLines" (input)="onMinLinesChange($event)" min="0" max="100"
-                step="5">
-        </div>
-
-        <!-- Sort Order -->
-        <div class="control-group">
-            <label for="sortBy"><i class="fas fa-sort"></i> Sort By</label>
-            <select id="sortBy" [value]="sortBy" (change)="onSortByChange($event)">
-                <option *ngFor="let option of sortOptions" [value]="option.value">
-                    {{ option.label }}
-                </option>
-            </select>
-        </div>
-
-        <div class="control-group toggles">
-            <!-- Group Small Nodes Toggle -->
-            <div class="toggle-control">
-                <input type="checkbox" id="groupSmallNodes" [checked]="groupSmallNodes"
-                    (change)="onToggleGrouping($event)">
-                <span class="toggle-checkbox"></span>
-                <label for="groupSmallNodes">Group Small Classes</label>
+        <div class="filter-section">
+            <!-- Coverage section -->
+            <div class="section-header">
+                <i class="fas fa-chart-pie"></i> Coverage
             </div>
 
-            <!-- Show Labels Toggle -->
-            <div class="toggle-control">
-                <input type="checkbox" id="showLabels" [checked]="showLabels" (change)="onToggleLabels($event)">
-                <span class="toggle-checkbox"></span>
-                <label for="showLabels">Show Labels</label>
-            </div>
+            <div class="filter-row">
+                <!-- Min Coverage Filter -->
+                <div class="filter-item range-container">
+                    <div class="range-label">
+                        <span>Min Coverage:</span>
+                        <span class="range-value">{{ minCoverage }}%</span>
+                    </div>
+                    <input type="range" id="minCoverage" [value]="minCoverage" (input)="onMinCoverageChange($event)"
+                        min="0" max="100" step="5">
+                </div>
 
-            <!-- Domain Grouping Toggle if added -->
-            <div class="toggle-control" *ngIf="enableDomainGroupingOption">
-                <input type="checkbox" id="enableDomainGrouping" [checked]="enableDomainGrouping"
-                    (change)="onToggleDomainGrouping($event)">
-                <span class="toggle-checkbox"></span>
-                <label for="enableDomainGrouping">Domain Grouping</label>
+                <!-- Min Lines Filter -->
+                <div class="filter-item range-container">
+                    <div class="range-label">
+                        <span>Min Lines:</span>
+                        <span class="range-value">{{ minLines }}</span>
+                    </div>
+                    <input type="range" id="minLines" [value]="minLines" (input)="onMinLinesChange($event)" min="0"
+                        max="100" step="5">
+                </div>
             </div>
         </div>
 
-        <!-- Color Scheme -->
-        <div class="control-group">
-            <label for="colorMode"><i class="fas fa-palette"></i> Color Scheme</label>
-            <select id="colorMode" [value]="colorMode" (change)="onColorModeChange($event)">
-                <option *ngFor="let option of colorModeOptions" [value]="option.value">
-                    {{ option.label }}
-                </option>
-            </select>
+        <div class="filter-section">
+            <!-- Appearance section -->
+            <div class="section-header">
+                <i class="fas fa-eye"></i> Appearance
+            </div>
+
+            <div class="filter-row">
+                <!-- Sort Order -->
+                <div class="filter-item">
+                    <label for="sortBy">Sort By</label>
+                    <select id="sortBy" [value]="sortBy" (change)="onSortByChange($event)">
+                        <option *ngFor="let option of sortOptions" [value]="option.value">
+                            {{ option.label }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Color Scheme -->
+                <div class="filter-item">
+                    <label for="colorMode">Color Scheme</label>
+                    <select id="colorMode" [value]="colorMode" (change)="onColorModeChange($event)">
+                        <option *ngFor="let option of colorModeOptions" [value]="option.value">
+                            {{ option.label }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Toggle options -->
+            <div class="filter-row toggles-row">
+                <!-- Group Small Nodes Toggle -->
+                <div class="filter-item toggle-container">
+                    <div class="toggle-control">
+                        <input type="checkbox" id="groupSmallNodes" [checked]="groupSmallNodes"
+                            (change)="onToggleGrouping($event)">
+                        <span class="toggle-checkbox"></span>
+                        <label for="groupSmallNodes">Group Small Classes</label>
+                    </div>
+                </div>
+
+                <!-- Show Labels Toggle -->
+                <div class="filter-item toggle-container">
+                    <div class="toggle-control">
+                        <input type="checkbox" id="showLabels" [checked]="showLabels" (change)="onToggleLabels($event)">
+                        <span class="toggle-checkbox"></span>
+                        <label for="showLabels">Show Labels</label>
+                    </div>
+                </div>
+
+                <!-- Domain Grouping Toggle if added -->
+                <div class="filter-item toggle-container" *ngIf="enableDomainGroupingOption">
+                    <div class="toggle-control">
+                        <input type="checkbox" id="enableDomainGrouping" [checked]="enableDomainGrouping"
+                            (change)="onToggleDomainGrouping($event)">
+                        <span class="toggle-checkbox"></span>
+                        <label for="enableDomainGrouping">Domain Grouping</label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -713,8 +713,8 @@ export class TreemapLayoutService {
         svg.selectAll('.coverage-legend').remove();
 
         // Calculate proper positioning to place legend at the top right
-        const topMargin = 20;
-        const rightMargin = 20;
+        const topMargin = 25;
+        const rightMargin = 5;
         const legendX = config.width - rightMargin - 85;
         const legendY = topMargin;
 

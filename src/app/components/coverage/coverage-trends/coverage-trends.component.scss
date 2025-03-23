@@ -3,14 +3,12 @@
   transition: var(--transition-base);
 }
 
-// Dashboard styling
 .history-dashboard {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
 }
 
-// Dashboard header with controls
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -90,7 +88,6 @@
   }
 }
 
-// Stats cards - leveraging our global metric-card class and adding custom trend styles
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -126,16 +123,15 @@
       color: var(--text-muted);
 
       &.positive {
-        color: var(--excellent-color);
+        color: var(--success-color);
       }
       &.negative {
-        color: var(--poor-color);
+        color: var(--error-color);
       }
     }
   }
 }
 
-// Charts section
 .chart-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -180,14 +176,12 @@
   }
 }
 
-// Chart tooltips
 :host ::ng-deep {
   .chart-tooltip {
     font-size: var(--font-size-sm);
     box-shadow: var(--shadow-lg);
   }
 
-  // SVG styling
   .x-axis,
   .y-axis {
     font-size: 11px;
@@ -199,7 +193,7 @@
   }
 
   .grid line {
-    stroke: var(--chart-grid);
+    stroke: var(--border-color);
     stroke-opacity: 0.2;
     shape-rendering: crispEdges;
   }
@@ -244,7 +238,6 @@
   }
 }
 
-// Responsive adjustments
 @media (max-width: 1200px) {
   .chart-grid {
     grid-template-columns: 1fr;

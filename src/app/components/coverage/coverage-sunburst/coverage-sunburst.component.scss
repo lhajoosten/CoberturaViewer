@@ -67,16 +67,16 @@
     margin-bottom: var(--space-sm);
 
     &.excellent {
-      color: var(--excellent-color);
+      color: var(--success-color);
     }
     &.good {
-      color: var(--good-color);
+      color: var(--accent-light);
     }
     &.average {
-      color: var(--average-color);
+      color: var(--warning-color);
     }
     &.poor {
-      color: var(--poor-color);
+      color: var(--error-color);
     }
   }
 
@@ -86,7 +86,6 @@
   }
 }
 
-// Using the global legend classes with sunburst-specific styling
 .legend {
   display: flex;
   justify-content: center;

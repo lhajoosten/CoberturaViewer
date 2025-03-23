@@ -3,14 +3,14 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: calc(100vh - 200px); /* Adjust based on header and footer height */
+  height: calc(100vh - 200px);
   min-height: 600px;
   background-color: var(--background-color);
   color: var(--text-color);
   overflow: hidden;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow);
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-md);
 }
 
 .visualization-container {
@@ -27,21 +27,15 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-
-  app-treemap-visualization {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
 }
 
 .zoom-controls {
   position: absolute;
-  top: 20px;
-  right: 110px; /* Position to the left of the legend */
+  bottom: 25px;
+  right: 25px;
   z-index: 10;
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .zoom-button {
@@ -50,17 +44,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--card-bg, white);
-  border: 1px solid var(--border-color, #ddd);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
-  color: var(--text-color, #333);
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-color);
+  transition: var(--transition-fast);
 
   &:hover {
-    background-color: var(--hover-color, #f5f5f5);
-    box-shadow: var(--shadow-md, 0 2px 6px rgba(0, 0, 0, 0.15));
+    background-color: var(--hover-color);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
   }
 
@@ -69,27 +63,12 @@
   }
 }
 
-/* Dark theme adjustments */
-.dark-theme .zoom-button {
-  background-color: var(--card-bg, #333);
-  color: var(--text-color, #fff);
-  border-color: var(--border-color, #555);
-
-  &:hover {
-    background-color: var(--hover-color, #444);
-  }
-}
-
 .controls-section {
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: #ffffff;
+  background-color: var(--surface-color);
   z-index: 10;
-}
-
-.dark-theme .controls-section {
-  background-color: #2d2d2d;
 }
 
 .advanced-controls {
@@ -97,42 +76,31 @@
   align-items: center;
   margin: 0 16px 12px 16px;
   padding-top: 8px;
-  border-top: 1px dashed #e0e0e0;
-}
-
-.dark-theme .advanced-controls {
-  border-top-color: #444;
+  border-top: 1px dashed var(--border-color);
 }
 
 .exclusions-button {
   display: flex;
   align-items: center;
-  background-color: #f0f2f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 14px;
+  background-color: var(--card-header-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
+  transition: var(--transition-fast);
+  color: var(--text-color);
 
-.dark-theme .exclusions-button {
-  background-color: #3a3a3a;
-  border-color: #555;
-  color: #e0e0e0;
-}
+  &:hover {
+    background-color: var(--hover-color);
+    border-color: var(--primary-color);
+  }
 
-.exclusions-button:hover {
-  background-color: #e6e8eb;
-}
-
-.dark-theme .exclusions-button:hover {
-  background-color: #444;
-}
-
-.exclusions-button i {
-  margin-right: 8px;
+  i {
+    margin-right: var(--space-sm);
+    color: var(--primary-color);
+  }
 }
 
 .badge {
@@ -142,11 +110,11 @@
   min-width: 20px;
   height: 20px;
   border-radius: 10px;
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
   font-size: 12px;
   font-weight: bold;
-  margin-left: 8px;
+  margin-left: var(--space-sm);
   padding: 0 6px;
 }
 

@@ -23,7 +23,7 @@ export class TreemapExclusionsComponent implements OnInit {
     // Sample patterns that users might find useful
     samplePatterns: { label: string, pattern: ExclusionPattern }[] = [
         {
-            label: 'Exclude Event classes',
+            label: 'Event classes',
             pattern: {
                 pattern: 'Event',
                 type: 'class',
@@ -32,7 +32,7 @@ export class TreemapExclusionsComponent implements OnInit {
             }
         },
         {
-            label: 'Exclude DTO classes',
+            label: 'DTO classes',
             pattern: {
                 pattern: 'DTO',
                 type: 'class',
@@ -41,7 +41,7 @@ export class TreemapExclusionsComponent implements OnInit {
             }
         },
         {
-            label: 'Exclude test infrastructure',
+            label: 'Test infrastructure',
             pattern: {
                 pattern: 'Test',
                 type: 'package',
