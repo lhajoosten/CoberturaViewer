@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../../../services/utils/theme.service';
 import { Subscription } from 'rxjs';
+import { ExclusionPattern } from '../../../../models/treemap-config.model';
 
 @Component({
     selector: 'app-treemap-controls',
@@ -12,43 +13,37 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./treemap-controls.component.scss']
 })
 export class TreemapControlsComponent implements OnInit, OnDestroy {
-    // Filter inputs and outputs
     @Input() minCoverage = 0;
-    @Output() minCoverageChange = new EventEmitter<number>();
-
     @Input() selectedPackage = '';
-    @Output() selectedPackageChange = new EventEmitter<string>();
-
     @Input() groupSmallNodes = false;
-    @Output() groupSmallNodesChange = new EventEmitter<boolean>();
-
     @Input() searchTerm = '';
-    @Output() searchTermChange = new EventEmitter<string>();
-
-    @Input() showLabels = true;
-    @Output() showLabelsChange = new EventEmitter<boolean>();
-
-    @Input() colorMode = 'default';
-    @Output() colorModeChange = new EventEmitter<string>();
-
-    @Input() minLines = 0;
-    @Output() minLinesChange = new EventEmitter<number>();
-
-    @Input() sortBy = 'size';
-    @Output() sortByChange = new EventEmitter<string>();
-
-    // Data inputs
-    @Input() packageList: string[] = [];
-    @Input() hasActiveFilters = false;
     @Input() showFilters = false;
-    @Input() isDarkTheme = false;
+    @Input() showLabels = true;
+    @Input() colorMode: 'default' | 'colorblind' = 'default';
+    @Input() minLines = 0;
+    @Input() sortBy = 'size';
+    @Input() hasActiveFilters = false;
+    @Input() packageList: string[] = [];
+    @Input() exclusionPatterns: ExclusionPattern[] = [];
+    @Input() enableDomainGrouping = true;
+    @Input() enableDomainGroupingOption = true;
 
-    // Actions
+    @Output() minCoverageChange = new EventEmitter<number>();
+    @Output() selectedPackageChange = new EventEmitter<string>();
+    @Output() groupSmallNodesChange = new EventEmitter<boolean>();
+    @Output() searchTermChange = new EventEmitter<string>();
+    @Output() showLabelsChange = new EventEmitter<boolean>();
+    @Output() colorModeChange = new EventEmitter<string>();
+    @Output() minLinesChange = new EventEmitter<number>();
+    @Output() sortByChange = new EventEmitter<string>();
     @Output() clearFilters = new EventEmitter<void>();
     @Output() toggleFilters = new EventEmitter<boolean>();
+    @Output() toggleExclusionsPanel = new EventEmitter<void>();
+    @Output() enableDomainGroupingChange = new EventEmitter<boolean>();
 
     // UI state
     isExpanded = false;
+    isDarkTheme = false;
     private themeSubscription: Subscription | null = null;
 
     // Available sort options
@@ -63,6 +58,11 @@ export class TreemapControlsComponent implements OnInit, OnDestroy {
         { value: 'default', label: 'Standard Colors' },
         { value: 'colorblind', label: 'Colorblind Friendly' }
     ];
+
+    get activeExclusionsCount(): number {
+        if (!this.exclusionPatterns) return 0;
+        return this.exclusionPatterns.filter(p => p.enabled).length;
+    }
 
     constructor(private themeService: ThemeService) { }
 
@@ -82,54 +82,70 @@ export class TreemapControlsComponent implements OnInit, OnDestroy {
         }
     }
 
-    // Toggle the expanded state of filters
     toggleExpanded(): void {
         this.isExpanded = !this.isExpanded;
         this.toggleFilters.emit(this.isExpanded);
     }
 
-    // Specific handlers for different types of controls
-    onMinCoverageChange(event: Event): void {
-        const value = +(event.target as HTMLInputElement).value;
-        this.minCoverageChange.emit(value);
+    onClearFilters(): void {
+        this.clearFilters.emit();
     }
 
-    onSearchTermChange(event: Event): void {
-        const value = (event.target as HTMLInputElement).value;
-        this.searchTermChange.emit(value);
+    onMinCoverageChange(event: Event): void {
+        const value = +(event.target as HTMLInputElement).value;
+        this.minCoverage = value;
+        this.minCoverageChange.emit(value);
     }
 
     onSelectedPackageChange(event: Event): void {
         const value = (event.target as HTMLSelectElement).value;
+        this.selectedPackage = value;
         this.selectedPackageChange.emit(value);
+    }
+
+    onToggleGrouping(event: Event): void {
+        const checked = (event.target as HTMLInputElement).checked;
+        this.groupSmallNodes = checked;
+        this.groupSmallNodesChange.emit(checked);
+    }
+
+    onSearchTermChange(event: Event): void {
+        const value = (event.target as HTMLInputElement).value;
+        this.searchTerm = value;
+        this.searchTermChange.emit(value);
+    }
+
+    onToggleLabels(event: Event): void {
+        const checked = (event.target as HTMLInputElement).checked;
+        this.showLabels = checked;
+        this.showLabelsChange.emit(checked);
+    }
+
+    onToggleDomainGrouping(event: Event): void {
+        const checked = (event.target as HTMLInputElement).checked;
+        this.enableDomainGrouping = checked;
+        this.enableDomainGroupingChange.emit(checked);
+    }
+
+    onColorModeChange(event: Event): void {
+        const value = (event.target as HTMLSelectElement).value;
+        this.colorMode = value as 'default' | 'colorblind';
+        this.colorModeChange.emit(value);
     }
 
     onMinLinesChange(event: Event): void {
         const value = +(event.target as HTMLInputElement).value;
+        this.minLines = value;
         this.minLinesChange.emit(value);
     }
 
     onSortByChange(event: Event): void {
         const value = (event.target as HTMLSelectElement).value;
+        this.sortBy = value;
         this.sortByChange.emit(value);
     }
 
-    onColorModeChange(event: Event): void {
-        const value = (event.target as HTMLSelectElement).value;
-        this.colorModeChange.emit(value);
-    }
-
-    onToggleGrouping(event: Event): void {
-        const checked = (event.target as HTMLInputElement).checked;
-        this.groupSmallNodesChange.emit(checked);
-    }
-
-    onToggleLabels(event: Event): void {
-        const checked = (event.target as HTMLInputElement).checked;
-        this.showLabelsChange.emit(checked);
-    }
-
-    onClearFilters(): void {
-        this.clearFilters.emit();
+    onToggleExclusionsPanel(): void {
+        this.toggleExclusionsPanel.emit();
     }
 }

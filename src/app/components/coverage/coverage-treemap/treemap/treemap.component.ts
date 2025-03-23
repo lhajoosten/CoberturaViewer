@@ -11,6 +11,8 @@ import { TreemapControlsComponent } from "../treemap-controls/treemap-controls.c
 import { TreemapDetailsComponent } from "../treemap-details/treemap-details.component";
 import { ThemeService } from "../../../../services/utils/theme.service";
 import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-visualization.component";
+import { TreemapExclusionsComponent } from "../treemap-exclusions/treemap-exclusions.component";
+import { ExclusionPattern } from "../../../../models/treemap-config.model";
 
 @Component({
     selector: 'app-coverage-treemap',
@@ -20,6 +22,7 @@ import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-
         FormsModule,
         TreemapControlsComponent,
         TreemapDetailsComponent,
+        TreemapExclusionsComponent,
         TreemapVisualizationComponent
     ],
     templateUrl: './treemap.component.html',
@@ -62,13 +65,19 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     colorMode: 'default' | 'colorblind' = 'default';
     minLines = 0;
     sortBy = 'size';
+    enableDomainGrouping = true;
     hasActiveFilters = false;
+
+    // Exclusion functionality
+    showExclusionsPanel = false;
+    exclusionPatterns: ExclusionPattern[] = [];
 
     // Data
     originalData: Coverage[] = [];
     filteredData: Coverage[] = [];
     hierarchicalData: any = null; // The actual D3 hierarchy data
     packageList: string[] = [];
+    domainList: string[] = [];
     coverageRanges: any[] = [];
 
     // Current coverage data
@@ -105,6 +114,9 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
         // Set default coverage ranges from service
         this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
 
+        // Load saved exclusion patterns from localStorage
+        this.loadSavedExclusionPatterns();
+
         // Load coverage data
         this.loadCoverageData();
     }
@@ -112,6 +124,22 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         // Clean up subscriptions
         this.subscriptions.unsubscribe();
+    }
+
+    private loadSavedExclusionPatterns(): void {
+        const savedPatterns = localStorage.getItem('treemap-exclusion-patterns');
+        if (savedPatterns) {
+            try {
+                this.exclusionPatterns = JSON.parse(savedPatterns);
+            } catch (e) {
+                console.error('Error loading saved exclusion patterns:', e);
+                this.exclusionPatterns = [];
+            }
+        }
+    }
+
+    private saveExclusionPatterns(): void {
+        localStorage.setItem('treemap-exclusion-patterns', JSON.stringify(this.exclusionPatterns));
     }
 
     private updateTreemapWithTheme(): void {
@@ -134,8 +162,8 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
                     // Transform the CoverageData to flat Coverage array
                     this.originalData = this.coverageDataService.transformToHierarchy(coverageData);
 
-                    // Build package list
-                    this.extractPackageList();
+                    // Extract domain and package lists
+                    this.extractDomainAndPackageLists();
 
                     // Apply initial filters
                     this.applyFilters();
@@ -143,6 +171,19 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
                     // No data available
                     this.originalData = [];
                     this.filteredData = [];
+
+                    // Update hasActiveFilters flag
+                    this.hasActiveFilters = this.minCoverage > 0 ||
+                        !!this.selectedPackage ||
+                        !!this.searchTerm ||
+                        this.groupSmallNodes ||
+                        this.minLines > 0 ||
+                        this.sortBy !== 'size' ||
+                        this.exclusionPatterns.some(p => p.enabled);
+
+                    // Reset selected node when filters change
+                    this.selectedNode = null;
+                    this.selectedClass = null;[];
                 }
 
                 this.isLoading = false;
@@ -152,52 +193,130 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
         this.subscriptions.add(subscription);
     }
 
-    private extractPackageList(): void {
+    private extractDomainAndPackageLists(): void {
         const uniquePackages = new Set<string>();
+        const uniqueDomains = new Set<string>();
 
         this.originalData.forEach(item => {
             if (item.packageName) {
                 uniquePackages.add(item.packageName);
+
+                // Extract domain from package name (first two segments)
+                const parts = item.packageName.split('.');
+                if (parts.length >= 2) {
+                    uniqueDomains.add(`${parts[0]}.${parts[1]}`);
+                }
             }
         });
 
         this.packageList = Array.from(uniquePackages).sort();
+        this.domainList = Array.from(uniqueDomains).sort();
+    }
+
+    private applyExclusionPatterns(data: Coverage[]): Coverage[] {
+        // Skip if no patterns are enabled
+        if (!this.exclusionPatterns.some(p => p.enabled)) {
+            return data;
+        }
+
+        return data.filter(item => {
+            // Check each enabled pattern
+            for (const pattern of this.exclusionPatterns) {
+                if (!pattern.enabled) continue;
+
+                const className = item.className || '';
+                const packageName = item.packageName || '';
+
+                switch (pattern.type) {
+                    case 'class':
+                        // Simple substring match for class names
+                        if (className.includes(pattern.pattern)) {
+                            return false;
+                        }
+                        break;
+                    case 'package':
+                        // Simple substring match for package names
+                        if (packageName.includes(pattern.pattern)) {
+                            return false;
+                        }
+                        break;
+                    case 'regex':
+                        // Regex match for either class or package
+                        try {
+                            const regex = new RegExp(pattern.pattern);
+                            if (regex.test(className) || regex.test(packageName)) {
+                                return false;
+                            }
+                        } catch (e) {
+                            console.error('Invalid regex pattern:', pattern.pattern);
+                        }
+                        break;
+                }
+            }
+
+            // Include the item if it didn't match any exclusion patterns
+            return true;
+        });
     }
 
     private applyFilters(): void {
         let data = [...this.originalData];
 
-        // 1. Filter by min coverage
+        // 1. Apply exclusion patterns first
+        data = this.applyExclusionPatterns(data);
+
+        // 2. Apply domain grouping if enabled
+        if (this.enableDomainGrouping) {
+            data = this.treemapLayoutService.groupPackagesByDomain(data);
+        }
+
+        // 3. Filter by min coverage
         if (this.minCoverage > 0) {
             data = data.filter(item => item.coverage >= this.minCoverage);
         }
 
-        // 2. Filter by selected package
+        // 4. Filter by selected package
         if (this.selectedPackage) {
-            data = data.filter(item => item.packageName === this.selectedPackage);
+            data = data.filter(item => {
+                // If this is a domain group, include it if it matches the package prefix
+                if (item.isDomainGroup) {
+                    return item.packageName === this.selectedPackage ||
+                        (item.children && item.children.some(child => child.packageName === this.selectedPackage));
+                }
+                return item.packageName === this.selectedPackage;
+            });
         }
 
-        // 3. Search term filter
+        // 5. Search term filter
         if (this.searchTerm) {
             const term = this.searchTerm.toLowerCase();
             data = data.filter(item => {
                 const className = item.className.toLowerCase();
                 const packageName = item.packageName?.toLowerCase() || '';
+
+                // For domain groups, also check children
+                if (item.isDomainGroup && item.children) {
+                    return item.children.some(child =>
+                        child.className.toLowerCase().includes(term) ||
+                        (child.packageName?.toLowerCase() || '').includes(term)
+                    );
+                }
+
                 return className.includes(term) || packageName.includes(term);
             });
         }
 
-        // 4. Min lines filter
+        // 6. Min lines filter
         if (this.minLines > 0) {
             data = data.filter(item => item.linesValid >= this.minLines);
         }
 
-        // 5. Group small nodes
+        // 7. Group small nodes
         if (this.groupSmallNodes) {
             data = this.treemapLayoutService.groupSmallNodes(data, 10);
         }
 
-        // 6. Sorting
+        // 8. Sorting
         switch (this.sortBy) {
             case 'coverage':
                 data.sort((a, b) => b.coverage - a.coverage);
@@ -219,14 +338,30 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
             !!this.searchTerm ||
             this.groupSmallNodes ||
             this.minLines > 0 ||
-            this.sortBy !== 'size';
+            this.sortBy !== 'size' ||
+            this.exclusionPatterns.some(p => p.enabled);
 
         // Reset selected node when filters change
         this.selectedNode = null;
         this.selectedClass = null;
     }
+
     // Handler for node selection
     onNodeSelected(node: Coverage): void {
+        // Special handling for domain group nodes
+        if (node.isDomainGroup && node.children) {
+            // Show domain summary instead of individual class
+            this.selectedNode = {
+                ...node,
+                isNamespace: true // Treat as namespace for details view
+            };
+            this.selectedClass = null;
+
+            // Find similar domains (with similar coverage)
+            this.findSimilarDomains(node);
+            return;
+        }
+
         this.selectedNode = node;
 
         // Find the actual class info to show details
@@ -240,6 +375,23 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
         } else {
             this.similarClasses = [];
         }
+    }
+
+    /**
+     * Find similar domains with comparable coverage
+     */
+    private findSimilarDomains(domainNode: Coverage): void {
+        if (!domainNode.isDomainGroup || !domainNode.packageName) {
+            this.similarClasses = [];
+            return;
+        }
+
+        // Find other domain groups with similar coverage
+        this.similarClasses = this.filteredData.filter(item =>
+            item.isDomainGroup &&
+            item.packageName !== domainNode.packageName &&
+            Math.abs(item.coverage - domainNode.coverage) < 15
+        ).slice(0, 5);
     }
 
     private async findClassDetails(node: Coverage): Promise<void> {
@@ -268,6 +420,7 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
 
         // Find classes in the same package with similar coverage
         this.similarClasses = this.filteredData.filter(item =>
+            !item.isDomainGroup && // Exclude domain groups
             item.packageName === this.selectedNode!.packageName &&
             item.className !== this.selectedNode!.className &&
             Math.abs(item.coverage - this.selectedNode!.coverage) < 15 // Within 15% coverage
@@ -279,6 +432,30 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
         if (!this.isLoading) {
             this.applyFilters();
         }
+    }
+
+    // Toggle exclusions panel
+    onToggleExclusionsPanel(): void {
+        this.showExclusionsPanel = !this.showExclusionsPanel;
+    }
+
+    // Handle exclusion patterns change
+    onExclusionPatternsChange(patterns: ExclusionPattern[]): void {
+        this.exclusionPatterns = patterns;
+        this.saveExclusionPatterns();
+    }
+
+    // Apply exclusion patterns
+    onApplyExclusions(patterns: ExclusionPattern[]): void {
+        this.exclusionPatterns = patterns;
+        this.saveExclusionPatterns();
+        this.applyFilters();
+    }
+
+    // Toggle domain grouping
+    onToggleDomainGrouping(enabled: boolean): void {
+        this.enableDomainGrouping = enabled;
+        this.applyFilters();
     }
 
     // Control change handlers
@@ -304,6 +481,9 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
 
     onShowLabelsChange(value: boolean): void {
         this.showLabels = value;
+        if (this.treemapVisualization) {
+            this.treemapVisualization.updateLabels(value);
+        }
     }
 
     onColorModeChange(value: string): void {
@@ -354,13 +534,122 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     // Handle click on a similar class
     onSelectSimilarClass(node: Coverage): void {
         this.selectedNode = node;
-        this.findClassDetails(node);
+
+        if (node.isDomainGroup) {
+            this.findSimilarDomains(node);
+        } else {
+            this.findClassDetails(node);
+        }
     }
 
     // Reset zoom to show the entire treemap
     resetZoom(): void {
         if (this.treemapVisualization) {
             this.treemapVisualization.resetZoom();
+        }
+    }
+
+    // Toggle labels visibility
+    toggleLabels(): void {
+        this.showLabels = !this.showLabels;
+        this.onShowLabelsChange(this.showLabels);
+    }
+
+    // Export treemap as SVG
+    exportSvg(): void {
+        if (!this.treemapVisualization) return;
+
+        try {
+            // Get the SVG element
+            const svgElement = this.treemapVisualization.getSvgElement();
+            if (!svgElement) {
+                console.error('No SVG element found');
+                return;
+            }
+
+            // Create a clone to avoid modifying the original
+            const svgClone = svgElement.cloneNode(true) as SVGElement;
+
+            // Set width and height explicitly
+            svgClone.setAttribute('width', '1200');
+            svgClone.setAttribute('height', '800');
+
+            // Add CSS styles inline
+            const styleElement = document.createElement('style');
+            styleElement.textContent = this.getCssStyles();
+            svgClone.insertBefore(styleElement, svgClone.firstChild);
+
+            // Convert to string
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgClone);
+
+            // Create a blob and download link
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+
+            // Create download link
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'coverage-treemap.svg';
+            link.click();
+
+            // Clean up
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting SVG:', error);
+        }
+    }
+
+    // Get CSS styles for SVG export
+    private getCssStyles(): string {
+        return `
+            .node rect {
+                stroke-width: 1px;
+            }
+            .node.depth-1 rect {
+                stroke-width: 2px;
+            }
+            .node.domain-group rect {
+                stroke-width: 2px;
+                stroke-dasharray: 2, 2;
+            }
+            .node-label {
+                font-family: Arial, sans-serif;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            }
+            .dark-theme .node-label {
+                fill: #ffffff;
+            }
+            .aggregation-indicator circle {
+                fill: rgba(0,0,0,0.4);
+                stroke: #ffffff;
+            }
+            .aggregation-indicator text {
+                fill: #ffffff;
+                font-weight: bold;
+                text-anchor: middle;
+            }
+        `;
+    }
+
+    /**
+ * Find and highlight a node by name
+ */
+    public findAndHighlightNode(nodeName: string): void {
+        if (this.treemapVisualization) {
+            this.treemapVisualization.highlightNode(nodeName);
+        }
+    }
+
+    /**
+     * Handle changes like screen rotation or tab activation
+     */
+    public handleVisibilityChange(): void {
+        if (this.treemapVisualization) {
+            // Small delay to ensure DOM has updated
+            setTimeout(() => {
+                this.treemapVisualization.refreshLayout();
+            }, 100);
         }
     }
 }

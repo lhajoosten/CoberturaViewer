@@ -4,13 +4,9 @@ import { Coverage, TreeNode } from '../../models/coverage.model';
 import { TreemapConfig } from '../../models/treemap-config.model';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class TreemapLayoutService {
-    /**
-     * Creates a new D3 treemap visualization
-     * Updated to support event handlers as parameters
-     */
     createTreemap(
         element: ElementRef,
         data: TreeNode,
@@ -22,18 +18,25 @@ export class TreemapLayoutService {
         // Clear any existing SVG
         d3.select(element.nativeElement).select('svg').remove();
 
-        // Create SVG container
+        // Ensure we have valid dimensions
+        const width = config.width || 800;
+        const height = config.height || 600;
+
+        console.log('Creating treemap with dimensions:', width, height);
+
+        // Create SVG container with responsive attributes
         const svg = d3.select(element.nativeElement)
             .append('svg')
-            .attr('width', config.width)
-            .attr('height', config.height)
-            .attr('viewBox', `0 0 ${config.width} ${config.height}`)
-            .attr('preserveAspectRatio', 'xMidYMid meet');
+            .attr('width', '100%')
+            .attr('height', '100%')
+            .attr('viewBox', `0 0 ${width} ${height}`)
+            .attr('preserveAspectRatio', 'xMidYMid meet')
+            .style('display', 'block'); // Important for proper sizing
 
         // Add background
         svg.append('rect')
-            .attr('width', config.width)
-            .attr('height', config.height)
+            .attr('width', width)
+            .attr('height', height)
             .attr('fill', config.themeDark ? '#1a1a1a' : '#f8fafc')
             .attr('rx', 8)
             .attr('class', 'treemap-background');
@@ -42,9 +45,10 @@ export class TreemapLayoutService {
         svg.append('g')
             .attr('class', 'zoom-container');
 
-        // Setup zoom behavior
+        // Setup zoom behavior with proper bounds
         const zoom = d3.zoom()
             .scaleExtent([0.5, 8])
+            .extent([[0, 0], [width, height]])
             .on('zoom', (event) => {
                 svg.select('.zoom-container')
                     .attr('transform', event.transform);
@@ -58,6 +62,18 @@ export class TreemapLayoutService {
             svg,
             zoom,
             update: (updatedData: TreeNode, updatedConfig: TreemapConfig) => {
+                // Ensure we update the dimensions too
+                const updatedWidth = updatedConfig.width || width;
+                const updatedHeight = updatedConfig.height || height;
+
+                // Update viewBox to reflect new dimensions
+                svg.attr('viewBox', `0 0 ${updatedWidth} ${updatedHeight}`);
+
+                // Update background dimensions
+                svg.select('.treemap-background')
+                    .attr('width', updatedWidth)
+                    .attr('height', updatedHeight);
+
                 this.updateVisualization(
                     svg,
                     updatedData,
@@ -74,7 +90,15 @@ export class TreemapLayoutService {
                 svg.transition().duration(300).call(
                     zoom.transform as any, d3.zoomIdentity
                 );
-            }
+            },
+            updateLabels: (showLabels: boolean) => {
+                // Update labels visibility
+                svg.selectAll('text.node-label')
+                    .style('opacity', showLabels ? 1 : 0);
+            },
+            highlightNode: (nodeName: string) => {
+                this.highlightNode(svg, nodeName);
+            },
         };
 
         // Initial visualization
@@ -90,17 +114,20 @@ export class TreemapLayoutService {
         return treemapInstance;
     }
 
-    /**
-     * Zooms the view to a specific node
-     */
-    private zoomToNode(svg: any, zoom: any, node: any, config: TreemapConfig): void {
+
+    private zoomToNode(
+        svg: any,
+        zoom: any,
+        node: any,
+        config: TreemapConfig
+    ): void {
         if (!node) return;
 
         const bounds = {
             x0: node.x0,
             y0: node.y0,
             x1: node.x1,
-            y1: node.y1
+            y1: node.y1,
         };
 
         const dx = bounds.x1 - bounds.x0;
@@ -115,19 +142,18 @@ export class TreemapLayoutService {
         );
 
         // Transition to the new view
-        svg.transition().duration(750).call(
-            zoom.transform,
-            d3.zoomIdentity
-                .translate(config.width / 2, config.height / 2)
-                .scale(scale)
-                .translate(-x, -y)
-        );
+        svg
+            .transition()
+            .duration(750)
+            .call(
+                zoom.transform,
+                d3.zoomIdentity
+                    .translate(config.width / 2, config.height / 2)
+                    .scale(scale)
+                    .translate(-x, -y)
+            );
     }
 
-    /**
-     * Updates the visualization with new data or config
-     * Updated to support event handlers as parameters
-     */
     private updateVisualization(
         svg: any,
         data: TreeNode,
@@ -136,38 +162,37 @@ export class TreemapLayoutService {
         onNodeHover?: (node: any, event: MouseEvent) => void,
         onNodeLeave?: () => void
     ): void {
-        // Clear ALL existing visualization elements, including legends!
+        // Clear existing visualization elements
         svg.select('.zoom-container').selectAll('*').remove();
-
-        // ALSO remove any existing legends before creating new ones
         svg.selectAll('.coverage-legend').remove();
-        svg.selectAll('.zoom-controls').remove();
 
         const container = svg.select('.zoom-container');
+        const width = config.width;
+        const height = config.height;
 
         // Update background color
         svg.select('.treemap-background')
             .attr('fill', config.themeDark ? '#1a1a1a' : '#f8fafc');
 
         try {
-            // Adjust the treemap size to leave space for controls and legend
-            const controlsSpace = 80; // Space reserved for controls/legend
-            const treemapWidth = config.width - controlsSpace;
+            // Calculate optimal padding based on container size
+            const paddingOuter = Math.max(3, Math.min(8, width / 100));
+            const paddingInner = Math.max(2, Math.min(5, width / 150));
+            const paddingTop = config.showLabels ? Math.max(20, height / 30) : paddingInner;
 
-            // Apply the treemap layout with reduced width
+            // Create the treemap layout with adjusted padding
             const treemap = d3.treemap()
-                .size([config.width - 10, config.height]) // Slight adjustment to leave room for legend
-                .paddingOuter(3)
-                .paddingInner(2)
-                .paddingTop(config.showLabels ? 20 : 2)
+                .size([width, height])
+                .paddingOuter(paddingOuter)
+                .paddingInner(paddingInner)
+                .paddingTop(paddingTop)
                 .round(true);
 
-            // Create hierarchy
+            // Create hierarchy and apply treemap layout
             const root = d3.hierarchy(data)
                 .sum((d: any) => d.value || 0)
                 .sort((a: any, b: any) => (b.value || 0) - (a.value || 0));
 
-            // Apply treemap layout
             treemap(root as any);
 
             // Filter nodes based on size if grouping is enabled
@@ -195,40 +220,46 @@ export class TreemapLayoutService {
                 .attr('class', (d: any) => {
                     const depth = d.depth;
                     const isNamespace = d.data.isNamespace;
-                    return `node depth-${depth} ${isNamespace ? 'namespace' : 'class'}`;
+                    const isDomainGroup = d.data.isDomainGroup;
+                    return `node depth-${depth} ${isNamespace ? 'namespace' : 'class'} ${isDomainGroup ? 'domain-group' : ''}`;
                 })
                 .attr('transform', (d: any) => `translate(${d.x0},${d.y0})`)
                 .on('click', (event: any, d: any) => {
                     if (event.defaultPrevented) return;
                     event.preventDefault();
-                    // Call the click handler if provided
                     if (onNodeClick) {
                         onNodeClick(d);
                     }
                 });
 
-            // Add rectangles to nodes
+            // Add rectangles to nodes with improved styling
             nodes.append('rect')
+                .attr('class', 'node-rect')
                 .attr('width', (d: any) => Math.max(0, d.x1 - d.x0))
                 .attr('height', (d: any) => Math.max(0, d.y1 - d.y0))
                 .attr('fill', (d: any) => this.getCoverageColor(d.data.coverage, config))
                 .attr('stroke', (d: any) => {
-                    // Darker stroke for top-level containers
                     if (d.depth === 1) return config.themeDark ? '#777' : '#444';
-                    // Slightly darker stroke for namespaces
                     if (d.data.isNamespace) return config.themeDark ? '#555' : '#aaa';
-                    // Default stroke for classes
+                    if (d.data.isDomainGroup) return config.themeDark ? '#aaa' : '#666';
                     return config.themeDark ? '#333' : '#ddd';
                 })
                 .attr('stroke-width', (d: any) => {
-                    // Thicker borders for higher level containers
+                    if (d.data.isDomainGroup) return 2.5;
                     if (d.depth === 1) return 2;
                     if (d.data.isNamespace) return 1.5;
                     return 1;
                 })
-                .attr('rx', (d: any) => d.depth === 1 ? 0 : 2) // Square corners for top level, rounded for others
-                .attr('ry', (d: any) => d.depth === 1 ? 0 : 2)
-                .attr('data-name', (d: any) => d.data.name)
+                .attr('rx', (d: any) => {
+                    if (d.depth === 1) return 0;
+                    if (d.data.isDomainGroup) return 4;
+                    return 2;
+                })
+                .attr('ry', (d: any) => {
+                    if (d.depth === 1) return 0;
+                    if (d.data.isDomainGroup) return 4;
+                    return 2;
+                })
                 .on('mouseover', (event: any, d: any) => {
                     // Highlight rectangle
                     d3.select(event.currentTarget)
@@ -250,9 +281,11 @@ export class TreemapLayoutService {
                         .attr('stroke', (d: any) => {
                             if (d.depth === 1) return config.themeDark ? '#777' : '#444';
                             if (d.data.isNamespace) return config.themeDark ? '#555' : '#aaa';
+                            if (d.data.isDomainGroup) return config.themeDark ? '#aaa' : '#666';
                             return config.themeDark ? '#333' : '#ddd';
                         })
                         .attr('stroke-width', (d: any) => {
+                            if (d.data.isDomainGroup) return 2.5;
                             if (d.depth === 1) return 2;
                             if (d.data.isNamespace) return 1.5;
                             return 1;
@@ -264,26 +297,29 @@ export class TreemapLayoutService {
                     }
                 });
 
-            // Add text labels if enabled
+            // Add better positioned and sized text labels if enabled
             if (config.showLabels) {
                 nodes.append('text')
-                    .attr('x', 5) // Small padding
-                    .attr('y', 15) // Position for text
+                    .attr('class', 'node-label')
+                    .attr('x', 5)
+                    .attr('y', 15)
                     .attr('fill', (d: any) => {
                         if (d.depth <= 2) {
-                            // For top levels, use a consistent color
                             return config.themeDark ? '#fff' : '#000';
                         }
                         return this.getTextColor(d.data.coverage, config);
                     })
                     .attr('font-size', (d: any) => {
-                        // Larger font for top levels, smaller for deeper levels
-                        if (d.depth === 1) return '14px';
-                        if (d.depth === 2) return '12px';
-                        return '11px';
+                        // Scale font size based on node size
+                        const nodeWidth = d.x1 - d.x0;
+                        const nodeHeight = d.y1 - d.y0;
+                        const size = Math.min(nodeWidth, nodeHeight);
+
+                        if (d.depth === 1) return Math.min(14, size / 10) + 'px';
+                        if (d.depth === 2) return Math.min(12, size / 12) + 'px';
+                        return Math.min(11, size / 15) + 'px';
                     })
                     .attr('font-weight', (d: any) => {
-                        // Bolder for top levels
                         if (d.depth <= 2) return 'bold';
                         return 'normal';
                     })
@@ -294,7 +330,7 @@ export class TreemapLayoutService {
                         const rectHeight = d.y1 - d.y0;
 
                         // Different thresholds based on depth
-                        const minWidth = d.depth <= 2 ? 80 : 50;
+                        const minWidth = d.depth <= 2 ? 60 : 40;
                         const minHeight = d.depth <= 2 ? 30 : 20;
 
                         if (rectWidth < minWidth || rectHeight < minHeight) {
@@ -308,7 +344,13 @@ export class TreemapLayoutService {
                 this.addAggregationIndicators(root, container, config, onNodeClick);
             }
 
-            // Add coverage legend
+            // Add domain group indicators if there are any domain groups
+            const hasDomainGroups = nodesToDisplay.some(d => (d.data as any).isDomainGroup);
+            if (hasDomainGroups) {
+                this.addDomainGroupIndicators(container, nodesToDisplay, config);
+            }
+
+            // Add a more compact coverage legend in a better position
             this.addCoverageLegend(svg, config);
 
         } catch (error) {
@@ -316,32 +358,179 @@ export class TreemapLayoutService {
         }
     }
 
-    /**
-     * Gets node label with truncation if needed
-     */
+    private highlightNode(svg: any, nodeName: string): void {
+        // Reset all nodes to normal appearance
+        svg
+            .selectAll('rect.node-rect')
+            .transition()
+            .duration(300)
+            .attr('stroke-width', (d: { depth: number; }) => (d.depth === 1 ? 2 : 1))
+            .attr('stroke-opacity', 0.8);
+
+        // Highlight the specified node
+        svg
+            .selectAll('rect.node-rect')
+            .filter((d: { data: { name: string; }; }) => d.data.name === nodeName)
+            .transition()
+            .duration(300)
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 3)
+            .attr('stroke-opacity', 1);
+    }
+
+    private addDomainGroupIndicators(
+        container: any,
+        nodes: any[],
+        config: TreemapConfig
+    ): void {
+        // Find domain group nodes
+        const domainGroups = nodes.filter((d) => d.data.isDomainGroup);
+
+        domainGroups.forEach((group) => {
+            // Add a small indicator icon for domain groups
+            container
+                .append('circle')
+                .attr('cx', group.x0 + 18)
+                .attr('cy', group.y0 + 12)
+                .attr('r', 8)
+                .attr(
+                    'fill',
+                    config.themeDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+                )
+                .attr('stroke', config.themeDark ? '#fff' : '#000')
+                .attr('stroke-width', 1.5)
+                .attr('class', 'domain-indicator');
+
+            // Add domain icon
+            container
+                .append('text')
+                .attr('x', group.x0 + 18)
+                .attr('y', group.y0 + 16)
+                .attr('text-anchor', 'middle')
+                .attr('font-family', 'FontAwesome')
+                .attr('font-size', '10px')
+                .attr('fill', config.themeDark ? '#fff' : '#000')
+                .text('\uf0e8'); // Using FontAwesome sitemap icon
+        });
+    }
+
+    groupPackagesByDomain(data: Coverage[]): Coverage[] {
+        // First, identify domain prefixes from package names
+        const packagePrefixes = new Set<string>();
+        data.forEach((item) => {
+            if (item.packageName) {
+                // Extract domain prefix (e.g., "Vanguard.Domain" from "Vanguard.Domain.Orders")
+                const parts = item.packageName.split('.');
+                if (parts.length >= 2) {
+                    packagePrefixes.add(`${parts[0]}.${parts[1]}`);
+                }
+            }
+        });
+
+        // Create domain groups
+        const result: Coverage[] = [];
+        packagePrefixes.forEach((prefix) => {
+            const domainClasses = data.filter((item) =>
+                item.packageName?.startsWith(prefix)
+            );
+
+            // Only create a domain group if there are multiple packages within it
+            const packages = new Set(domainClasses.map((item) => item.packageName));
+
+            if (packages.size > 1) {
+                // Create domain group node
+                result.push({
+                    className: `${prefix}.*`,
+                    packageName: prefix,
+                    coverage: this.calculateAverageCoverage(domainClasses),
+                    linesValid: domainClasses.reduce(
+                        (sum, item) => sum + item.linesValid,
+                        0
+                    ),
+                    isDomainGroup: true,
+                    children: domainClasses,
+                });
+            } else {
+                // Add individual classes to result
+                result.push(...domainClasses);
+            }
+        });
+
+        return result;
+    }
+
+    private calculateAverageCoverage(nodes: Coverage[]): number {
+        if (!nodes || nodes.length === 0) return 0;
+
+        const totalLines = nodes.reduce((sum, item) => sum + (item.linesValid || 0), 0);
+        const totalCovered = nodes.reduce((sum, item) => {
+            const covered = item.linesCovered !== undefined
+                ? item.linesCovered
+                : (item.linesValid * item.coverage / 100);
+            return sum + covered;
+        }, 0);
+
+        return totalLines > 0 ? (totalCovered / totalLines) * 100 : 0;
+    }
+
     private getNodeLabel(d: any): string {
         const name = d.data.name;
         const width = d.x1 - d.x0;
 
-        // If rectangle is too small, don't show text
         if (width < 30) return '';
 
-        // For namespaces, show full name if possible
+        // For domain groups, show special formatting
+        if (d.data.isDomainGroup) {
+            const domainName = name.replace('.*', '');
+            const parts = domainName.split('.');
+            const lastPart = parts[parts.length - 1];
+
+            return lastPart + ' Domain';
+        }
+
+        // For namespaces, show cleaner package names
         if (d.data.isNamespace) {
+            const parts = name.split('.');
+            const displayName =
+                parts.length > 2
+                    ? parts[parts.length - 2] + '.' + parts[parts.length - 1]
+                    : name;
+
             const maxChars = Math.floor(width / 7);
+            if (displayName.length <= maxChars) return displayName;
+            return displayName.substring(0, maxChars - 3) + '...';
+        }
 
-            // For top-level nodes, always show the full name if possible
-            if (d.depth <= 2 || name.length <= maxChars) return name;
+        // For class nodes, use smarter truncation
+        const maxClassChars = Math.floor(width / 7);
 
-            // For long names that won't fit, truncate with ellipsis
-            if (name.length > maxChars) {
-                return name.substring(0, maxChars - 3) + '...';
+        // For pattern-based class names, keep meaningful parts
+        const patterns = [
+            /(Service|Repository|Controller|Handler|Factory|Provider|Manager)$/,
+            /^(I)([A-Z][a-z]+)/,
+        ];
+
+        for (const pattern of patterns) {
+            const match = name.match(pattern);
+            if (match) {
+                const matchedPart = match[0];
+                const prefix = name.substring(0, name.lastIndexOf(matchedPart));
+
+                if (prefix.length + matchedPart.length <= maxClassChars) {
+                    return prefix + matchedPart;
+                }
+
+                if (prefix.length <= maxClassChars - matchedPart.length - 3) {
+                    return (
+                        prefix.substring(0, maxClassChars - matchedPart.length - 3) +
+                        '...' +
+                        matchedPart
+                    );
+                }
             }
         }
 
-        // For class nodes, truncate if needed
-        const maxClassChars = Math.floor(width / 7);
-
+        // Default truncation
         if (name.length <= maxClassChars) {
             return name;
         } else {
@@ -360,27 +549,37 @@ export class TreemapLayoutService {
 
         // Bottom positioning with padding
         const bottomPadding = 20;
-        const legendY = config.height - bottomPadding - (config.coverageRanges.length * 22);
+        const legendY =
+            config.height - bottomPadding - config.coverageRanges.length * 22;
 
         // Create legend group
-        const legendGroup = svg.append('g')
+        const legendGroup = svg
+            .append('g')
             .attr('class', 'coverage-legend')
             .attr('transform', `translate(${legendX}, ${legendY})`);
 
         // Add semi-transparent background for better readability
-        legendGroup.append('rect')
+        legendGroup
+            .append('rect')
             .attr('x', -5)
             .attr('y', -25)
             .attr('width', 85) // Slightly wider to fit all content
-            .attr('height', (config.coverageRanges.length * 22) + 35)
-            .attr('fill', config.themeDark ? 'rgba(20,20,20,0.7)' : 'rgba(255,255,255,0.7)')
+            .attr('height', config.coverageRanges.length * 22 + 35)
+            .attr(
+                'fill',
+                config.themeDark ? 'rgba(20,20,20,0.7)' : 'rgba(255,255,255,0.7)'
+            )
             .attr('rx', 5)
             .attr('ry', 5)
-            .attr('stroke', config.themeDark ? 'rgba(80,80,100,0.3)' : 'rgba(180,180,200,0.5)')
+            .attr(
+                'stroke',
+                config.themeDark ? 'rgba(80,80,100,0.3)' : 'rgba(180,180,200,0.5)'
+            )
             .attr('stroke-width', 1);
 
         // Add legend title and items as before
-        legendGroup.append('text')
+        legendGroup
+            .append('text')
             .attr('x', 0)
             .attr('y', -10)
             .attr('font-size', '13px')
@@ -390,11 +589,13 @@ export class TreemapLayoutService {
 
         // Add legend items
         config.coverageRanges.forEach((range, i) => {
-            const item = legendGroup.append('g')
+            const item = legendGroup
+                .append('g')
                 .attr('transform', `translate(0, ${i * 22})`);
 
             // Color box
-            item.append('rect')
+            item
+                .append('rect')
                 .attr('width', 15)
                 .attr('height', 15)
                 .attr('fill', range.color)
@@ -402,7 +603,8 @@ export class TreemapLayoutService {
                 .attr('ry', 2);
 
             // Label
-            item.append('text')
+            item
+                .append('text')
                 .attr('x', 22)
                 .attr('y', 12)
                 .attr('font-size', '12px')
@@ -416,20 +618,20 @@ export class TreemapLayoutService {
             console.warn('Legend may be cut off:', {
                 configWidth: config.width,
                 legendRight: rightEdge,
-                overflow: rightEdge - config.width
+                overflow: rightEdge - config.width,
             });
 
             // Emergency repositioning if legend would overflow
             if (rightEdge > config.width) {
                 const adjustment = rightEdge - config.width + 10;
-                legendGroup.attr('transform', `translate(${legendX - adjustment}, ${legendY})`);
+                legendGroup.attr(
+                    'transform',
+                    `translate(${legendX - adjustment}, ${legendY})`
+                );
             }
         }
     }
 
-    /**
-     * Adds indicators for small nodes that are grouped
-     */
     private addAggregationIndicators(
         root: any,
         container: any,
@@ -447,7 +649,7 @@ export class TreemapLayoutService {
             });
         });
 
-        // Add indicators
+        // Add improved indicators
         parentsWithSmallChildren.forEach((parent: any) => {
             const smallChildren = parent.children.filter((child: any) => {
                 const nodeWidth = child.x1 - child.x0;
@@ -456,40 +658,43 @@ export class TreemapLayoutService {
             });
 
             if (smallChildren.length > 0) {
-                // Add indicator
-                container.append('circle')
-                    .attr('cx', parent.x0 + 20)
-                    .attr('cy', parent.y0 + 20)
-                    .attr('r', 12)
-                    .attr('fill', 'rgba(0,0,0,0.4)')
-                    .attr('stroke', '#fff')
-                    .attr('stroke-width', 1)
-                    .attr('class', 'aggregation-indicator')
+                // Create group for indicator
+                const indicatorGroup = container.append('g')
+                    .attr('class', 'aggregation-indicator-group')
+                    .attr('transform', `translate(${parent.x0 + 25}, ${parent.y0 + 20})`)
+                    .style('cursor', 'pointer')
                     .on('click', (event: any) => {
                         event.stopPropagation();
-                        // Call the node click handler if provided, passing the parent node
                         if (onNodeClick) {
                             onNodeClick(parent);
                         }
-                    })
-                    .append('title')
-                    .text(`${smallChildren.length} hidden items - Click to view`);
+                    });
+
+                // Add circle background with shadow
+                indicatorGroup.append('circle')
+                    .attr('r', 14)
+                    .attr('fill', 'rgba(0,0,0,0.4)')
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 1.5)
+                    .attr('filter', 'drop-shadow(0px 1px 2px rgba(0,0,0,0.3))');
 
                 // Add counter text
-                container.append('text')
-                    .attr('x', parent.x0 + 20)
-                    .attr('y', parent.y0 + 24)
+                indicatorGroup.append('text')
                     .attr('text-anchor', 'middle')
+                    .attr('dy', 5)
                     .attr('fill', '#fff')
-                    .attr('font-size', '10px')
+                    .attr('font-size', '12px')
                     .attr('font-weight', 'bold')
                     .attr('pointer-events', 'none')
                     .text(`+${smallChildren.length}`);
+
+                // Add tooltip on hover
+                indicatorGroup.append('title')
+                    .text(`${smallChildren.length} hidden items - Click to view`);
             }
         });
     }
 
-    // This method groups small nodes into a single "Other" node per package
     groupSmallNodes(data: Coverage[], minSize: number = 5): Coverage[] {
         // First, group by package
         const packageGroups = new Map<string, Coverage[]>();
@@ -506,8 +711,8 @@ export class TreemapLayoutService {
 
         // For each package, separate small nodes and keep large ones
         packageGroups.forEach((items, packageName) => {
-            const largeNodes = items.filter(item => item.linesValid >= minSize);
-            const smallNodes = items.filter(item => item.linesValid < minSize);
+            const largeNodes = items.filter((item) => item.linesValid >= minSize);
+            const smallNodes = items.filter((item) => item.linesValid < minSize);
 
             // Add all large nodes
             result.push(...largeNodes);
@@ -515,10 +720,18 @@ export class TreemapLayoutService {
             // If we have small nodes, create an aggregate
             if (smallNodes.length > 0) {
                 // Calculate aggregate metrics
-                const totalLines = smallNodes.reduce((sum, item) => sum + item.linesValid, 0);
-                const totalCoveredLines = smallNodes.reduce((sum, item) =>
-                    sum + (item.linesCovered || item.linesValid * item.coverage / 100), 0);
-                const aggregateCoverage = totalLines > 0 ? (totalCoveredLines / totalLines) * 100 : 0;
+                const totalLines = smallNodes.reduce(
+                    (sum, item) => sum + item.linesValid,
+                    0
+                );
+                const totalCoveredLines = smallNodes.reduce(
+                    (sum, item) =>
+                        sum +
+                        (item.linesCovered || (item.linesValid * item.coverage) / 100),
+                    0
+                );
+                const aggregateCoverage =
+                    totalLines > 0 ? (totalCoveredLines / totalLines) * 100 : 0;
 
                 // Create the "Other" node
                 result.push({
@@ -530,7 +743,7 @@ export class TreemapLayoutService {
                     isNamespace: false,
                     value: totalLines,
                     // Store the original small nodes for reference
-                    children: smallNodes
+                    children: smallNodes,
                 });
             }
         });
@@ -539,37 +752,29 @@ export class TreemapLayoutService {
     }
 
     getCoverageColor(coverage: number, config: TreemapConfig): string {
+        // First check if we can use config ranges
+        if (config.coverageRanges && config.coverageRanges.length > 0) {
+            const range = config.coverageRanges.find(
+                (r) => coverage >= r.min && coverage <= r.max
+            );
+            if (range) return range.color;
+        }
+
+        // Use enhanced color palette based on colorMode
         if (config.colorMode === 'colorblind') {
-            // Colorblind-friendly palette
+            // Improved colorblind palette with better contrast
             if (coverage >= 90) return '#018571'; // Teal
             if (coverage >= 75) return '#80cdc1'; // Light teal
             if (coverage >= 50) return '#dfc27d'; // Tan
             if (coverage >= 25) return '#a6611a'; // Brown
-            return '#d01c8b'; // Purple for very low coverage
+            return '#d01c8b'; // Purple
         } else {
-            // Try to use the coverage ranges from config first
-            if (config.coverageRanges && config.coverageRanges.length > 0) {
-                const range = config.coverageRanges.find(r =>
-                    coverage >= r.min && coverage <= r.max
-                );
-                if (range) return range.color;
-            }
-
-            // Fallback to CSS variables if available
-            try {
-                if (coverage >= 90) return getComputedStyle(document.documentElement).getPropertyValue('--excellent-color').trim() || '#4caf50';
-                if (coverage >= 75) return getComputedStyle(document.documentElement).getPropertyValue('--good-color').trim() || '#8bc34a';
-                if (coverage >= 50) return getComputedStyle(document.documentElement).getPropertyValue('--average-color').trim() || '#ffb400';
-                if (coverage >= 25) return getComputedStyle(document.documentElement).getPropertyValue('--poor-color').trim() || '#f44336';
-                return getComputedStyle(document.documentElement).getPropertyValue('--poor-color').trim() || '#f44336';
-            } catch (e) {
-                // If CSS variables fail, use hardcoded colors
-                if (coverage >= 90) return '#4caf50'; // Green
-                if (coverage >= 75) return '#8bc34a'; // Light green
-                if (coverage >= 50) return '#ffb400'; // Yellow/orange
-                if (coverage >= 25) return '#ff9800'; // Orange
-                return '#f44336';    // Red
-            }
+            // Enhanced default colors with better contrast
+            if (coverage >= 90) return '#38a169'; // Green (darker)
+            if (coverage >= 75) return '#68d391'; // Light green
+            if (coverage >= 50) return '#f6e05e'; // Yellow
+            if (coverage >= 25) return '#ed8936'; // Orange
+            return '#e53e3e'; // Red
         }
     }
 
@@ -580,7 +785,11 @@ export class TreemapLayoutService {
         // Try to use design system text colors
         if (config.themeDark) {
             try {
-                return getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#ffffff';
+                return (
+                    getComputedStyle(document.documentElement)
+                        .getPropertyValue('--text-color')
+                        .trim() || '#ffffff'
+                );
             } catch (e) {
                 return '#ffffff';
             }
@@ -608,10 +817,7 @@ export class TreemapLayoutService {
         }
     }
 
-    /**
-     * Helper method to convert hex color to RGB
-     */
-    private hexToRgb(hex: string): { r: number, g: number, b: number } | null {
+    private hexToRgb(hex: string): { r: number; g: number; b: number } | null {
         // Remove # if present
         hex = hex.replace(/^#/, '');
 
@@ -627,25 +833,23 @@ export class TreemapLayoutService {
         return { r, g, b };
     }
 
-    // Default coverage ranges for the visualization
     getDefaultCoverageRanges(isDarkTheme: boolean = false): any[] {
         return [
             { min: 90, max: 100, label: '90-100%', color: '#4CAF50' },
             { min: 75, max: 89.9, label: '75-89%', color: '#8BC34A' },
             { min: 50, max: 74.9, label: '50-74%', color: '#FFC107' },
             { min: 25, max: 49.9, label: '25-49%', color: '#FF9800' },
-            { min: 0, max: 24.9, label: '0-24%', color: '#F44336' }
+            { min: 0, max: 24.9, label: '0-24%', color: '#F44336' },
         ];
     }
 
-    // Colorblind-friendly coverage ranges
     getColorblindCoverageRanges(): any[] {
         return [
             { min: 90, max: 100, label: '90-100%', color: '#018571' }, // Teal
             { min: 75, max: 89.9, label: '75-89%', color: '#80cdc1' }, // Light teal
             { min: 50, max: 74.9, label: '50-74%', color: '#dfc27d' }, // Tan
             { min: 25, max: 49.9, label: '25-49%', color: '#a6611a' }, // Brown
-            { min: 0, max: 24.9, label: '0-24%', color: '#d01c8b' }    // Purple
+            { min: 0, max: 24.9, label: '0-24%', color: '#d01c8b' }, // Purple
         ];
     }
 }

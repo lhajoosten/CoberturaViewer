@@ -10,30 +10,30 @@ export class ThemeService {
     darkTheme$: Observable<boolean> = this.darkThemeSubject.asObservable();
 
     constructor() {
-        // Check if user has a theme preference stored or use system preference
-        const savedTheme = localStorage.getItem('theme-preference');
-        if (savedTheme) {
-            this.setDarkTheme(savedTheme === 'dark');
-        } else {
-            // Check system preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            this.setDarkTheme(prefersDark);
-        }
+        // Initialize theme preference
+        this.initializeTheme();
     }
 
-    setDarkTheme(isDark: boolean): void {
-        this.darkThemeSubject.next(isDark);
-        localStorage.setItem('theme-preference', isDark ? 'dark' : 'light');
+    private initializeTheme(): void {
+        const savedTheme = localStorage.getItem('theme');
+        const isDarkMode = savedTheme === 'dark' ||
+            (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-        // Apply class to document root for global CSS variables
+        this.setTheme(isDarkMode);
+    }
+
+    setTheme(isDark: boolean): void {
         if (isDark) {
             document.documentElement.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark');
         } else {
             document.documentElement.classList.remove('dark-theme');
+            localStorage.setItem('theme', 'light');
         }
+        this.darkThemeSubject.next(isDark);
     }
 
     toggleTheme(): void {
-        this.setDarkTheme(!this.darkThemeSubject.value);
+        this.setTheme(!this.darkThemeSubject.value);
     }
 }
