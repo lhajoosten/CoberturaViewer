@@ -1,6 +1,6 @@
 {
   "name": "cobertura-viewer",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "A simple yet powerful tool to visualize Cobertura coverage reports",
   "author": {
     "name": "Luc Joosten",

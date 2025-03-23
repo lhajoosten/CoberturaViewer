@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Coverage, ClassInfo } from '../../../../models/coverage.model';
 import { ClassDetailsComponent } from '../../../class-details/class-details.component';
@@ -40,6 +40,9 @@ export class TreemapDetailsComponent implements OnInit, OnDestroy {
         if (this.themeSubscription) {
             this.themeSubscription.unsubscribe();
         }
+
+        // Restore scrolling
+        document.body.style.overflow = '';
     }
 
     onClose(): void {
@@ -59,5 +62,23 @@ export class TreemapDetailsComponent implements OnInit, OnDestroy {
         if (coverage >= 75) return 'good';
         if (coverage >= 50) return 'moderate';
         return 'poor';
+    }
+
+    /**
+     * Handle clicks on the overlay background
+     * Close the modal when clicking outside the details panel
+     */
+    onOverlayClick(event: MouseEvent): void {
+        if ((event.target as HTMLElement).classList.contains('details-modal-overlay')) {
+            this.closeDetails.emit();
+        }
+    }
+
+    /**
+     * Handle escape key press
+     */
+    @HostListener('document:keydown.escape')
+    onEscapeKey(): void {
+        this.closeDetails.emit();
     }
 }

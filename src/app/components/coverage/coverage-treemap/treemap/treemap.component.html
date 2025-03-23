@@ -7,8 +7,17 @@
         [showLabels]="showLabels" (showLabelsChange)="onShowLabelsChange($event)" [colorMode]="colorMode"
         (colorModeChange)="onColorModeChange($event)" [minLines]="minLines" (minLinesChange)="onMinLinesChange($event)"
         [sortBy]="sortBy" (sortByChange)="onSortByChange($event)" [hasActiveFilters]="hasActiveFilters"
-        [packageList]="packageList" (clearFilters)="onClearAllFilters()" (toggleFilters)="onToggleFilters($event)">
+        [packageList]="packageList" (clearFilters)="onClearAllFilters()" (toggleFilters)="onToggleFilters($event)"
+        [exclusionPatterns]="exclusionPatterns" (toggleExclusionsPanel)="onToggleExclusionsPanel()">
     </app-treemap-controls>
+
+    <!-- Exclusions panel -->
+    <div class="exclusions-panel-container" *ngIf="showExclusionsPanel" [@fadeInOut]>
+        <app-treemap-exclusions [isDarkTheme]="isDarkTheme" [patterns]="exclusionPatterns"
+            (close)="showExclusionsPanel = false" (patternsChange)="onExclusionPatternsChange($event)"
+            (applyExclusions)="onApplyExclusions($event)">
+        </app-treemap-exclusions>
+    </div>
 
     <!-- Loading indicator -->
     <div class="loading-overlay" *ngIf="isLoading">
@@ -22,6 +31,7 @@
         <div class="treemap-wrapper" *ngIf="hasData">
             <app-treemap-visualization [data]="filteredData" [isDarkTheme]="isDarkTheme" [showLabels]="showLabels"
                 [groupSmallNodes]="groupSmallNodes" [colorMode]="colorMode" [coverageRanges]="coverageRanges"
+                [enableDomainGrouping]="enableDomainGrouping" [filters]="filters" [sortBy]="sortBy"
                 (nodeSelected)="onNodeSelected($event)">
             </app-treemap-visualization>
 
@@ -42,9 +52,9 @@
         </div>
     </div>
 
-    <!-- Details panel when a node is selected -->
-    <app-treemap-details *ngIf="selectedNode" [@slideInOut] [selectedNode]="selectedNode"
-        [selectedClass]="selectedClass" [similarClasses]="similarClasses" [isDarkTheme]="isDarkTheme"
-        (closeDetails)="closeDetails()" (selectSimilarNode)="onSelectSimilarClass($event)">
+    <!-- Modal-style Details panel when a node is selected -->
+    <app-treemap-details *ngIf="selectedNode" [@fadeInOut] [selectedNode]="selectedNode" [selectedClass]="selectedClass"
+        [similarClasses]="similarClasses" [isDarkTheme]="isDarkTheme" (closeDetails)="closeDetails()"
+        (selectSimilarNode)="onSelectSimilarClass($event)">
     </app-treemap-details>
 </div>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coverage, CoverageData, TreeNode, Report } from '../models/coverage.model';
+import { Coverage, CoverageData } from '../models/coverage.model';
 
 @Injectable({
     providedIn: 'root'

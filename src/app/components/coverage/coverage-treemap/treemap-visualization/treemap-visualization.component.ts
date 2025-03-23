@@ -1,9 +1,13 @@
 import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, Output, EventEmitter, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Coverage } from '../../../../models/coverage.model';
 import { TreemapLayoutService } from '../../../../services/utils/treemap-layout.service';
-import { TreemapConfig } from '../../../../models/treemap-config.model';
+import { Coverage, TreeNode } from '../../../../models/coverage.model';
+import { TreemapConfig, TreemapFilter } from '../../../../models/treemap-config.model';
 
+/**
+ * Component responsible for rendering the treemap visualization
+ * Handles the D3-based visualization and user interactions
+ */
 @Component({
     selector: 'app-treemap-visualization',
     standalone: true,
@@ -18,7 +22,10 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
     @Input() groupSmallNodes = false;
     @Input() colorMode: 'default' | 'colorblind' = 'default';
     @Input() coverageRanges: any[] = [];
-    @Input() hierarchicalData: any = null; // Optional: Accept pre-built hierarchy
+    @Input() hierarchicalData: any = null;
+    @Input() enableDomainGrouping = true;
+    @Input() filters: TreemapFilter = {};
+    @Input() sortBy?: 'size' | 'coverage' | 'name';
 
     @Output() nodeSelected = new EventEmitter<Coverage>();
 
@@ -34,26 +41,36 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
     private treemapInstance: any = null;
     private resizeObserver: ResizeObserver | null = null;
 
+    private resizeTimeout: any;
+    private lastWidth = 0;
+    private lastHeight = 0;
+
     constructor(private treemapLayoutService: TreemapLayoutService) { }
 
     ngOnInit(): void {
-        // Create the initial treemap
-        this.buildTreemap();
-
-        // Setup resize handling
-        this.setupResizeObserver();
+        // Add a slight delay to ensure the container is fully rendered
+        setTimeout(() => {
+            this.buildTreemap();
+            this.setupResizeObserver();
+        }, 100);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         // Rebuild the treemap if data or major config changed
-        const shouldRebuild = ['data', 'colorMode', 'groupSmallNodes', 'hierarchicalData'].some(prop => changes[prop]);
+        const majorChanges = ['data', 'colorMode', 'groupSmallNodes', 'hierarchicalData', 'sortBy'].some(
+            prop => changes[prop]
+        );
 
-        if (shouldRebuild) {
+        if (majorChanges) {
             this.buildTreemap();
         }
         else if (changes['showLabels'] && this.treemapInstance) {
             // Just update the labels if only that property changed
             this.treemapInstance.updateLabels(this.showLabels);
+        }
+        else if (changes['filters'] && this.treemapInstance) {
+            // Just update the filters if that's all that changed
+            this.updateFilters(this.filters);
         }
     }
 
@@ -62,29 +79,93 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
         if (this.resizeObserver) {
             this.resizeObserver.disconnect();
         }
+
+        // Clear any pending timeouts
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+        }
     }
 
     @HostListener('window:resize')
     onResize(): void {
-        // Debounce this for better performance
+        // Debounce resize events
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+        }
+
+        this.resizeTimeout = setTimeout(() => {
+            if (this.treemapInstance) {
+                const container = this.containerRef.nativeElement;
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+
+                // Only rebuild if dimensions changed significantly
+                if (Math.abs(this.lastWidth - width) > 5 || Math.abs(this.lastHeight - height) > 5) {
+                    console.log('Rebuilding treemap due to size change:', width, height);
+                    this.lastWidth = width;
+                    this.lastHeight = height;
+                    this.buildTreemap();
+                }
+            }
+        }, 250); // 250ms debounce
+    }
+
+    /**
+     * Updates the visibility of labels in the treemap
+     * @param show Whether to show or hide labels
+     */
+    updateLabels(show: boolean): void {
+        this.showLabels = show;
+
+        // If we have a treemap instance, update it
         if (this.treemapInstance) {
-            this.buildTreemap();
+            this.treemapInstance.updateLabels(show);
         }
     }
 
+    /**
+     * Gets the SVG element for export or manipulation
+     * @returns The SVG element or null if not available
+     */
+    getSvgElement(): SVGElement | null {
+        try {
+            const container = this.containerRef.nativeElement;
+            return container.querySelector('svg') as SVGElement;
+        } catch (error) {
+            console.error('Error getting SVG element:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Sets up a resize observer to detect container size changes
+     */
     private setupResizeObserver(): void {
         const container = this.containerRef.nativeElement;
 
         this.resizeObserver = new ResizeObserver(entries => {
-            // Only rebuild if significant size change occurred
-            if (this.treemapInstance) {
-                this.buildTreemap();
+            // Get the new dimensions from the entry
+            const entry = entries[0];
+            if (entry) {
+                const newWidth = entry.contentRect.width;
+                const newHeight = entry.contentRect.height;
+
+                // Only rebuild if dimensions changed significantly
+                if (Math.abs(this.lastWidth - newWidth) > 5 || Math.abs(this.lastHeight - newHeight) > 5) {
+                    console.log('ResizeObserver detected size change:', newWidth, newHeight);
+                    this.lastWidth = newWidth;
+                    this.lastHeight = newHeight;
+                    this.buildTreemap();
+                }
             }
         });
 
         this.resizeObserver.observe(container);
     }
 
+    /**
+     * Builds or rebuilds the treemap visualization
+     */
     private buildTreemap(): void {
         const container = this.containerRef.nativeElement;
 
@@ -92,8 +173,14 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
         if ((!this.data?.length && !this.hierarchicalData) || !container) return;
 
         // Get dimensions from the container
-        const width = container.clientWidth || 800;
-        const height = container.clientHeight || 600;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        // Store dimensions for resize comparisons
+        this.lastWidth = width;
+        this.lastHeight = height;
+
+        console.log('Building treemap with dimensions:', width, height);
 
         // Configure the treemap
         const config: TreemapConfig = {
@@ -105,7 +192,10 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
             minNodeSize: 20,
             colorMode: this.colorMode,
             coverageRanges: this.coverageRanges,
-            autoHideControls: false
+            autoHideControls: false,
+            enableDomainGrouping: this.enableDomainGrouping,
+            filter: this.filters,
+            sortBy: this.sortBy
         };
 
         // Either use provided hierarchical data or create it from flat data
@@ -127,13 +217,46 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
     }
 
     /**
-     * Creates a hierarchical structure suitable for D3 treemap
+     * Updates just the filters without rebuilding the entire treemap
+     * @param filters New filter settings to apply
      */
-    private convertToHierarchy(data: Coverage[]): any {
+    public updateFilters(filters: TreemapFilter): void {
+        this.filters = filters;
+
+        if (this.treemapInstance && this.treemapInstance.updateFilters) {
+            this.treemapInstance.updateFilters(filters);
+        } else {
+            // If the instance doesn't have an updateFilters method, rebuild the entire treemap
+            this.buildTreemap();
+        }
+    }
+
+    /**
+     * Creates a hierarchical structure suitable for D3 treemap
+     * @param data Flat list of coverage items
+     * @returns Hierarchical tree structure
+     */
+    private convertToHierarchy(data: Coverage[]): TreeNode {
         // Group by package first
         const packageMap = new Map<string, Coverage[]>();
 
+        // Define minimum value for tiny nodes
+        const MIN_NODE_VALUE = 10; // Minimum size for rendering - adjust as needed
+
         data.forEach(item => {
+            // Ensure minimum value for very small nodes
+            if (item.linesValid < 5) {
+                item.value = Math.max(MIN_NODE_VALUE, item.linesValid);
+            } else {
+                item.value = item.linesValid;
+            }
+
+            // Handle domain groups specially
+            if (item.isDomainGroup && item.children) {
+                packageMap.set(item.packageName || 'Default', [item]);
+                return;
+            }
+
             const pkgName = item.packageName || 'Default';
             if (!packageMap.has(pkgName)) {
                 packageMap.set(pkgName, []);
@@ -142,63 +265,97 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
         });
 
         // Create hierarchy root
-        const root = {
+        const root: TreeNode = {
             name: 'Coverage',
-            children: [] as any[],
+            children: [],
             isNamespace: true,
             coverage: 0,
+            linesValid: 0,
             value: 0
         };
 
         // Add packages as children
         packageMap.forEach((classes, pkgName) => {
-            // Calculate package metrics
-            const totalLines = classes.reduce((sum, cls) => sum + (cls.linesValid || 0), 0);
-            const totalCovered = classes.reduce((sum, cls) => {
-                const covered = cls.linesCovered !== undefined
-                    ? cls.linesCovered
-                    : (cls.linesValid * cls.coverage / 100);
-                return sum + covered;
-            }, 0);
+            // Check if we have a domain group
+            const domainGroup = classes.find(c => c.isDomainGroup);
 
-            const pkgCoverage = totalLines > 0 ? (totalCovered / totalLines) * 100 : 0;
+            if (domainGroup) {
+                // Add domain group as-is
+                root.children!.push({
+                    name: pkgName,
+                    isNamespace: true,
+                    isDomainGroup: true,
+                    coverage: domainGroup.coverage,
+                    linesValid: domainGroup.linesValid,
+                    value: domainGroup.linesValid || 0,
+                    children: domainGroup.children?.map(cls => ({
+                        name: cls.className,
+                        isNamespace: false,
+                        coverage: cls.coverage,
+                        linesValid: cls.linesValid,
+                        value: cls.linesValid || 1,
+                        packageName: cls.packageName,
+                        originalData: cls
+                    })) || []
+                });
+            } else {
+                // Calculate package metrics for regular package
+                const totalLines = classes.reduce((sum, cls) => sum + (cls.linesValid || 0), 0);
+                const totalCovered = classes.reduce((sum, cls) => {
+                    const covered = cls.linesCovered !== undefined
+                        ? cls.linesCovered
+                        : (cls.linesValid * cls.coverage / 100);
+                    return sum + covered;
+                }, 0);
 
-            // Create package node
-            const pkgNode = {
-                name: pkgName,
-                isNamespace: true,
-                coverage: pkgCoverage,
-                value: totalLines,
-                children: classes.map(cls => ({
-                    name: cls.className,
-                    isNamespace: false,
-                    coverage: cls.coverage,
-                    value: cls.linesValid || 1, // Ensure non-zero value for sizing
-                    branchRate: cls.branchRate,
-                    linesCovered: cls.linesCovered,
-                    linesValid: cls.linesValid,
-                    filename: cls.filename,
-                    packageName: cls.packageName,
-                    originalData: cls // Store reference to original data
-                }))
-            };
+                const pkgCoverage = totalLines > 0 ? (totalCovered / totalLines) * 100 : 0;
 
-            root.children.push(pkgNode);
+                // Create package node
+                const pkgNode: TreeNode = {
+                    name: pkgName,
+                    isNamespace: true,
+                    coverage: pkgCoverage,
+                    linesValid: totalLines,
+                    value: totalLines,
+                    children: classes.map(cls => ({
+                        name: cls.className,
+                        isNamespace: false,
+                        coverage: cls.coverage,
+                        linesValid: cls.linesValid,
+                        value: cls.linesValid || 1,
+                        packageName: cls.packageName,
+                        originalData: cls
+                    }))
+                };
+
+                root.children!.push(pkgNode);
+            }
+
+            // Make sure every node has at least the minimum value
+            classes.forEach(cls => {
+                if (!cls.value || cls.value < MIN_NODE_VALUE) {
+                    cls.value = MIN_NODE_VALUE;
+                }
+            });
         });
 
         // Calculate root coverage
-        const rootTotalLines = root.children.reduce((sum, pkg) => sum + pkg.value, 0);
-        const rootTotalCovered = root.children.reduce((sum, pkg) => {
-            return sum + (pkg.value * pkg.coverage / 100);
-        }, 0);
+        if (root.children && root.children.length > 0) {
+            const rootTotalLines = root.children.reduce((sum, pkg) => sum + (pkg.linesValid || 0), 0);
+            const rootTotalCovered = root.children.reduce((sum, pkg) => {
+                return sum + ((pkg.linesValid || 0) * pkg.coverage / 100);
+            }, 0);
 
-        root.coverage = rootTotalLines > 0 ? (rootTotalCovered / rootTotalLines) * 100 : 0;
+            root.coverage = rootTotalLines > 0 ? (rootTotalCovered / rootTotalLines) * 100 : 0;
+            root.linesValid = rootTotalLines;
+        }
 
         return root;
     }
 
     /**
      * Handle node selection and emit the selected node
+     * @param node The D3 node that was clicked
      */
     private onNodeSelectedInternal(node: any): void {
         // For D3 hierarchy nodes, access data differently
@@ -207,13 +364,24 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
         if (nodeData.originalData) {
             // The node has a reference to the original data
             this.nodeSelected.emit(nodeData.originalData);
+        } else if (nodeData.isDomainGroup) {
+            // It's a domain group node
+            this.nodeSelected.emit({
+                className: nodeData.name + ' Domain',
+                packageName: nodeData.name,
+                coverage: nodeData.coverage,
+                linesValid: nodeData.linesValid || 0,
+                linesCovered: nodeData.linesCovered,
+                isDomainGroup: true,
+                children: nodeData.children?.map((c: any) => c.originalData || c)
+            });
         } else if (!nodeData.isNamespace) {
             // It's a class node without originalData reference
             this.nodeSelected.emit({
                 className: nodeData.name,
                 packageName: nodeData.packageName || '',
                 coverage: nodeData.coverage,
-                linesValid: nodeData.value || 0,
+                linesValid: nodeData.linesValid || 0,
                 linesCovered: nodeData.linesCovered,
                 branchRate: nodeData.branchRate,
                 filename: nodeData.filename
@@ -223,6 +391,8 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
 
     /**
      * Handle node hover event
+     * @param node The node being hovered over
+     * @param event The mouse event
      */
     private onNodeHover(node: any, event: MouseEvent): void {
         // Extract node data
@@ -246,6 +416,7 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
 
     /**
      * Public method to allow zooming to a specific node
+     * @param node The node to zoom to
      */
     public zoomToNode(node: any): void {
         if (this.treemapInstance && this.treemapInstance.zoomToNode) {
@@ -259,6 +430,33 @@ export class TreemapVisualizationComponent implements OnChanges, OnInit, OnDestr
     public resetZoom(): void {
         if (this.treemapInstance && this.treemapInstance.resetZoom) {
             this.treemapInstance.resetZoom();
+        }
+    }
+
+    /**
+     * Force a refresh of the treemap layout
+     */
+    public refreshLayout(): void {
+        if (this.containerRef && this.containerRef.nativeElement) {
+            // Force a recalculation of the layout
+            const container = this.containerRef.nativeElement;
+            this.lastWidth = 0; // Reset to force rebuild
+            this.lastHeight = 0;
+
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                this.buildTreemap();
+            }, 50);
+        }
+    }
+
+    /**
+     * Public method to highlight a specific node by name
+     * @param nodeName Name of the node to highlight
+     */
+    public highlightNode(nodeName: string): void {
+        if (this.treemapInstance && this.treemapInstance.highlightNode) {
+            this.treemapInstance.highlightNode(nodeName);
         }
     }
 }

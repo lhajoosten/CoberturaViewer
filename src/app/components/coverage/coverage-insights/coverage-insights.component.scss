@@ -11,7 +11,6 @@
   padding: var(--space-lg);
 }
 
-// Metrics grid - using the global metric-card styles with specific layout
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -19,7 +18,6 @@
   margin-bottom: var(--space-xl);
 }
 
-// Insights list
 .insights-list {
   margin-bottom: var(--space-xl);
 
@@ -40,13 +38,13 @@
     box-shadow: var(--shadow-sm);
 
     &.success {
-      border-color: var(--excellent-color);
+      border-color: var(--success-color);
     }
     &.warning {
-      border-color: var(--average-color);
+      border-color: var(--warning-color);
     }
     &.danger {
-      border-color: var(--poor-color);
+      border-color: var(--error-color);
     }
     &.info {
       border-color: var(--info-color);
@@ -56,13 +54,13 @@
       font-size: var(--font-size-xl);
 
       .success & {
-        color: var(--excellent-color);
+        color: var(--success-color);
       }
       .warning & {
-        color: var(--average-color);
+        color: var(--warning-color);
       }
       .danger & {
-        color: var(--poor-color);
+        color: var(--error-color);
       }
       .info & {
         color: var(--info-color);
@@ -87,7 +85,6 @@
   }
 }
 
-// High risk classes section
 .high-risk-classes {
   margin-bottom: var(--space-xl);
 
@@ -107,7 +104,6 @@
     overflow-x: auto;
   }
 
-  // Using our global data-table class with specific styles
   .risk-table {
     width: 100%;
     border-collapse: collapse;
@@ -143,7 +139,7 @@
 
       .risk-bar {
         height: 100%;
-        background-color: var(--poor-color);
+        background-color: var(--error-color);
         border-radius: 3px;
         width: 100%;
       }
@@ -151,7 +147,6 @@
   }
 }
 
-// Coverage distribution - uses our global legend class
 .coverage-distribution {
   margin-bottom: var(--space-xl);
 
@@ -172,27 +167,26 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
+      color: var(--text-on-primary);
       font-weight: 600;
       font-size: var(--font-size-base);
 
       &.excellent {
-        background-color: var(--excellent-color);
+        background-color: var(--success-color);
       }
       &.good {
-        background-color: var(--good-color);
+        background-color: var(--accent-color);
       }
       &.average {
-        background-color: var(--average-color);
+        background-color: var(--warning-color);
       }
       &.poor {
-        background-color: var(--poor-color);
+        background-color: var(--error-color);
       }
     }
   }
 }
 
-// Recommendations
 .recommendations {
   h3 {
     font-size: var(--font-size-lg);
@@ -219,7 +213,7 @@
       height: 28px;
       border-radius: var(--border-radius-round);
       background-color: var(--primary-color);
-      color: white;
+      color: var(--text-on-primary);
       display: flex;
       align-items: center;
       justify-content: center;
