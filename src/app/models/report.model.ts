@@ -21,3 +21,36 @@ export interface ReportSummary {
     /** Actual number of lines covered */
     linesCovered: number;
 }
+
+/**
+ * Simplified structure for report data
+ * Used for generating coverage reports
+ */
+export interface Report {
+    /** Collection of packages in the report */
+    packages: {
+        /** Name of the package */
+        name: string;
+
+        /** Classes contained in this package */
+        classes: {
+            /** Name of the class */
+            name: string;
+
+            /** Coverage percentage (0-100) */
+            coverage: number;
+
+            /** Total number of lines that could be covered */
+            linesValid: number;
+
+            /** Actual number of lines covered */
+            linesCovered?: number;
+
+            /** Branch coverage rate (0.0-1.0) */
+            branchRate?: number;
+
+            /** Source filename containing this class */
+            filename?: string;
+        }[];
+    }[];
+}

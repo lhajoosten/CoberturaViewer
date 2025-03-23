@@ -37,11 +37,11 @@
 
 .zoom-controls {
   position: absolute;
-  bottom: var(--space-md);
-  right: var(--space-md);
-  display: flex;
-  gap: var(--space-xs);
+  top: 20px;
+  right: 110px; /* Position to the left of the legend */
   z-index: 10;
+  display: flex;
+  gap: 8px;
 }
 
 .zoom-button {
@@ -50,15 +50,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-round);
+  background-color: var(--card-bg, white);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 50%;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  color: var(--text-color);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+  color: var(--text-color, #333);
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: var(--hover-color);
+    background-color: var(--hover-color, #f5f5f5);
+    box-shadow: var(--shadow-md, 0 2px 6px rgba(0, 0, 0, 0.15));
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Dark theme adjustments */
+.dark-theme .zoom-button {
+  background-color: var(--card-bg, #333);
+  color: var(--text-color, #fff);
+  border-color: var(--border-color, #555);
+
+  &:hover {
+    background-color: var(--hover-color, #444);
   }
 }
 

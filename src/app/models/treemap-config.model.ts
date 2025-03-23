@@ -1,3 +1,5 @@
+// treemap-config.model.ts
+
 /**
  * Defines a coverage percentage range with visual properties
  * Used for color-coding nodes based on their coverage level
@@ -35,61 +37,36 @@ export interface ExclusionPattern {
 }
 
 /**
- * Hierarchical node structure representing code elements in a tree
- * Used as the core data structure for visualizing code coverage
+ * Filter configuration for the treemap visualization
+ * Controls which nodes are included or excluded
  */
-export interface TreeNode {
-    /** Display name of the node */
-    name: string;
+export interface TreemapFilter {
+    /** Packages to exclude by name or pattern */
+    packageExclusions?: string[];
 
-    /** Complete path identifier including all parent elements */
-    fullPath?: string;
+    /** Class names to exclude by name or pattern */
+    classNameExclusions?: string[];
 
-    /** Fully qualified name of the element */
-    fullName?: string;
+    /** Exclude nodes below this coverage percentage threshold */
+    coverageThreshold?: number;
 
-    /** Whether this node represents a namespace/package rather than a file */
-    isNamespace: boolean;
+    /** Exclude nodes with fewer valid lines than this value */
+    minValidLines?: number;
 
-    /** Coverage percentage (0-100) */
-    coverage: number;
+    /** Whether to exclude packages with no valid lines */
+    excludeEmptyPackages?: boolean;
 
-    /** Size metric used for determining node area in visualization */
-    value: number;
+    /** Whether to exclude compiler-generated code */
+    excludeGeneratedCode?: boolean;
 
-    /** Child nodes contained within this node */
-    children: TreeNode[];
+    /** User-defined exclusion patterns for more complex filtering */
+    exclusionPatterns?: ExclusionPattern[];
 
-    // Coverage metrics
-    /** Branch coverage percentage (0-100) */
-    branchRate?: number;
+    /** Search term for filtering nodes by name */
+    searchTerm?: string;
 
-    /** Total number of lines that could be covered */
-    linesValid?: number;
-
-    /** Actual number of covered lines */
-    linesCovered?: number;
-
-    // File location information
-    /** Directory path */
-    path?: string;
-
-    /** Name of the file without path */
-    filename?: string;
-
-    // Search-related flags
-    /** Whether this node directly matches search criteria */
-    matchesSearch?: boolean;
-
-    /** Whether this node contains any descendants that match search criteria */
-    containsMatch?: boolean;
-
-    // Classification metadata
-    /** Type of namespace (e.g., "package", "module", "directory") */
-    namespaceType?: string;
-
-    // Allow for extensibility with additional properties
-    [key: string]: any;
+    /** Selected package for filtering */
+    selectedPackage?: string;
 }
 
 /**
@@ -129,6 +106,12 @@ export interface TreemapConfig {
 
     /** Whether to display nodes that match exclusion patterns */
     showExcludedNodes?: boolean;
+
+    /** Active filters */
+    filter?: TreemapFilter;
+
+    /** How to sort displayed nodes */
+    sortBy?: 'size' | 'coverage' | 'name';
 }
 
 /**
@@ -148,7 +131,6 @@ export interface TreemapOptions {
     /** Minimum size threshold for individual node display (in pixels) */
     minNodeSize: number;
 
-    // Filtering options
     /** Minimum coverage percentage to display (0-100) */
     minCoverage: number;
 

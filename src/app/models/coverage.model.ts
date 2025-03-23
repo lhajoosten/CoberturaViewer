@@ -221,42 +221,15 @@ export interface TimeRange {
 }
 
 /**
- * Hierarchical node structure for tree-based visualizations
- * Used for representing code structure in visualizations
- */
-export interface TreeNode {
-    /** Display name of the node */
-    name: string;
-
-    /** Complete path identifier including all parent elements */
-    fullPath?: string;
-
-    /** Whether this node represents a namespace/package rather than a file */
-    isNamespace: boolean;
-
-    /** Coverage percentage (0-100) */
-    coverage: number;
-
-    /** Size metric used for determining node area in visualization */
-    value: number;
-
-    /** Child nodes contained within this node */
-    children: TreeNode[];
-
-    /** Additional properties for extensibility */
-    [key: string]: any;
-}
-
-/**
  * Detailed coverage information for a code element
- * Used for mapping coverage data to visualization components
+ * Used for displaying coverage data in visualizations
  */
 export interface Coverage {
     /** Name of the class */
     className: string;
 
     /** Name of the package containing this class */
-    packageName: string;
+    packageName?: string;
 
     /** Coverage percentage (0-100) */
     coverage: number;
@@ -290,46 +263,40 @@ export interface Coverage {
 
     /** Child nodes contained within this element */
     children?: Coverage[];
-
-    /** Whether this element directly matches search criteria */
-    matchesSearch?: boolean;
-
-    /** Whether this element contains any descendants that match search criteria */
-    containsMatch?: boolean;
-
-    /** Whether this element is excluded by filtering rules */
-    excluded?: boolean;
 }
 
 /**
- * Simplified structure for report data
- * Used for generating coverage reports
+ * Tree node structure for hierarchical data visualization
+ * Used specifically for building treemap hierarchies
  */
-export interface Report {
-    /** Collection of packages in the report */
-    packages: {
-        /** Name of the package */
-        name: string;
+export interface TreeNode {
+    /** Display name of the node */
+    name: string;
 
-        /** Classes contained in this package */
-        classes: {
-            /** Name of the class */
-            name: string;
+    /** Package or namespace name */
+    packageName?: string;
 
-            /** Coverage percentage (0-100) */
-            coverage: number;
+    /** Coverage percentage (0-100) */
+    coverage: number;
 
-            /** Total number of lines that could be covered */
-            linesValid: number;
+    /** Total lines of code in this node */
+    linesValid: number;
 
-            /** Actual number of lines covered */
-            linesCovered?: number;
+    /** Lines of code covered by tests */
+    linesCovered?: number;
 
-            /** Branch coverage rate (0.0-1.0) */
-            branchRate?: number;
+    /** Whether this node represents a namespace/package */
+    isNamespace?: boolean;
 
-            /** Source filename containing this class */
-            filename?: string;
-        }[];
-    }[];
+    /** Whether this node represents a domain group */
+    isDomainGroup?: boolean;
+
+    /** Size value for visualization scaling */
+    value?: number;
+
+    /** Child nodes in the hierarchy */
+    children?: TreeNode[];
+
+    /** Original Coverage object this node was created from */
+    originalData?: any;
 }
