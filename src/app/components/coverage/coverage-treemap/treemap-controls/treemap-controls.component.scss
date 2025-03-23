@@ -1,3 +1,29 @@
+.controls-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-header-bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.advanced-controls {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--card-header-bg);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+/* Ensure the controls container has proper overflow */
 .treemap-controls {
   background-color: var(--card-bg);
   border-radius: var(--border-radius-lg);
@@ -5,12 +31,15 @@
   margin-bottom: var(--space-md);
   overflow: hidden;
   transition: var(--transition-base);
+  max-height: 80vh; /* Limit height and enable scrolling */
+  display: flex;
+  flex-direction: column;
 }
 
-.controls-header {
-  padding: var(--space-sm) var(--space-md);
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--card-header-bg);
+/* Make controls content scrollable */
+.controls-content.visible {
+  overflow-y: auto;
+  max-height: calc(80vh - 120px); /* Adjust based on header/footer height */
 }
 
 .title-row {
@@ -217,17 +246,6 @@
     font-size: var(--font-size-sm);
     color: var(--text-color);
   }
-}
-
-// Enhanced Advanced Controls
-.advanced-controls {
-  display: flex;
-  align-items: center;
-  padding: var(--space-sm) var(--space-md);
-  border-top: 1px solid var(--border-color);
-  background-color: var(--card-header-bg);
-  flex-wrap: wrap;
-  gap: var(--space-md);
 }
 
 .exclusions-button {

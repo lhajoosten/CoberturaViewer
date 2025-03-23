@@ -52,9 +52,9 @@
         </div>
     </div>
 
-    <!-- Details panel when a node is selected -->
-    <app-treemap-details *ngIf="selectedNode" [@slideInOut] [selectedNode]="selectedNode"
-        [selectedClass]="selectedClass" [similarClasses]="similarClasses" [isDarkTheme]="isDarkTheme"
-        (closeDetails)="closeDetails()" (selectSimilarNode)="onSelectSimilarClass($event)">
+    <!-- Modal-style Details panel when a node is selected -->
+    <app-treemap-details *ngIf="selectedNode" [@fadeInOut] [selectedNode]="selectedNode" [selectedClass]="selectedClass"
+        [similarClasses]="similarClasses" [isDarkTheme]="isDarkTheme" (closeDetails)="closeDetails()"
+        (selectSimilarNode)="onSelectSimilarClass($event)">
     </app-treemap-details>
 </div>
