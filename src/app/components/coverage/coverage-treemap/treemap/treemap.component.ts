@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, Input, ViewChild } from "@angular/core";
+import { Component, OnInit, OnDestroy, Input, ViewChild, NgZone } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { trigger, style, transition, animate } from '@angular/animations';
 import { Subscription } from "rxjs";
-import { ClassInfo, Coverage, CoverageData } from "../../../../models/coverage.model";
-import { CoverageDataService } from "../../../../services/coverage-data.service";
+import { ClassInfo, Coverage, CoverageData, TreeNode } from "../../../../models/coverage.model";
+import { BuildHierarchyOptions, CoverageDataService } from "../../../../services/coverage-data.service";
 import { CoverageStoreService } from "../../../../services/coverage-store.service";
 import { TreemapLayoutService } from "../../../../services/utils/treemap-layout.service";
 import { TreemapControlsComponent } from "../treemap-controls/treemap-controls.component";
@@ -12,7 +12,7 @@ import { TreemapDetailsComponent } from "../treemap-details/treemap-details.comp
 import { ThemeService } from "../../../../services/utils/theme.service";
 import { TreemapVisualizationComponent } from "../treemap-visualization/treemap-visualization.component";
 import { TreemapExclusionsComponent } from "../treemap-exclusions/treemap-exclusions.component";
-import { ExclusionPattern, TreemapFilter } from "../../../../models/treemap-config.model";
+import { CoverageRange, ExclusionPattern, TreemapFilter } from "../../../../models/treemap-config.model";
 
 @Component({
     selector: 'app-coverage-treemap',
@@ -55,7 +55,7 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     // Theme & loading states
     isLoading = true;
 
-    // Filter states
+    // --- Filter states ---
     minCoverage = 0;
     selectedPackage = '';
     groupSmallNodes = false;
@@ -67,26 +67,20 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     sortBy: 'size' | 'coverage' | 'name' = 'size';
     enableDomainGrouping = true;
     hasActiveFilters = false;
-
-    // Exclusion functionality
     showExclusionsPanel = false;
     exclusionPatterns: ExclusionPattern[] = [];
 
-    // Data
-    originalData: Coverage[] = [];
-    filteredData: Coverage[] = [];
-    hierarchicalData: any = null; // The actual D3 hierarchy data
+    // --- Data ---
+    hierarchyRoot: TreeNode | null = null;
+    currentCoverageData: CoverageData | null = null;
     packageList: string[] = [];
     domainList: string[] = [];
-    coverageRanges: any[] = [];
+    coverageRanges: CoverageRange[] = [];
 
-    // Current coverage data
-    private currentCoverageData: CoverageData | null = null;
-
-    // For node selection
-    selectedNode: Coverage | null = null;
+    // --- Selection ---
+    selectedNode: any | null = null;
     selectedClass: ClassInfo | null = null;
-    similarClasses: Coverage[] = [];
+    similarClasses: any[] = [];
 
     // Filters
     filters: TreemapFilter = {
@@ -106,36 +100,34 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
         private coverageDataService: CoverageDataService,
         private coverageStoreService: CoverageStoreService,
         private treemapLayoutService: TreemapLayoutService,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        private zone: NgZone
     ) { }
 
     get hasData(): boolean {
-        return this.filteredData && this.filteredData.length > 0;
+        // Check if the hierarchyRoot exists and has children
+        return !!this.hierarchyRoot?.children?.length;
     }
 
     ngOnInit(): void {
-        // Subscribe to theme changes
         this.subscriptions.add(
             this.themeService.darkTheme$.subscribe(isDark => {
                 this.isDarkTheme = isDark;
-                this.updateTreemapWithTheme();
+                this.updateTreemapWithTheme(); // This now updates ranges
             })
         );
 
-        // Set default coverage ranges from service
-        this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
+        // Initialize coverage ranges based on theme
+        this.updateTreemapWithTheme();
 
-        // Load saved exclusion patterns from localStorage
         this.loadSavedExclusionPatterns();
-
-        // Load coverage data
-        this.loadCoverageData();
+        this.loadCoverageData(); // Load and build hierarchy
     }
 
     ngOnDestroy(): void {
-        // Clean up subscriptions
         this.subscriptions.unsubscribe();
     }
+
 
     private loadSavedExclusionPatterns(): void {
         const savedPatterns = localStorage.getItem('treemap-exclusion-patterns');
@@ -154,529 +146,242 @@ export class CoverageTreemapComponent implements OnInit, OnDestroy {
     }
 
     private updateTreemapWithTheme(): void {
-        // Update coverage ranges based on theme
+        // Update coverage ranges based on theme and color mode
         this.coverageRanges = this.colorMode === 'colorblind'
             ? this.treemapLayoutService.getColorblindCoverageRanges()
             : this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
+        // Note: If visualization component exists, might need to trigger update
+        if (this.treemapVisualization) {
+            this.treemapVisualization.updateCoverageRanges(this.coverageRanges);
+        }
     }
 
     private loadCoverageData(): void {
         this.isLoading = true;
+        this.subscriptions.add(
+            this.coverageStoreService.getCoverageData().subscribe({
+                next: (coverageData) => {
+                    this.currentCoverageData = coverageData; // Store raw data
+                    if (coverageData) {
+                        const hierarchyOptions: BuildHierarchyOptions = {
+                            groupSmallNodes: this.groupSmallNodes, // Use component state
+                            smallNodeThreshold: 10 // Or make this configurable
+                        };
+                        // Build the hierarchy using the service
+                        this.hierarchyRoot = this.coverageDataService.buildHierarchy(coverageData, hierarchyOptions);
 
-        // Subscribe to the coverage data from the store service
-        const subscription = this.coverageStoreService.getCoverageData().subscribe({
-            next: (coverageData) => {
-                if (coverageData) {
-                    // Store the current coverage data
-                    this.currentCoverageData = coverageData;
+                        // Extract package list for filter dropdown (can still do this from raw data)
+                        this.extractDomainAndPackageLists(coverageData);
 
-                    // Transform the CoverageData to flat Coverage array
-                    this.originalData = this.coverageDataService.transformToHierarchy(coverageData);
-
-                    // Extract domain and package lists
-                    this.extractDomainAndPackageLists();
-
-                    // Apply initial filters
-                    this.applyFilters();
-                } else {
-                    // No data available
-                    this.originalData = [];
-                    this.filteredData = [];
-
-                    // Update hasActiveFilters flag
-                    this.hasActiveFilters = this.minCoverage > 0 ||
-                        !!this.selectedPackage ||
-                        !!this.searchTerm ||
-                        this.groupSmallNodes ||
-                        this.minLines > 0 ||
-                        this.sortBy !== 'size' ||
-                        this.exclusionPatterns.some(p => p.enabled);
-
-                    // Reset selected node when filters change
-                    this.selectedNode = null;
-                    this.selectedClass = null;[];
+                        // Initial filter application (updates filter object, visualization reacts)
+                        this.applyFilters();
+                    } else {
+                        this.hierarchyRoot = null; // Clear hierarchy
+                        this.packageList = [];
+                        this.domainList = [];
+                    }
+                    this.isLoading = false;
+                },
+                error: (err) => {
+                    console.error("Error loading coverage data:", err);
+                    this.isLoading = false;
+                    this.hierarchyRoot = null;
                 }
-
-                this.isLoading = false;
-            }
-        });
-
-        this.subscriptions.add(subscription);
+            })
+        );
     }
 
-    private extractDomainAndPackageLists(): void {
+    private extractDomainAndPackageLists(coverageData: CoverageData): void {
         const uniquePackages = new Set<string>();
         const uniqueDomains = new Set<string>();
 
-        this.originalData.forEach(item => {
-            if (item.packageName) {
-                uniquePackages.add(item.packageName);
-
-                // Extract domain from package name (first two segments)
-                const parts = item.packageName.split('.');
+        coverageData.packages.forEach(item => {
+            if (item.name) {
+                uniquePackages.add(item.name);
+                const parts = item.name.split('.');
                 if (parts.length >= 2) {
                     uniqueDomains.add(`${parts[0]}.${parts[1]}`);
                 }
             }
         });
-
         this.packageList = Array.from(uniquePackages).sort();
         this.domainList = Array.from(uniqueDomains).sort();
     }
 
     private applyFilters(): void {
-        // First apply exclusion patterns at the Coverage level
-        let filteredData = this.applyExclusionPatterns(this.originalData);
+        this.isLoading = true; // Show loading while filters potentially update viz
 
-        // Create a filter object to pass to the treemap visualization
-        const filter: TreemapFilter = {
-            // Include coverage threshold
+        // Update the filters object based on component state
+        this.filters = {
             coverageThreshold: this.minCoverage > 0 ? this.minCoverage : undefined,
-
-            // Include minimum lines requirement
             minValidLines: this.minLines > 0 ? this.minLines : undefined,
-
-            // Always exclude empty packages for cleaner visualization
-            excludeEmptyPackages: true,
-
-            // Always exclude compiler-generated code
-            excludeGeneratedCode: true,
-
-            // Include only enabled exclusion patterns
+            excludeEmptyPackages: true, // Default behavior
+            excludeGeneratedCode: true, // Default behavior
             exclusionPatterns: this.exclusionPatterns.filter(p => p.enabled),
-
-            // Add search term if provided
             searchTerm: this.searchTerm || undefined,
-
-            // Add package filter if selected
             selectedPackage: this.selectedPackage || undefined
         };
 
-        // Apply domain grouping if enabled
-        if (this.enableDomainGrouping) {
-            filteredData = this.treemapLayoutService.groupPackagesByDomain(filteredData);
-        }
-
-        // Group small nodes if enabled
-        if (this.groupSmallNodes) {
-            filteredData = this.treemapLayoutService.groupSmallNodes(filteredData, 10);
-        }
-
-        // Update the filtered data
-        this.filteredData = filteredData;
-
-        // Update the treemap visualization with the new filters and sort settings
-        if (this.treemapVisualization) {
-            this.filters = filter; // Set the filter property for reference
-            this.treemapVisualization.filters = filter;
-            this.treemapVisualization.sortBy = this.sortBy as 'size' | 'coverage' | 'name';
-            // Force a refresh if the instance exists
-            this.treemapVisualization.refreshLayout();
-        }
-
-        // Update active filters flag for UI feedback
+        // Update hasActiveFilters flag (logic remains similar)
         this.hasActiveFilters = this.minCoverage > 0 ||
             !!this.selectedPackage ||
             !!this.searchTerm ||
-            this.groupSmallNodes ||
+            this.groupSmallNodes || // Keep UI state flag
             this.minLines > 0 ||
-            this.sortBy !== 'size' ||
+            this.sortBy !== 'size' || // Keep UI state flag
             this.exclusionPatterns.some(p => p.enabled);
 
-        // Reset selected node when filters change
+        // Reset selection when filters change
         this.selectedNode = null;
         this.selectedClass = null;
+        this.similarClasses = [];
+
+        // Give visualization a moment to potentially update based on @Input changes
+        setTimeout(() => { this.isLoading = false; }, 50);
     }
 
-    private applyExclusionPatterns(data: Coverage[]): Coverage[] {
-        // Skip the entire filtering if no patterns are enabled
-        if (!this.exclusionPatterns.some(p => p.enabled)) {
-            return data;
-        }
-
-        // Apply filtering
-        return data.filter(item => {
-            const filename = item.filename || '';
-            const packageName = item.packageName || '';
-            const className = item.className || '';
-
-            // Exclude items from /obj/ directories - these are compilation artifacts
-            if (filename.includes('/obj/') || filename.includes('\\obj\\')) {
-                return false;
-            }
-
-            // Exclude compiler-generated code
-            if (className && (
-                className.includes('<>') ||
-                className.includes('<PrivateImplementationDetails>') ||
-                (className.includes('<') && className.includes('>d__'))
-            )) {
-                return false;
-            }
-
-            // Check user-defined exclusion patterns
-            for (const pattern of this.exclusionPatterns) {
-                if (!pattern.enabled) continue;
-
-                switch (pattern.type) {
-                    case 'class':
-                        if (className.includes(pattern.pattern)) {
-                            return false;
-                        }
-                        break;
-                    case 'package':
-                        if (packageName.includes(pattern.pattern)) {
-                            return false;
-                        }
-                        break;
-                    case 'regex':
-                        try {
-                            const regex = new RegExp(pattern.pattern);
-                            if (regex.test(className) || regex.test(packageName)) {
-                                return false;
-                            }
-                        } catch (e) {
-                            console.error('Invalid regex pattern:', pattern.pattern);
-                        }
-                        break;
-                }
-            }
-
-            return true;
-        });
-    }
-
-    private findSimilarDomains(domainNode: Coverage): void {
-        if (!domainNode.isDomainGroup || !domainNode.packageName) {
-            this.similarClasses = [];
+    private findClassDetails(selectedTreeNode: any): void {
+        // Find class details from the RAW data using properties from the TreeNode
+        if (!this.currentCoverageData || !selectedTreeNode?.packageName || !selectedTreeNode?.name) {
+            this.selectedClass = null;
             return;
         }
-
-        // Find other domain groups with similar coverage
-        this.similarClasses = this.filteredData.filter(item =>
-            item.isDomainGroup &&
-            item.packageName !== domainNode.packageName &&
-            Math.abs(item.coverage - domainNode.coverage) < 15
-        ).slice(0, 5);
-    }
-
-    private async findClassDetails(node: Coverage): Promise<void> {
-        // Find the actual class details from the current coverage data
-        if (!this.currentCoverageData) return;
+        const nodeName = selectedTreeNode.name;
+        const nodePackage = selectedTreeNode.packageName;
 
         for (const pkg of this.currentCoverageData.packages) {
-            if (pkg.name === node.packageName) {
-                for (const cls of pkg.classes) {
-                    if (cls.name === node.className) {
-                        this.selectedClass = cls;
-                        return;
-                    }
+            if (pkg.name === nodePackage) {
+                const foundClass = pkg.classes.find(cls => cls.name === nodeName);
+                if (foundClass) {
+                    this.selectedClass = foundClass;
+                    this.findSimilarClasses(foundClass, nodePackage); // Find similar based on ClassInfo
+                    return;
                 }
             }
         }
-
         this.selectedClass = null;
+        this.similarClasses = [];
     }
 
-    private findSimilarClasses(): void {
-        if (!this.selectedNode || !this.selectedNode.packageName) {
+    private findSimilarClasses(selectedClsInfo: ClassInfo, packageName: string): void {
+        // Find similar classes based on the raw ClassInfo data
+        if (!this.currentCoverageData) {
+            this.similarClasses = [];
+            return;
+        }
+        const targetPackage = this.currentCoverageData.packages.find(p => p.name === packageName);
+        if (!targetPackage) {
             this.similarClasses = [];
             return;
         }
 
-        // Find classes in the same package with similar coverage
-        this.similarClasses = this.filteredData.filter(item =>
-            !item.isDomainGroup && // Exclude domain groups
-            item.packageName === this.selectedNode!.packageName &&
-            item.className !== this.selectedNode!.className &&
-            Math.abs(item.coverage - this.selectedNode!.coverage) < 15 // Within 15% coverage
-        ).slice(0, 5); // Limit to 5 similar classes
+        this.similarClasses = targetPackage.classes
+            .filter(cls => cls.name !== selectedClsInfo.name && Math.abs(cls.lineRate - selectedClsInfo.lineRate) < 15)
+            .slice(0, 5)
+            // Map back to a structure the details component expects if needed
+            .map(cls => ({
+                className: cls.name,
+                packageName: packageName,
+                coverage: cls.lineRate,
+                linesValid: cls.lines?.length || 0,
+                // Add other needed props...
+            }));
     }
 
-    // Public method to allow refreshing the treemap from outside
-    public refreshVisualization(): void {
-        if (!this.isLoading) {
-            this.applyFilters();
-        }
+    // --- Event Handlers ---
+
+    // Node selection handler - receives data emitted by visualization
+    onNodeSelected(nodeData: any): void {
+        // Run the state updates within Angular's zone
+        this.zone.run(() => {
+            this.selectedNode = nodeData;
+            this.selectedClass = null; // Reset class details initially
+
+            if (nodeData && !nodeData.isNamespace) {
+                this.findClassDetails(nodeData);
+            } else {
+                this.similarClasses = [];
+            }
+            console.log('Node selected (inside zone):', this.selectedNode?.name); // Add log to confirm
+        });
     }
-
-    // Handler for node selection
-    onNodeSelected(node: Coverage): void {
-        // Special handling for domain group nodes
-        if (node.isDomainGroup && node.children) {
-            // Show domain summary instead of individual class
-            this.selectedNode = {
-                ...node,
-                isNamespace: true // Treat as namespace for details view
-            };
-            this.selectedClass = null;
-
-            // Find similar domains (with similar coverage)
-            this.findSimilarDomains(node);
-            return;
-        }
-
-        this.selectedNode = node;
-
-        // Find the actual class info to show details
-        if (this.selectedNode && !this.selectedNode.isNamespace) {
-            this.findClassDetails(this.selectedNode);
-        }
-
-        // Find similar classes if we have a selected node
-        if (this.selectedNode && this.selectedNode.packageName) {
-            this.findSimilarClasses();
-        } else {
-            this.similarClasses = [];
-        }
-    }
-
 
     // Toggle exclusions panel
     onToggleExclusionsPanel(): void {
         this.showExclusionsPanel = !this.showExclusionsPanel;
     }
 
-    // Handle exclusion patterns change
+    // Handle exclusion patterns change (only updates state and saves)
     onExclusionPatternsChange(patterns: ExclusionPattern[]): void {
         this.exclusionPatterns = patterns;
         this.saveExclusionPatterns();
+        // Optionally re-apply filters immediately if needed, or let user click apply
+        // this.applyFilters();
     }
 
-    // Apply exclusion patterns
+    // Apply exclusion patterns (updates filter object)
     onApplyExclusions(patterns: ExclusionPattern[]): void {
         this.exclusionPatterns = patterns;
         this.saveExclusionPatterns();
-
-        // Update just the filters without re-filtering all the data
-        if (this.treemapVisualization) {
-            const filter: TreemapFilter = {
-                // Include any other active filters
-                coverageThreshold: this.minCoverage > 0 ? this.minCoverage : undefined,
-                minValidLines: this.minLines > 0 ? this.minLines : undefined,
-                excludeEmptyPackages: true,
-                excludeGeneratedCode: true,
-                exclusionPatterns: patterns.filter(p => p.enabled),
-                searchTerm: this.searchTerm || undefined,
-                selectedPackage: this.selectedPackage || undefined
-            };
-
-            this.filters = filter; // Set the filter property for reference
-            this.treemapVisualization.filters = filter;
-            this.treemapVisualization.updateFilters(filter);
-        } else {
-            // Fall back to the full filter application if visualization isn't available
-            this.applyFilters();
-        }
-
-        // Update hasActiveFilters flag
-        this.hasActiveFilters = this.minCoverage > 0 ||
-            !!this.selectedPackage ||
-            !!this.searchTerm ||
-            this.groupSmallNodes ||
-            this.minLines > 0 ||
-            this.sortBy !== 'size' ||
-            this.exclusionPatterns.some(p => p.enabled);
+        this.applyFilters(); // Re-apply filters to update the filter object
+        this.showExclusionsPanel = false; // Close panel after applying
     }
 
-    // Toggle domain grouping
-    onToggleDomainGrouping(enabled: boolean): void {
-        this.enableDomainGrouping = enabled;
-        this.applyFilters();
-    }
+    // --- Control change handlers ---
+    // These now just update state and call applyFilters()
+    onMinCoverageChange(value: number): void { this.minCoverage = value; this.applyFilters(); }
+    onSelectedPackageChange(value: string): void { this.selectedPackage = value; this.applyFilters(); }
+    onSearchTermChange(value: string): void { this.searchTerm = value; this.applyFilters(); }
+    onMinLinesChange(value: number): void { this.minLines = value; this.applyFilters(); }
+    onSortByChange(value: string): void { this.sortBy = value as 'size' | 'coverage' | 'name'; this.applyFilters(); }
 
-    // Control change handlers
-    onMinCoverageChange(value: number): void {
-        this.minCoverage = value;
-        this.applyFilters();
-    }
-
-    onSelectedPackageChange(value: string): void {
-        this.selectedPackage = value;
-        this.applyFilters();
-    }
-
+    // Grouping/Labels/Color affect visualization directly, update state and let viz handle it
     onGroupSmallNodesChange(value: boolean): void {
         this.groupSmallNodes = value;
-        this.applyFilters();
+        this.loadCoverageData();
+        // The visualization component should react to this @Input change
     }
-
-    onSearchTermChange(value: string): void {
-        this.searchTerm = value;
-        this.applyFilters();
-    }
-
     onShowLabelsChange(value: boolean): void {
         this.showLabels = value;
-        if (this.treemapVisualization) {
-            this.treemapVisualization.updateLabels(value);
-        }
+        // The visualization component should react to this @Input change
     }
-
     onColorModeChange(value: string): void {
         this.colorMode = value as 'default' | 'colorblind';
-
-        // Update color ranges if color mode changes
-        if (value === 'colorblind') {
-            this.coverageRanges = this.treemapLayoutService.getColorblindCoverageRanges();
-        } else {
-            this.coverageRanges = this.treemapLayoutService.getDefaultCoverageRanges(this.isDarkTheme);
-        }
+        this.updateTreemapWithTheme(); // Update ranges and potentially viz
+        // The visualization component should react to this @Input change
     }
-
-    onMinLinesChange(value: number): void {
-        this.minLines = value;
-        this.applyFilters();
-    }
-
-    onSortByChange(value: string): void {
-        this.sortBy = value as 'size' | 'coverage' | 'name';
-        this.applyFilters();
+    onToggleDomainGrouping(enabled: boolean): void {
+        this.enableDomainGrouping = enabled;
+        // The visualization component should react to this @Input change
     }
 
     onClearAllFilters(): void {
-        // Reset all filters to default values
+        // Reset filter states
         this.minCoverage = 0;
         this.selectedPackage = '';
-        this.groupSmallNodes = false;
+        this.groupSmallNodes = false; // Reset UI toggle state
         this.searchTerm = '';
         this.minLines = 0;
-        this.sortBy = 'size';
-
-        // Apply the reset filters
-        this.applyFilters();
+        this.sortBy = 'size'; // Reset sort state
+        // Keep exclusion patterns unless explicitly cleared
+        this.applyFilters(); // Apply the reset filter state
     }
 
-    onToggleFilters(expanded: boolean): void {
-        this.showFilters = expanded;
+    onToggleFilters(expanded: boolean): void { this.showFilters = expanded; }
+    closeDetails(): void { this.selectedNode = null; this.selectedClass = null; this.similarClasses = []; }
+
+
+    onSelectSimilarClass(node: any): void {
+        // Ensure this also runs in zone if it directly updates state
+        // that affects the template immediately
+        this.zone.run(() => {
+            this.onNodeSelected(node); // Reuse selection logic which is now zoned
+        });
     }
 
-    // Method to close class details panel
-    closeDetails(): void {
-        this.selectedNode = null;
-        this.selectedClass = null;
-        this.similarClasses = [];
-    }
-
-    // Handle click on a similar class
-    onSelectSimilarClass(node: Coverage): void {
-        this.selectedNode = node;
-
-        if (node.isDomainGroup) {
-            this.findSimilarDomains(node);
-        } else {
-            this.findClassDetails(node);
-        }
-    }
-
-    // Reset zoom to show the entire treemap
-    resetZoom(): void {
-        if (this.treemapVisualization) {
-            this.treemapVisualization.resetZoom();
-        }
-    }
-
-    // Toggle labels visibility
-    toggleLabels(): void {
-        this.showLabels = !this.showLabels;
-        this.onShowLabelsChange(this.showLabels);
-    }
-
-    // Export treemap as SVG
-    exportSvg(): void {
-        if (!this.treemapVisualization) return;
-
-        try {
-            // Get the SVG element
-            const svgElement = this.treemapVisualization.getSvgElement();
-            if (!svgElement) {
-                console.error('No SVG element found');
-                return;
-            }
-
-            // Create a clone to avoid modifying the original
-            const svgClone = svgElement.cloneNode(true) as SVGElement;
-
-            // Set width and height explicitly
-            svgClone.setAttribute('width', '1200');
-            svgClone.setAttribute('height', '800');
-
-            // Add CSS styles inline
-            const styleElement = document.createElement('style');
-            styleElement.textContent = this.getCssStyles();
-            svgClone.insertBefore(styleElement, svgClone.firstChild);
-
-            // Convert to string
-            const serializer = new XMLSerializer();
-            const svgString = serializer.serializeToString(svgClone);
-
-            // Create a blob and download link
-            const blob = new Blob([svgString], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
-
-            // Create download link
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'coverage-treemap.svg';
-            link.click();
-
-            // Clean up
-            URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Error exporting SVG:', error);
-        }
-    }
-
-    // Get CSS styles for SVG export
-    private getCssStyles(): string {
-        return `
-            .node rect {
-                stroke-width: 1px;
-            }
-            .node.depth-1 rect {
-                stroke-width: 2px;
-            }
-            .node.domain-group rect {
-                stroke-width: 2px;
-                stroke-dasharray: 2, 2;
-            }
-            .node-label {
-                font-family: Arial, sans-serif;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            }
-            .dark-theme .node-label {
-                fill: #ffffff;
-            }
-            .aggregation-indicator circle {
-                fill: rgba(0,0,0,0.4);
-                stroke: #ffffff;
-            }
-            .aggregation-indicator text {
-                fill: #ffffff;
-                font-weight: bold;
-                text-anchor: middle;
-            }
-        `;
-    }
-
-    /**
- * Find and highlight a node by name
- */
-    public findAndHighlightNode(nodeName: string): void {
-        if (this.treemapVisualization) {
-            this.treemapVisualization.highlightNode(nodeName);
-        }
-    }
-
-    /**
-     * Handle changes like screen rotation or tab activation
-     */
-    public handleVisibilityChange(): void {
-        if (this.treemapVisualization) {
-            // Small delay to ensure DOM has updated
-            setTimeout(() => {
-                this.treemapVisualization.refreshLayout();
-            }, 100);
-        }
-    }
+    // --- Methods interacting directly with visualization component ---
+    resetZoom(): void { if (this.treemapVisualization) { this.treemapVisualization.resetZoom(); } }
+    exportSvg(): void { if (this.treemapVisualization) { this.treemapVisualization.exportSvg(); } }
+    findAndHighlightNode(nodeName: string): void { if (this.treemapVisualization) { this.treemapVisualization.findAndHighlightNode(nodeName); } }
+    handleVisibilityChange(): void { if (this.treemapVisualization) { this.treemapVisualization.handleVisibilityChange(); } }
 }

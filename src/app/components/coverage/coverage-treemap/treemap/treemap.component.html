@@ -1,5 +1,4 @@
 <div class="coverage-treemap-container" [class.dark-theme]="isDarkTheme">
-    <!-- Controls Component -->
     <app-treemap-controls [minCoverage]="minCoverage" (minCoverageChange)="onMinCoverageChange($event)"
         [selectedPackage]="selectedPackage" (selectedPackageChange)="onSelectedPackageChange($event)"
         [groupSmallNodes]="groupSmallNodes" (groupSmallNodesChange)="onGroupSmallNodesChange($event)"
@@ -8,10 +7,10 @@
         (colorModeChange)="onColorModeChange($event)" [minLines]="minLines" (minLinesChange)="onMinLinesChange($event)"
         [sortBy]="sortBy" (sortByChange)="onSortByChange($event)" [hasActiveFilters]="hasActiveFilters"
         [packageList]="packageList" (clearFilters)="onClearAllFilters()" (toggleFilters)="onToggleFilters($event)"
-        [exclusionPatterns]="exclusionPatterns" (toggleExclusionsPanel)="onToggleExclusionsPanel()">
+        [exclusionPatterns]="exclusionPatterns" (toggleExclusionsPanel)="onToggleExclusionsPanel()"
+        [enableDomainGrouping]="enableDomainGrouping" (enableDomainGroupingChange)="onToggleDomainGrouping($event)">
     </app-treemap-controls>
 
-    <!-- Exclusions panel -->
     <div class="exclusions-panel-container" *ngIf="showExclusionsPanel" [@fadeInOut]>
         <app-treemap-exclusions [isDarkTheme]="isDarkTheme" [patterns]="exclusionPatterns"
             (close)="showExclusionsPanel = false" (patternsChange)="onExclusionPatternsChange($event)"
@@ -19,32 +18,29 @@
         </app-treemap-exclusions>
     </div>
 
-    <!-- Loading indicator -->
     <div class="loading-overlay" *ngIf="isLoading">
         <div class="spinner"></div>
         <div class="loading-text">Loading coverage data...</div>
     </div>
 
-    <!-- Main Visualization Container -->
     <div class="visualization-container">
-        <!-- Treemap D3 Visualization -->
-        <div class="treemap-wrapper" *ngIf="hasData">
-            <app-treemap-visualization [data]="filteredData" [isDarkTheme]="isDarkTheme" [showLabels]="showLabels"
+        <div class="treemap-wrapper" *ngIf="hierarchyRoot && !isLoading"> <app-treemap-visualization
+                [hierarchyRoot]="hierarchyRoot" [isDarkTheme]="isDarkTheme" [showLabels]="showLabels"
                 [groupSmallNodes]="groupSmallNodes" [colorMode]="colorMode" [coverageRanges]="coverageRanges"
                 [enableDomainGrouping]="enableDomainGrouping" [filters]="filters" [sortBy]="sortBy"
                 (nodeSelected)="onNodeSelected($event)">
             </app-treemap-visualization>
 
-            <!-- Zoom Controls -->
             <div class="zoom-controls">
                 <button class="zoom-button" (click)="resetZoom()" title="Reset zoom">
                     <i class="fas fa-compress-arrows-alt"></i>
                 </button>
+                <button class="zoom-button" (click)="exportSvg()" title="Export SVG">
+                    <i class="fas fa-download"></i>
+                </button>
             </div>
         </div>
-
-        <!-- No data message -->
-        <div class="no-data-message" *ngIf="!hasData && !isLoading">
+        <div class="no-data-message" *ngIf="!hierarchyRoot && !isLoading">
             <div class="message-content">
                 <h3>No coverage data available</h3>
                 <p>No code coverage data has been loaded. Upload a Cobertura XML file to see results.</p>
@@ -52,7 +48,6 @@
         </div>
     </div>
 
-    <!-- Modal-style Details panel when a node is selected -->
     <app-treemap-details *ngIf="selectedNode" [@fadeInOut] [selectedNode]="selectedNode" [selectedClass]="selectedClass"
         [similarClasses]="similarClasses" [isDarkTheme]="isDarkTheme" (closeDetails)="closeDetails()"
         (selectSimilarNode)="onSelectSimilarClass($event)">

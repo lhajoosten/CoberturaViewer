@@ -11,6 +11,9 @@ export interface LineInfo {
 
     /** Whether this line contains a branch decision point */
     branch: boolean;
+
+    /** Collection of condition coverage data */
+    conditions?: ConditionInfo;
 }
 
 /**
@@ -32,6 +35,18 @@ export interface ClassInfo {
 
     /** Collection of individual line coverage data */
     lines: LineInfo[];
+
+    /** Collection of method coverage data */
+    methods?: MethodInfo[];
+
+    /** Complexity */
+    complexity?: number;
+
+    /** Collection of condition coverage data */
+    linesValid?: number;   // Add this
+
+    /** Total number of lines that could be covered */
+    linesCovered?: number; // Add this
 }
 
 /**
@@ -50,6 +65,15 @@ export interface PackageInfo {
 
     /** Collection of classes contained within this package */
     classes: ClassInfo[];
+
+    /** Collection of method coverage data */
+    methodRate?: number;
+
+    /** Collection of condition coverage data */
+    conditionRate?: number;
+
+    /** Complexity */
+    complexity?: number;
 }
 
 /**
@@ -80,6 +104,18 @@ export interface CoverageSummary {
 
     /** When the coverage data was generated */
     timestamp: string;
+
+    /** Total number of classes/files analyzed */
+    methodsValid?: number
+
+    /** Total number of classes/files covered */
+    methodsCovered?: number
+
+    /** Total number of branches analyzed */
+    conditionsValid?: number
+
+    /** Total number of branches covered */
+    conditionsCovered?: number
 }
 
 /**
@@ -270,33 +306,40 @@ export interface Coverage {
  * Used specifically for building treemap hierarchies
  */
 export interface TreeNode {
-    /** Display name of the node */
+    name: string;          // Name of the node (package or class)
+    coverage: number;      // Line coverage percentage
+    branchRate?: number;   // Optional: Branch coverage percentage
+    complexity?: number;   // Optional: Cyclomatic complexity
+    linesValid: number;    // Total valid lines for coverage
+    linesCovered?: number; // Total lines covered
+    isNamespace: boolean;  // True if it's a package/grouping node, false for class/leaf
+    value?: number;        // Size metric for visualization (e.g., linesValid)
+    children?: TreeNode[]; // Child nodes
+    packageName?: string;  // Name of the parent package (useful for class nodes)
+    filename?: string;     // Filename (for class nodes)
+    originalData?: any;    // Optional: Reference to the original ClassInfo/PackageInfo if needed
+    isDomainGroup?: boolean; // Optional: Flag for domain grouping feature
+    isGroupedNode?: boolean;
+}
+
+/**
+ * Coverage information for a specific method/function
+ * Used for analyzing method-level coverage and complexity
+ */
+export interface MethodInfo {
     name: string;
+    signature: string;
+    lineRate: number;
+    branchRate: number;
+    complexity: number;
+}
 
-    /** Package or namespace name */
-    packageName?: string;
-
-    /** Coverage percentage (0-100) */
-    coverage: number;
-
-    /** Total lines of code in this node */
-    linesValid: number;
-
-    /** Lines of code covered by tests */
-    linesCovered?: number;
-
-    /** Whether this node represents a namespace/package */
-    isNamespace?: boolean;
-
-    /** Whether this node represents a domain group */
-    isDomainGroup?: boolean;
-
-    /** Size value for visualization scaling */
-    value?: number;
-
-    /** Child nodes in the hierarchy */
-    children?: TreeNode[];
-
-    /** Original Coverage object this node was created from */
-    originalData?: any;
+/**
+ * Coverage information for a specific condition within a method
+ * Used for analyzing branch-level coverage and complexity
+ */
+export interface ConditionInfo {
+    coverage: number; // e.g. 100
+    total: number;    // e.g. 2
+    covered: number;  // e.g. 2
 }
