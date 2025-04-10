@@ -1,23 +1,252 @@
 <div class="dashboard-container" [class.dark-theme]="isDarkTheme">
-    <div class="dashboard-content" *ngIf="!hasCoverageData">
-        <app-file-uploader></app-file-uploader>
+    <!-- Header with title and global controls -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <i class="fas fa-chart-pie"></i>
+            <h1>Test Coverage Dashboard</h1>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" (click)="toggleTheme()" title="Toggle Dark Mode">
+                <i class="fas" [ngClass]="isDarkTheme ? 'fa-sun' : 'fa-moon'"></i>
+            </button>
+            <div class="header-badge" *ngIf="hasCoverageData">
+                <span class="badge" [ngClass]="getOverallCoverageClass()">
+                    {{ getOverallCoverage() }}% Coverage
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Welcome screen when no data is loaded -->
+    <div class="dashboard-content welcome-screen" *ngIf="!hasCoverageData">
+        <div class="welcome-container">
+            <div class="welcome-header">
+                <h2>Welcome to the Coverage Dashboard</h2>
+                <p class="welcome-subtitle">Upload a coverage report file to get started</p>
+            </div>
+
+            <app-file-uploader></app-file-uploader>
+
+            <div class="welcome-features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3>Intuitive Visualizations</h3>
+                    <p>See your test coverage displayed as interactive treemaps and sunburst charts</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Smart Insights</h3>
+                    <p>Get actionable recommendations to improve your test coverage strategically</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Track Progress</h3>
+                    <p>Monitor coverage trends over time with historical data tracking</p>
+                </div>
+            </div>
+
+            <div class="welcome-recent" *ngIf="hasHistory">
+                <div class="recent-header">
+                    <h3>Recent Reports</h3>
+                    <button class="btn-outline btn-sm" (click)="clearHistory()" *ngIf="snapshots.length > 0">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+
+                <div class="recent-list">
+                    <div class="recent-item" *ngFor="let snapshot of snapshots.slice().reverse().slice(0, 5)"
+                        (click)="loadSnapshot(snapshot)">
+                        <div class="recent-date">{{ formatDate(snapshot.date) }}</div>
+                        <div class="recent-coverage" [ngClass]="getCoverageClass(snapshot.lineRate)">
+                            {{ snapshot.lineRate.toFixed(1) }}%
+                        </div>
+                        <div class="recent-meta">
+                            {{ snapshot.linesCovered }} / {{ snapshot.linesValid }} lines
+                        </div>
+                        <button class="btn-icon">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Dashboard with tabs after data is loaded -->
     <div class="dashboard-content" *ngIf="hasCoverageData">
         <div class="tabs-container">
             <div class="tabs-header">
                 <button *ngFor="let tab of tabs" class="tab-button" [class.active]="activeTab === tab.id"
-                    (click)="setActiveTab(tab.id)">
+                    (click)="setActiveTab(tab.id)" [attr.data-tooltip]="tab.label">
                     <i [class]="tab.icon"></i>
                     <span>{{ tab.label }}</span>
                 </button>
+
+                <div class="tabs-actions">
+                    <button class="action-btn" (click)="reloadData()" title="Reload Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="action-btn" (click)="exportCurrentView()" title="Export Current View">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="action-btn" (click)="uploadNewData()" title="Upload New Data">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="tab-content" [@fadeInOut]>
-                <app-coverage-treemap *ngIf="activeTab === 'treemap'"></app-coverage-treemap>
-                <app-coverage-sunburst *ngIf="activeTab === 'sunburst'"></app-coverage-sunburst>
-                <app-coverage-trends *ngIf="activeTab === 'history'"></app-coverage-trends>
-                <app-coverage-insights *ngIf="activeTab === 'insights'"></app-coverage-insights>
+                <!-- Treemap Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'treemap'">
+                    <app-ngx-coverage-treemap></app-ngx-coverage-treemap>
+                </div>
+
+                <!-- Sunburst Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'sunburst'">
+                    <app-ngx-coverage-sunburst></app-ngx-coverage-sunburst>
+                </div>
+
+                <!-- History Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'history'">
+                    <app-ngx-coverage-trends></app-ngx-coverage-trends>
+                </div>
+
+                <!-- Insights Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'insights'">
+                    <app-coverage-insights></app-coverage-insights>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with metadata -->
+    <footer class="dashboard-footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span *ngIf="hasCoverageData">Last updated: {{ getLastUpdated() }}</span>
+                <span *ngIf="!hasCoverageData">Ready to analyze your coverage data</span>
+            </div>
+            <div class="footer-actions">
+                <button class="btn-text" (click)="showAboutModal()">
+                    <i class="fas fa-info-circle"></i> About
+                </button>
+                <button class="btn-text" (click)="showHelpModal()">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- About modal -->
+    <div class="modal-overlay" *ngIf="showAbout">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>About Coverage Dashboard</h3>
+                <button class="modal-close" (click)="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="about-content">
+                    <div class="about-logo">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h4>Test Coverage Dashboard</h4>
+                    <p class="about-version">Version 1.0.0</p>
+                    <p>A powerful tool for visualizing and analyzing test coverage data from Cobertura XML reports.</p>
+
+                    <h5>Features</h5>
+                    <ul>
+                        <li>Interactive treemap and sunburst visualizations</li>
+                        <li>Historical trend analysis</li>
+                        <li>Smart insights and recommendations</li>
+                        <li>Custom filtering and sorting</li>
+                        <li>Export capabilities</li>
+                    </ul>
+
+                    <p class="about-footer">Built with Angular, D3.js and NGX-Charts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help modal -->
+    <div class="modal-overlay" *ngIf="showHelp">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Help & Getting Started</h3>
+                <button class="modal-close" (click)="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-content">
+                    <h4>Getting Started</h4>
+                    <ol>
+                        <li>Upload a Cobertura XML file using the file uploader</li>
+                        <li>Explore different visualizations using the tabs</li>
+                        <li>Interact with charts to drill down into specific components</li>
+                        <li>Review insights and recommendations</li>
+                    </ol>
+
+                    <h4>Working with Visualizations</h4>
+                    <ul>
+                        <li><strong>Treemap</strong> - Shows nested rectangles representing packages and classes</li>
+                        <li><strong>Sunburst</strong> - Displays coverage as a radial hierarchy</li>
+                        <li><strong>History</strong> - Charts showing coverage trends over time</li>
+                        <li><strong>Insights</strong> - Actionable recommendations to improve coverage</li>
+                    </ul>
+
+                    <h4>Keyboard Shortcuts</h4>
+                    <div class="shortcuts-grid">
+                        <div class="shortcut">
+                            <kbd>T</kbd>
+                            <span>Switch to Treemap</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>S</kbd>
+                            <span>Switch to Sunburst</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>H</kbd>
+                            <span>Switch to History</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>I</kbd>
+                            <span>Switch to Insights</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>U</kbd>
+                            <span>Upload new file</span>
+                        </div>
+                        <div class="shortcut">
+                            <kbd>?</kbd>
+                            <span>Show this help</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload modal when switching from data view -->
+    <div class="modal-overlay" *ngIf="showUpload">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Upload New Coverage Data</h3>
+                <button class="modal-close" (click)="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message">Uploading new data will replace the current visualization. Your history will be
+                    preserved.</p>
+                <app-file-uploader (uploadComplete)="onUploadComplete()"></app-file-uploader>
+                <div class="modal-actions">
+                    <button class="btn-outline" (click)="closeModal()">Cancel</button>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,124 @@
+<div class="sunburst-container card" [class.dark-theme]="isDarkTheme">
+    <div class="toolbar">
+        <h2>Coverage Hierarchy</h2>
+        <div class="toolbar-actions">
+            <button (click)="toggleChartType()" class="toolbar-btn" title="Toggle Chart Type">
+                <i class="fas" [ngClass]="chartType === 'advanced-pie' ? 'fa-chart-pie' : 'fa-chart-bar'"></i>
+            </button>
+            <button (click)="resetView()" class="toolbar-btn" title="Reset View">
+                <i class="fas fa-undo"></i>
+            </button>
+            <button (click)="exportChart()" class="toolbar-btn" title="Export as PNG">
+                <i class="fas fa-download"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="navigation-bar" *ngIf="breadcrumbs.length > 0">
+        <div class="breadcrumbs">
+            <span *ngFor="let crumb of breadcrumbs; let i = index" class="breadcrumb-item"
+                [class.active]="i === breadcrumbs.length - 1" (click)="navigateToBreadcrumb(i)">
+                {{ crumb.name }}
+            </span>
+        </div>
+    </div>
+
+    <div class="chart-container" #chartContainer>
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <span>Loading coverage data...</span>
+        </div>
+
+        <!-- Advanced Pie Chart -->
+        <ngx-charts-advanced-pie-chart
+            *ngIf="chartData && chartData.length > 0 && !isLoading && chartType === 'advanced-pie'"
+            [view]="[width, height]" [scheme]="colorScheme" [results]="chartData" [gradient]="false" [animations]="true"
+            (select)="onSelect($event)">
+        </ngx-charts-advanced-pie-chart>
+
+        <!-- Pie Chart (Sunburst alternative) -->
+        <ngx-charts-pie-chart *ngIf="chartData && chartData.length > 0 && !isLoading && chartType === 'pie'"
+            [view]="[width, height]" [scheme]="colorScheme" [results]="chartData" [gradient]="false" [animations]="true"
+            [doughnut]="true" [arcWidth]="0.25" [tooltipDisabled]="true" (select)="onSelect($event)"
+            (activate)="onActivate($event)" (deactivate)="onDeactivate()">
+        </ngx-charts-pie-chart>
+
+        <div class="empty-state" *ngIf="(!chartData || chartData.length === 0) && !isLoading">
+            <i class="fas fa-chart-pie"></i>
+            <p>No coverage data available.</p>
+        </div>
+
+        <!-- Custom Tooltip -->
+        <div class="tooltip" [style.left.px]="tooltipX" [style.top.px]="tooltipY" [style.opacity]="showTooltip ? 1 : 0">
+            <div *ngIf="tooltipNode" class="tooltip-content">
+                <div class="tooltip-header">
+                    <span class="node-type" [ngClass]="tooltipNode.isPackage ? 'package' : 'class'">
+                        {{ tooltipNode.isPackage ? 'Package' : 'Class' }}
+                    </span>
+                    <div class="tooltip-title">{{ tooltipNode.name }}</div>
+                </div>
+
+                <div class="tooltip-metrics">
+                    <div class="tooltip-row">
+                        <span>Coverage:</span>
+                        <span [ngClass]="getCoverageClass(tooltipNode.coverage)">
+                            {{ tooltipNode.coverage.toFixed(1) }}%
+                        </span>
+                    </div>
+
+                    <div class="tooltip-row">
+                        <span>Lines:</span>
+                        <span>{{ tooltipNode.value }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel" *ngIf="currentNode">
+        <div class="node-info">
+            <div class="info-header">
+                <h3>{{ currentNode.name }}</h3>
+                <div class="coverage-badge" [ngClass]="getCoverageClass(currentNode.coverage)">
+                    {{ currentNode.coverage.toFixed(1) }}%
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Lines</div>
+                    <div class="metric-value">{{ currentNode.value }}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">Covered</div>
+                    <div class="metric-value">{{ getCoveredLines(currentNode) }}</div>
+                </div>
+
+                <div class="metric-card" *ngIf="currentNode.children && currentNode.children.length">
+                    <div class="metric-title">Items</div>
+                    <div class="metric-value">{{ currentNode.children.length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="color-box excellent"></div>
+            <span>90-100%</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box good"></div>
+            <span>75-90%</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box moderate"></div>
+            <span>50-75%</span>
+        </div>
+        <div class="legend-item">
+            <div class="color-box poor"></div>
+            <span>0-50%</span>
+        </div>
+    </div>
+</div>

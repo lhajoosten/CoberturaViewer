@@ -1,0 +1,139 @@
+@use "sass:color";
+@use "sass:map";
+
+// Color Palette
+$primary-color: #5b2ac3;
+$primary-light: #7c49e3;
+$primary-dark: #4a1eb0;
+$primary-bg: rgba(91, 42, 195, 0.08);
+
+$accent-color: #00ff95;
+$accent-light: #66ffbc;
+$accent-dark: #00cc78;
+$accent-bg: rgba(0, 255, 149, 0.08);
+
+// Theme Colors
+$background-color: #f8f9fa;
+$surface-color: #ffffff;
+$card-bg: #ffffff;
+$card-header-bg: #f8fafc;
+$border-color: #e2e8f0;
+
+// Typography Colors
+$text-color: #1a202c;
+$text-muted: #718096;
+$text-on-primary: #ffffff;
+$text-on-accent: #1a202c;
+
+// Feedback Colors
+$success-color: #00cc78;
+$info-color: #7c49e3;
+$warning-color: #ffb400;
+$error-color: #e53e3e;
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// Spacing Scale
+$spacing-scale: (
+  "xs": 0.25rem,
+  "sm": 0.5rem,
+  "md": 1rem,
+  "lg": 1.5rem,
+  "xl": 2rem,
+  "xxl": 3rem,
+);
+
+// Font Sizes
+$font-sizes: (
+  "xs": 0.7rem,
+  "sm": 0.8rem,
+  "base": 0.9rem,
+  "md": 1rem,
+  "lg": 1.1rem,
+  "xl": 1.25rem,
+  "xxl": 1.5rem,
+  "huge": 2rem,
+);
+
+// Border Radius
+$border-radius: (
+  "sm": 3px,
+  "md": 4px,
+  "lg": 6px,
+  "xl": 8px,
+  "round": 50%,
+);
+
+// Shadows
+$shadows: (
+  "sm": 0 1px 2px rgba(91, 42, 195, 0.05),
+  "base": 0 1px 3px rgba(91, 42, 195, 0.1),
+  "md": 0 2px 4px rgba(91, 42, 195, 0.1),
+  "lg": 0 2px 8px rgba(91, 42, 195, 0.15),
+);
+
+// Color Function
+@function color($key, $opacity: 1) {
+  @if map.has-key($color-map, $key) {
+    $color: map.get($color-map, $key);
+    @return rgba($color, $opacity);
+  }
+  @warn "Unknown color `#{$key}` in color map.";
+  @return null;
+}
+
+// Spacing Function
+@function spacing($key) {
+  @if map.has-key($spacing-scale, $key) {
+    @return map.get($spacing-scale, $key);
+  }
+  @warn "Unknown spacing key `#{$key}` in spacing scale.";
+  @return null;
+}
+
+// Color Map for easier color retrieval
+$color-map: (
+  "primary": $primary-color,
+  "primary-light": $primary-light,
+  "primary-dark": $primary-dark,
+  "primary-bg": $primary-bg,
+  "accent": $accent-color,
+  "accent-light": $accent-light,
+  "accent-dark": $accent-dark,
+  "accent-bg": $accent-bg,
+  "background": $background-color,
+  "surface": $surface-color,
+  "card-bg": $card-bg,
+  "card-header-bg": $card-header-bg,
+  "border": $border-color,
+  "text": $text-color,
+  "text-muted": $text-muted,
+  "text-on-primary": $text-on-primary,
+  "text-on-accent": $text-on-accent,
+  "success": $success-color,
+  "info": $info-color,
+  "warning": $warning-color,
+  "error": $error-color,
+);
+
+// Font Size Function
+@function font-size($key) {
+  @if map.has-key($font-sizes, $key) {
+    @return map.get($font-sizes, $key);
+  }
+  @warn "Unknown font size key `#{$key}` in font sizes.";
+  @return null;
+}
+
+// Border Radius Function
+@function border-radius($key) {
+  @if map.has-key($border-radius, $key) {
+    @return map.get($border-radius, $key);
+  }
+  @warn "Unknown border radius key `#{$key}` in border radius.";
+  @return null;
+}

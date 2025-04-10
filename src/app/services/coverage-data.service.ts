@@ -4,6 +4,7 @@ import { CoverageData, TreeNode, PackageInfo, ClassInfo } from '../models/covera
 export interface BuildHierarchyOptions {
     groupSmallNodes?: boolean;
     smallNodeThreshold?: number; // e.g., linesValid threshold
+    simplifyNames?: boolean; // Whether to simplify class and package names
 }
 
 @Injectable({
@@ -12,100 +13,297 @@ export interface BuildHierarchyOptions {
 export class CoverageDataService {
 
     buildHierarchy(coverageData: CoverageData | null, options?: BuildHierarchyOptions): TreeNode | null {
-        if (!coverageData?.summary || !coverageData.packages) { /* ... error handling ... */ return null; }
+        if (!coverageData?.summary || !coverageData.packages) {
+            console.warn("Cannot build hierarchy: Missing coverage data or summary");
+            return null;
+        }
 
         const groupNodes = options?.groupSmallNodes ?? false;
-        // Threshold for grouping (e.g., classes with fewer than 10 lines)
+        // Threshold for grouping small nodes (% of package total)
         const threshold = options?.smallNodeThreshold ?? 10;
+        // Whether to simplify package and class names
+        const simplifyNames = options?.simplifyNames ?? true;
 
-        const root: TreeNode = { /* ... root setup ... */
-            name: 'Overall Coverage', coverage: coverageData.summary.lineRate || 0, branchRate: coverageData.summary.branchRate || 0, complexity: coverageData.summary.complexity || 0, linesValid: 0, linesCovered: 0, isNamespace: true, value: 0, children: []
+        console.log(`Building hierarchy with options: groupSmallNodes=${groupNodes}, threshold=${threshold}, simplifyNames=${simplifyNames}`);
+
+        // Initialize root node
+        const root: TreeNode = {
+            name: 'Overall Coverage',
+            coverage: coverageData.summary.lineRate || 0,
+            branchRate: coverageData.summary.branchRate || 0,
+            complexity: coverageData.summary.complexity || 0,
+            linesValid: 0,
+            linesCovered: 0,
+            isNamespace: true,
+            value: 0,
+            children: []
         };
-        let totalRootValue = 0, totalRootLinesValid = 0, totalRootLinesCovered = 0;
 
-        coverageData.packages.forEach((pkgInfo: PackageInfo) => {
-            let packageLinesValid = 0, packageLinesCovered = 0, packageValue = 0;
-            const finalPackageChildren: TreeNode[] = []; // Nodes to actually add (including 'Other')
-            const largeClassNodes: TreeNode[] = [];
-            const smallClassData: ClassInfo[] = []; // Collect raw small class data
-
-            pkgInfo.classes.forEach((clsInfo: ClassInfo) => {
-                const classLinesValid = clsInfo.linesValid ?? 0;
-                if (classLinesValid <= 0) return; // Skip zero-line classes always
-
-                // *** Grouping Logic ***
-                if (groupNodes && classLinesValid < threshold) {
-                    smallClassData.push(clsInfo); // Collect small classes
-                } else {
-                    // Process large classes normally
-                    const classValue = classLinesValid;
-                    const classNode: TreeNode = { /* ... create classNode as before ... */
-                        name: clsInfo.name, packageName: pkgInfo.name, coverage: clsInfo.lineRate || 0, branchRate: clsInfo.branchRate || 0, complexity: clsInfo.complexity || 0, linesValid: classLinesValid, linesCovered: clsInfo.linesCovered ?? 0, isNamespace: false, value: classValue, children: undefined, filename: clsInfo.filename
-                    };
-                    largeClassNodes.push(classNode); // Add to large nodes list
-                }
-                // Aggregate totals for package regardless of grouping for accurate stats
-                packageLinesValid += classLinesValid;
-                packageLinesCovered += (clsInfo.linesCovered ?? 0);
-            });
-
-            // Add all large nodes to final list
-            finalPackageChildren.push(...largeClassNodes);
-            packageValue += largeClassNodes.reduce((sum, node) => sum + (node.value || 0), 0);
-
-            // Create 'Other' node if small classes were collected and grouping is on
-            if (groupNodes && smallClassData.length > 0) {
-                const smallNodesLinesValid = smallClassData.reduce((sum, cls) => sum + (cls.linesValid ?? 0), 0);
-                const smallNodesLinesCovered = smallClassData.reduce((sum, cls) => sum + (cls.linesCovered ?? 0), 0);
-                const smallNodesComplexity = smallClassData.reduce((sum, cls) => sum + (cls.complexity ?? 0), 0);
-                const smallNodesValue = smallNodesLinesValid; // Value based on total lines
-                const smallNodesCoverage = smallNodesLinesValid > 0 ? (smallNodesLinesCovered / smallNodesLinesValid) * 100 : 0;
-                // Note: BranchRate for 'Other' is hard to calculate meaningfully, maybe omit or average?
-
-                const otherNode: TreeNode = {
-                    name: `Other (${smallClassData.length} small classes)`,
-                    packageName: pkgInfo.name,
-                    coverage: this.clampRate(smallNodesCoverage),
-                    branchRate: 0, // Or calculate average?
-                    complexity: smallNodesComplexity,
-                    linesValid: smallNodesLinesValid,
-                    linesCovered: smallNodesLinesCovered,
-                    isNamespace: false, // Treat as a leaf visually
-                    isGroupedNode: true, // Add flag to identify this node
-                    value: Math.max(1, smallNodesValue), // Ensure grouped node has at least value 1
-                    children: undefined, // No children visually
-                    originalData: smallClassData // Optionally store original data
-                };
-                finalPackageChildren.push(otherNode);
-                packageValue += otherNode.value || 0;
-            }
-
-            // Add the package node if it has children (large or 'Other')
-            if (finalPackageChildren.length > 0) {
-                const packageCoverage = packageLinesValid > 0 ? (packageLinesCovered / packageLinesValid) * 100 : 0;
-                const packageNode: TreeNode = { /* ... create packageNode as before ... */
-                    name: pkgInfo.name || 'Default Package', coverage: this.clampRate(packageCoverage), branchRate: pkgInfo.branchRate || 0, complexity: pkgInfo.complexity || 0, linesValid: packageLinesValid, linesCovered: packageLinesCovered, isNamespace: true, value: packageValue, children: finalPackageChildren, packageName: pkgInfo.name
-                };
-                root.children!.push(packageNode);
-                totalRootValue += packageValue;
-                totalRootLinesValid += packageLinesValid;
-                totalRootLinesCovered += packageLinesCovered;
-            }
+        // First pass - calculate total lines for proportion calculations
+        let totalLinesValid = 0;
+        coverageData.packages.forEach(pkg => {
+            const packageLinesValid = pkg.classes.reduce((sum, cls) =>
+                sum + (cls.linesValid || 0), 0);
+            totalLinesValid += packageLinesValid;
         });
 
-        // Set final root stats
-        root.value = totalRootValue || 1;
+        if (totalLinesValid <= 0) {
+            console.warn("Cannot build hierarchy: No valid lines found in coverage data");
+            return null;
+        }
+
+        console.log(`Building hierarchy with total lines: ${totalLinesValid}`);
+
+        // Second pass - build the hierarchy with proportional values
+        let totalValue = 0;
+        let totalRootLinesValid = 0;
+        let totalRootLinesCovered = 0;
+
+        // Group packages by domain (first two segments of package name) if desired
+        const packagesByDomain = new Map<string, PackageInfo[]>();
+
+        // Process each package
+        coverageData.packages.forEach((pkgInfo: PackageInfo) => {
+            // Skip empty packages
+            if (!pkgInfo.classes?.length) return;
+
+            const packageName = pkgInfo.name || 'Default Package';
+
+            // Extract domain (first two segments of package)
+            let domain = packageName;
+            const parts = packageName.split('.');
+            if (parts.length >= 2) {
+                domain = `${parts[0]}.${parts[1]}`;
+            }
+
+            // Add to domain map
+            if (!packagesByDomain.has(domain)) {
+                packagesByDomain.set(domain, []);
+            }
+            packagesByDomain.get(domain)!.push(pkgInfo);
+        });
+
+        // Create domain-grouped packages
+        for (const [domain, packages] of packagesByDomain.entries()) {
+            // Process each package in this domain
+            const domainPackages: TreeNode[] = [];
+            let domainLinesValid = 0;
+            let domainLinesCovered = 0;
+            let domainValue = 0;
+
+            packages.forEach(pkgInfo => {
+                let packageLinesValid = 0;
+                let packageLinesCovered = 0;
+                const packageClasses: TreeNode[] = [];
+
+                // Process with small node grouping
+                const smallClassNodes: TreeNode[] = [];
+                const largeClassNodes: TreeNode[] = [];
+
+                // Process all classes in this package
+                pkgInfo.classes.forEach(clsInfo => {
+                    const classLinesValid = clsInfo.linesValid ?? 0;
+                    if (classLinesValid <= 0) return; // Skip zero-line classes
+
+                    // Determine package proportion threshold for small classes
+                    const packageTotal = pkgInfo.classes.reduce((sum, c) => sum + (c.linesValid ?? 0), 0);
+                    const classPercentage = (classLinesValid / packageTotal) * 100;
+
+                    // Create class node
+                    const classNode: TreeNode = {
+                        name: simplifyNames ? this.simplifyClassName(clsInfo.name, pkgInfo.name) : clsInfo.name,
+                        packageName: pkgInfo.name,
+                        coverage: clsInfo.lineRate || 0,
+                        branchRate: clsInfo.branchRate || 0,
+                        complexity: clsInfo.complexity || 0,
+                        linesValid: classLinesValid,
+                        linesCovered: clsInfo.linesCovered ?? 0,
+                        isNamespace: false,
+                        value: classLinesValid, // Size proportional to lines valid
+                        children: undefined,
+                        filename: clsInfo.filename
+                    };
+
+                    // Group small nodes if enabled
+                    if (groupNodes && classPercentage < threshold) {
+                        smallClassNodes.push(classNode);
+                    } else {
+                        largeClassNodes.push(classNode);
+                    }
+
+                    // Update package totals
+                    packageLinesValid += classLinesValid;
+                    packageLinesCovered += (clsInfo.linesCovered ?? 0);
+                });
+
+                // Add all large class nodes
+                packageClasses.push(...largeClassNodes);
+
+                // Create "Other" group for small classes if needed
+                if (smallClassNodes.length > 0) {
+                    const totalSmallLines = smallClassNodes.reduce((sum, node) => sum + node.linesValid, 0);
+                    const totalSmallCovered = smallClassNodes.reduce((sum, node) => sum + (node.linesCovered || 0), 0);
+                    const groupCoverage = totalSmallLines > 0 ? (totalSmallCovered / totalSmallLines) * 100 : 0;
+
+                    const otherNode: TreeNode = {
+                        name: `Other (${smallClassNodes.length} small classes)`,
+                        packageName: pkgInfo.name,
+                        coverage: this.clampRate(groupCoverage),
+                        branchRate: 0,
+                        complexity: smallClassNodes.reduce((sum, node) => sum + (node.complexity || 0), 0),
+                        linesValid: totalSmallLines,
+                        linesCovered: totalSmallCovered,
+                        isNamespace: false,
+                        isGroupedNode: true,
+                        value: totalSmallLines, // Use total lines as value
+                        children: undefined,
+                        originalData: smallClassNodes // Store original nodes
+                    };
+
+                    packageClasses.push(otherNode);
+                }
+
+                // Only add package if it has classes
+                if (packageClasses.length > 0) {
+                    // Calculate package coverage
+                    const packageCoverage = packageLinesValid > 0 ?
+                        (packageLinesCovered / packageLinesValid) * 100 : 0;
+
+                    // Simplify package name if option enabled
+                    let displayName = pkgInfo.name || '';
+                    if (simplifyNames) {
+                        displayName = this.simplifyPackageName(displayName, domain);
+                    }
+
+                    // Create package node
+                    const packageNode: TreeNode = {
+                        name: displayName,
+                        coverage: this.clampRate(packageCoverage),
+                        branchRate: pkgInfo.branchRate || 0,
+                        complexity: pkgInfo.complexity || 0,
+                        linesValid: packageLinesValid,
+                        linesCovered: packageLinesCovered,
+                        isNamespace: true,
+                        value: packageLinesValid, // Value proportional to lines valid
+                        children: packageClasses,
+                        packageName: pkgInfo.name
+                    };
+
+                    // Log package details for debugging
+                    console.log(`Package: ${pkgInfo.name}, Lines: ${packageLinesValid}, Classes: ${packageClasses.length}, Proportion: ${(packageLinesValid / totalLinesValid * 100).toFixed(2)}%`);
+
+                    // Add to domain packages
+                    domainPackages.push(packageNode);
+                    domainLinesValid += packageLinesValid;
+                    domainLinesCovered += packageLinesCovered;
+                    domainValue += packageLinesValid;
+                }
+            });
+
+            // If there's only one package in the domain, just add it directly to root
+            if (domainPackages.length === 1) {
+                root.children!.push(domainPackages[0]);
+            }
+            // Otherwise, create a domain grouping node
+            else if (domainPackages.length > 1) {
+                // Calculate domain coverage
+                const domainCoverage = domainLinesValid > 0 ?
+                    (domainLinesCovered / domainLinesValid) * 100 : 0;
+
+                // Create domain node
+                const domainNode: TreeNode = {
+                    name: domain,
+                    coverage: this.clampRate(domainCoverage),
+                    linesValid: domainLinesValid,
+                    linesCovered: domainLinesCovered,
+                    isNamespace: true,
+                    isDomainGroup: true,
+                    value: domainValue, // Value proportional to lines valid
+                    children: domainPackages,
+                    packageName: domain
+                };
+
+                // Add to root
+                root.children!.push(domainNode);
+            }
+
+            // Update root totals
+            totalValue += domainValue;
+            totalRootLinesValid += domainLinesValid;
+            totalRootLinesCovered += domainLinesCovered;
+        }
+
+        // Set final root properties
+        root.value = totalRootLinesValid;
         root.linesValid = totalRootLinesValid;
         root.linesCovered = totalRootLinesCovered;
-        root.coverage = root.linesValid > 0 ? this.clampRate((root.linesCovered / root.linesValid) * 100) : 0;
+        root.coverage = totalRootLinesValid > 0 ?
+            this.clampRate((totalRootLinesCovered / totalRootLinesValid) * 100) : 0;
 
-        if (!root.children || root.children.length === 0) {
-            console.warn("Hierarchy built, but root has no children packages (might be due to zero-line class filtering).");
-        } else if (root.value <= 1) {
-            console.warn(`Hierarchy root value is low (${root.value}). Check source data.`);
+        if (root.children?.length === 0) {
+            console.warn("No valid packages found in coverage data");
+            return null;
+        }
+
+        // Log hierarchy for debugging
+        console.log(`Built hierarchy with ${root.children?.length} packages, total lines: ${totalRootLinesValid}`);
+        if (root.children) {
+            root.children.forEach(pkg => {
+                console.log(`- ${pkg.name}: ${pkg.linesValid} lines (${pkg.value} value), ${pkg.children?.length || 0} classes, ${(pkg.linesValid / totalRootLinesValid * 100).toFixed(2)}%`);
+            });
         }
 
         return root;
+    }
+
+    /**
+     * Simplifies class names by removing package prefixes and special characters
+     */
+    private simplifyClassName(className: string, packageName: string): string {
+        if (!className) return className;
+
+        // Remove package prefix if present
+        if (packageName && className.startsWith(packageName + '.')) {
+            className = className.substring(packageName.length + 1);
+        }
+
+        // Handle special class naming patterns
+        if (className.includes('$')) {
+            // Inner class - just show the part after the last $
+            className = className.substring(className.lastIndexOf('$') + 1);
+        }
+
+        if (className.includes('<') && className.includes('>')) {
+            // Generated method - simplify the name
+            const match = className.match(/^<(.+?)>/);
+            if (match && match[1]) {
+                className = match[1];
+                if (className.includes('.')) {
+                    className = className.substring(className.lastIndexOf('.') + 1);
+                }
+            } else {
+                className = className.replace(/<|>/g, '');
+            }
+        }
+
+        return className;
+    }
+
+    /**
+     * Simplifies package names by removing common domain prefixes and standardizing format
+     */
+    private simplifyPackageName(packageName: string, domain: string): string {
+        if (!packageName) return packageName;
+
+        // If the package is exactly the domain, just return it
+        if (packageName === domain) return packageName;
+
+        // Otherwise, if it starts with the domain, remove the domain prefix
+        if (domain && packageName.startsWith(domain + '.')) {
+            return packageName.substring(domain.length + 1);
+        }
+
+        return packageName;
     }
 
     private clampRate(rate: number): number {

@@ -1,0 +1,174 @@
+@use "./tokens" as tokens;
+
+@use "sass:color";
+@use "sass:map";
+
+// Responsive Breakpoint Mixin
+@mixin breakpoint($point) {
+  @if $point == sm {
+    @media (max-width: tokens.$breakpoint-sm) {
+      @content;
+    }
+  } @else if $point == md {
+    @media (max-width: tokens.$breakpoint-md) {
+      @content;
+    }
+  } @else if $point == lg {
+    @media (max-width: tokens.$breakpoint-lg) {
+      @content;
+    }
+  } @else if $point == xl {
+    @media (max-width: tokens.$breakpoint-xl) {
+      @content;
+    }
+  }
+}
+
+// Flexbox Mixins
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Typography Mixins
+@mixin font-size($size) {
+  font-size: map.get(tokens.$font-sizes, $size);
+}
+
+// Button Mixins
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: map.get(tokens.$border-radius, "md");
+}
+
+@mixin primary-button {
+  @include button-base;
+  background-color: tokens.color("primary");
+  color: tokens.color("text-on-primary");
+
+  &:hover {
+    background-color: tokens.color("primary-light");
+  }
+
+  &:active {
+    background-color: tokens.color("primary-dark");
+  }
+}
+
+@mixin secondary-button {
+  @include button-base;
+  background-color: tokens.color("accent");
+  color: tokens.color("text-on-accent");
+
+  &:hover {
+    background-color: tokens.color("accent-light");
+  }
+
+  &:active {
+    background-color: tokens.color("accent-dark");
+  }
+}
+
+// Input Mixins
+@mixin input-base {
+  padding: spacing("sm") spacing("md");
+  border: 1px solid tokens.color("border");
+  border-radius: map.get(tokens.$border-radius, "md");
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: tokens.color("primary");
+    box-shadow: 0 0 0 2px tokens.color("primary-bg");
+  }
+}
+
+// Card Mixin
+@mixin card {
+  background-color: tokens.color("card-bg");
+  border-radius: map.get(tokens.$border-radius, "lg");
+  box-shadow: map.get(tokens.$shadows, "base");
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: map.get(tokens.$shadows, "lg");
+  }
+}
+
+// Coverage Status Mixins
+@mixin coverage-status {
+  &.excellent {
+    color: tokens.color("success");
+  }
+  &.good {
+    color: tokens.color("accent-dark");
+  }
+  &.average {
+    color: tokens.color("warning");
+  }
+  &.poor {
+    color: tokens.color("error");
+  }
+}
+
+// Progress Bar Mixin
+@mixin progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: tokens.color("border");
+  border-radius: map.get(tokens.$border-radius, "md");
+  overflow: hidden;
+
+  .progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+
+    @include coverage-status;
+  }
+}
+
+// Tooltip Mixin
+@mixin tooltip {
+  position: absolute;
+  background-color: tokens.color("card-bg");
+  border: 1px solid tokens.color("border");
+  border-radius: map.get(tokens.$border-radius, "md");
+  box-shadow: map.get(tokens.$shadows, "md");
+  padding: spacing("sm");
+  z-index: 100;
+}
+
+// Loading Spinner Mixin
+@mixin loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid tokens.color("border");
+  border-top: 4px solid tokens.color("primary");
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

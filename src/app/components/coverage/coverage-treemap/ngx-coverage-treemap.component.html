@@ -1,0 +1,418 @@
+<div class="treemap-container" [class.dark-theme]="isDarkTheme">
+    <!-- Control panel -->
+    <div class="control-panel">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Coverage Threshold:</label>
+                <div class="slider-container">
+                    <input type="range" [(ngModel)]="minCoverage" (input)="applyFilters()" min="0" max="100" step="5">
+                    <span class="slider-value">{{ minCoverage }}%</span>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>Package:</label>
+                <select [(ngModel)]="selectedPackage" (change)="applyFilters()">
+                    <option value="">All Packages</option>
+                    <option *ngFor="let pkg of packageList" [value]="pkg">{{ pkg }}</option>
+                </select>
+            </div>
+
+            <div class="filter-group search-group">
+                <label>Search:</label>
+                <div class="search-container">
+                    <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
+                        placeholder="Search classes...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="options-row">
+            <div class="toggle-group">
+                <label>
+                    <input type="checkbox" [(ngModel)]="showLabels" (change)="updateChartOptions()">
+                    <span class="toggle-label">Show Labels</span>
+                </label>
+            </div>
+
+            <div class="toggle-group">
+                <label>
+                    <input type="checkbox" [(ngModel)]="groupSmallNodes" (change)="rebuildHierarchy()">
+                    <span class="toggle-label">Group Small Nodes</span>
+                </label>
+            </div>
+
+            <div class="toggle-group">
+                <label>
+                    <input type="checkbox" [(ngModel)]="enableDomainGrouping" (change)="rebuildHierarchy()">
+                    <span class="toggle-label">Domain Grouping</span>
+                </label>
+            </div>
+
+            <div class="sort-group">
+                <label>Sort by:</label>
+                <select [(ngModel)]="sortBy" (change)="applyFilters()">
+                    <option value="size">Size</option>
+                    <option value="coverage">Coverage</option>
+                    <option value="name">Name</option>
+                </select>
+            </div>
+
+            <div class="action-buttons">
+                <button *ngIf="hasActiveFilters" (click)="resetFilters()" class="btn btn-clear">
+                    <i class="fas fa-times"></i> Clear Filters
+                </button>
+
+                <button (click)="toggleExclusionsPanel()" class="btn btn-exclusion">
+                    <i class="fas fa-filter"></i> Exclusions
+                    <span *ngIf="enabledExclusionPatternsCount > 0" class="badge">
+                        {{ enabledExclusionPatternsCount }}
+                    </span>
+                </button>
+
+                <button (click)="exportChart()" class="btn btn-export">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualization area -->
+    <div class="visualization-container" #chartContainer>
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <span>Processing coverage data...</span>
+        </div>
+
+        <ngx-charts-tree-map *ngIf="chartData && chartData.length > 0 && !isLoading" [scheme]="colorScheme"
+            [results]="chartData" [gradient]="false" [animations]="true" [labelFormatting]="labelFormatting"
+            [valueFormatting]="valueFormatting" [tooltipDisabled]="true" (select)="onSelect($event)"
+            (activate)="onActivate($event)" (deactivate)="onDeactivate()">
+        </ngx-charts-tree-map>
+
+        <div class="empty-state" *ngIf="(!chartData || chartData.length === 0) && !isLoading">
+            <i class="fas fa-chart-area"></i>
+            <p>No coverage data available or all data is filtered out.</p>
+            <button *ngIf="hasActiveFilters" (click)="resetFilters()" class="btn">Clear Filters</button>
+        </div>
+    </div>
+
+    <!-- Custom tooltip -->
+    <div class="tooltip" [style.left.px]="tooltipX" [style.top.px]="tooltipY" [style.opacity]="showTooltip ? 1 : 0">
+        <div *ngIf="tooltipNode" class="tooltip-content">
+            <div class="tooltip-header">
+                <span class="node-type" [class.package]="tooltipNode.isNamespace"
+                    [class.class]="!tooltipNode.isNamespace && !tooltipNode.isGroupedNode"
+                    [class.grouped]="tooltipNode.isGroupedNode">
+                    {{ tooltipNode.isNamespace ? 'Package' : (tooltipNode.isGroupedNode ? 'Group' : 'Class') }}
+                </span>
+                <div class="tooltip-title">{{ tooltipNode.name }}</div>
+            </div>
+
+            <div class="tooltip-package" *ngIf="tooltipNode.packageName && !tooltipNode.isNamespace">
+                {{ tooltipNode.packageName }}
+            </div>
+
+            <div class="tooltip-metrics">
+                <div class="tooltip-row">
+                    <span>Coverage:</span>
+                    <span [ngClass]="getCoverageClass(tooltipNode.coverage)">
+                        {{ tooltipNode.coverage.toFixed(1) }}%
+                    </span>
+                </div>
+
+                <div class="tooltip-row">
+                    <span>Lines:</span>
+                    <span>{{ tooltipNode.linesValid }}</span>
+                </div>
+
+                <div class="tooltip-row" *ngIf="tooltipNode.linesCovered !== undefined">
+                    <span>Covered:</span>
+                    <span>{{ tooltipNode.linesCovered }} lines</span>
+                </div>
+
+                <div class="tooltip-row" *ngIf="tooltipNode.branchRate !== undefined">
+                    <span>Branch Rate:</span>
+                    <span [ngClass]="getCoverageClass(tooltipNode.branchRate)">
+                        {{ tooltipNode.branchRate.toFixed(1) }}%
+                    </span>
+                </div>
+
+                <div class="tooltip-row" *ngIf="tooltipNode.filename">
+                    <span>File:</span>
+                    <span class="filename">{{ tooltipNode.filename }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details panel -->
+    <div class="details-panel" *ngIf="selectedNode" [@slideInRight]>
+        <div class="details-header">
+            <h3>{{ selectedNode.isNamespace ? 'Package Details' : 'Class Details' }}</h3>
+            <button class="close-button" (click)="closeDetails()">&times;</button>
+        </div>
+
+        <div class="details-content">
+            <div class="node-info">
+                <div class="node-name">{{ selectedNode.name }}</div>
+                <div class="node-package" *ngIf="!selectedNode.isNamespace">{{ selectedNode.packageName }}</div>
+
+                <div class="coverage-summary">
+                    <div class="coverage-indicator">
+                        <div class="coverage-label">Line Coverage</div>
+                        <div class="coverage-value" [ngClass]="getCoverageClass(selectedNode.coverage)">
+                            {{ selectedNode.coverage.toFixed(1) }}%
+                        </div>
+                    </div>
+
+                    <div class="coverage-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" [style.width.%]="selectedNode.coverage"
+                                [ngClass]="getCoverageClass(selectedNode.coverage)"></div>
+                        </div>
+                        <div class="progress-label">
+                            {{ selectedNode.linesCovered }} / {{ selectedNode.linesValid }} lines covered
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Lines of Code</div>
+                        <div class="metric-value">{{ selectedNode.linesValid }}</div>
+                    </div>
+
+                    <div class="metric-card" *ngIf="selectedNode.branchRate !== undefined">
+                        <div class="metric-label">Branch Coverage</div>
+                        <div class="metric-value" [ngClass]="getCoverageClass(selectedNode.branchRate)">
+                            {{ selectedNode.branchRate.toFixed(1) }}%
+                        </div>
+                    </div>
+
+                    <div class="metric-card" *ngIf="selectedNode.isNamespace">
+                        <div class="metric-label">Classes</div>
+                        <div class="metric-value">{{ selectedNode.children?.length || 0 }}</div>
+                    </div>
+                </div>
+
+                <div class="details-file" *ngIf="selectedNode.filename">
+                    <div class="file-label">Source File:</div>
+                    <div class="file-path">{{ selectedNode.filename }}</div>
+                </div>
+            </div>
+
+            <!-- Child classes for package nodes -->
+            <div class="children-list" *ngIf="selectedNode.isNamespace && selectedNode.children?.length">
+                <h4>Classes ({{ selectedNode.children?.length }})</h4>
+                <div class="list-container">
+                    <div class="list-header">
+                        <div class="list-col name-col">Name</div>
+                        <div class="list-col coverage-col">Coverage</div>
+                        <div class="list-col lines-col">Lines</div>
+                    </div>
+                    <div class="list-body">
+                        <div class="list-row" *ngFor="let child of selectedNode.children"
+                            (click)="selectChildNode(child)">
+                            <div class="list-col name-col">{{ child.name }}</div>
+                            <div class="list-col coverage-col">
+                                <div class="mini-progress">
+                                    <div class="mini-progress-bar" [style.width.%]="child.coverage"
+                                        [ngClass]="getCoverageClass(child.coverage)"></div>
+                                </div>
+                                <span [ngClass]="getCoverageClass(child.coverage)">{{ child.coverage.toFixed(1)
+                                    }}%</span>
+                            </div>
+                            <div class="list-col lines-col">{{ child.linesValid }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Line details for class nodes -->
+            <div class="line-details" *ngIf="selectedClass && !selectedNode.isNamespace">
+                <h4>Line Coverage Details</h4>
+                <div class="line-stats">
+                    <div class="stat">
+                        <div class="stat-value covered">{{ getCoveredLineCount() }}</div>
+                        <div class="stat-label">Covered</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value uncovered">{{ getUncoveredLineCount() }}</div>
+                        <div class="stat-label">Uncovered</div>
+                    </div>
+                    <div class="stat" *ngIf="getBranchLineCount() > 0">
+                        <div class="stat-value branch">{{ getBranchLineCount() }}</div>
+                        <div class="stat-label">Branches</div>
+                    </div>
+                </div>
+
+                <div class="line-table-container">
+                    <table class="line-table">
+                        <thead>
+                            <tr>
+                                <th>Line</th>
+                                <th>Hits</th>
+                                <th>Branch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let line of selectedClass.lines" [class.covered]="line.hits > 0"
+                                [class.uncovered]="line.hits === 0">
+                                <td>{{ line.number }}</td>
+                                <td>{{ line.hits }}</td>
+                                <td>
+                                    <span *ngIf="line.branch" class="branch-indicator">
+                                        <i class="fas fa-code-branch"></i>
+                                        <span *ngIf="line.conditions">{{ line.conditions.covered }}/{{
+                                            line.conditions.total }}</span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Similar classes -->
+            <div class="similar-classes" *ngIf="similarClasses.length > 0 && !selectedNode.isNamespace">
+                <h4>Similar Classes</h4>
+                <p class="similar-description">Classes with similar coverage in the same package:</p>
+                <div class="similar-list">
+                    <div class="similar-item" *ngFor="let item of similarClasses" (click)="selectSimilarClass(item)">
+                        <div class="similar-name">{{ item.name }}</div>
+                        <div class="similar-coverage" [ngClass]="getCoverageClass(item.coverage)">
+                            {{ item.coverage.toFixed(1) }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exclusions panel -->
+    <div class="exclusions-overlay" *ngIf="showExclusionsPanel" [@fadeIn]>
+        <div class="exclusions-panel">
+            <div class="exclusions-header">
+                <h3><i class="fas fa-filter"></i> Exclusion Patterns</h3>
+                <button class="close-button" (click)="toggleExclusionsPanel()">&times;</button>
+            </div>
+
+            <div class="exclusions-content">
+                <p class="exclusions-description">
+                    Define patterns to exclude specific classes or packages from the visualization.
+                </p>
+
+                <!-- Active patterns list -->
+                <div class="patterns-list">
+                    <h4>Active Patterns</h4>
+                    <div class="no-patterns" *ngIf="exclusionPatterns.length === 0">
+                        No exclusion patterns defined yet. Add a pattern below to start filtering.
+                    </div>
+
+                    <div class="pattern-controls" *ngIf="exclusionPatterns.length > 0">
+                        <button class="pattern-btn" (click)="enableAllPatterns()">Enable All</button>
+                        <button class="pattern-btn" (click)="disableAllPatterns()">Disable All</button>
+                    </div>
+
+                    <div class="pattern-item" *ngFor="let pattern of exclusionPatterns; let i = index"
+                        [class.disabled]="!pattern.enabled">
+                        <div class="pattern-toggle">
+                            <input type="checkbox" [id]="'pattern-' + i" [(ngModel)]="pattern.enabled"
+                                (change)="onPatternToggle()">
+                            <span class="toggle-checkbox"></span>
+                        </div>
+
+                        <div class="pattern-info">
+                            <div class="pattern-text">{{ pattern.pattern }}</div>
+                            <div>
+                                <span class="pattern-type" [ngClass]="pattern.type">{{ pattern.type }}</span>
+                                <span class="pattern-description" *ngIf="pattern.description">{{ pattern.description
+                                    }}</span>
+                            </div>
+                        </div>
+
+                        <div class="pattern-actions">
+                            <button class="delete-btn" (click)="removePattern(i)" title="Remove pattern">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add new pattern form -->
+                <div class="add-pattern-form">
+                    <h4>Add New Pattern</h4>
+
+                    <div class="form-group">
+                        <label for="pattern-text">Pattern</label>
+                        <input type="text" id="pattern-text" [(ngModel)]="newPattern.pattern"
+                            placeholder="e.g., Domain.Events or *Repository">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pattern-type">Type</label>
+                        <select id="pattern-type" [(ngModel)]="newPattern.type">
+                            <option value="class">Class</option>
+                            <option value="package">Package</option>
+                            <option value="regex">Regex</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pattern-description">Description (optional)</label>
+                        <input type="text" id="pattern-description" [(ngModel)]="newPattern.description"
+                            placeholder="Why this pattern is excluded">
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="add-btn" [disabled]="!newPattern.pattern" (click)="addPattern()">
+                            <i class="fas fa-plus"></i> Add Pattern
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sample patterns -->
+                <div class="sample-patterns">
+                    <h4>Suggested Patterns</h4>
+                    <div class="sample-buttons">
+                        <button class="sample-button" *ngFor="let sample of samplePatterns"
+                            (click)="addSamplePattern(sample.pattern)">
+                            {{ sample.label }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exclusions-footer">
+                <button class="apply-btn" (click)="applyExclusions()">
+                    <i class="fas fa-check"></i> Apply Exclusions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coverage legend -->
+    <div class="coverage-legend">
+        <div class="legend-title">Coverage</div>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="color-box excellent"></div>
+                <span>90-100%</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box good"></div>
+                <span>75-90%</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box moderate"></div>
+                <span>50-75%</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box poor"></div>
+                <span>0-50%</span>
+            </div>
+        </div>
+    </div>
+</div>

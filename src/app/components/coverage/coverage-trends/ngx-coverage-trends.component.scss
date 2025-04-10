@@ -1,0 +1,296 @@
+@use "../../../../styles/_tokens" as tokens;
+@use "../../../../styles/_mixins" as mixins;
+@use "sass:map";
+
+.trends-container {
+  @include mixins.card;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+// Toolbar Styling
+.toolbar {
+  @include mixins.flex-between;
+  padding: spacing("md") spacing("lg");
+  background-color: tokens.color("card-header-bg");
+  border-bottom: 1px solid tokens.color("border");
+  flex-shrink: 0;
+
+  h2 {
+    margin: 0;
+    @include mixins.font-size("xl");
+    font-weight: 600;
+    color: tokens.color("text");
+    @include mixins.flex-center;
+    gap: spacing("md");
+
+    i {
+      color: tokens.color("primary");
+    }
+  }
+
+  .toolbar-actions {
+    @include mixins.flex-center;
+    gap: spacing("sm");
+  }
+
+  .toolbar-btn {
+    @include mixins.button-base;
+    width: 36px;
+    height: 36px;
+    background-color: tokens.color("primary-bg");
+    color: tokens.color("primary");
+
+    &:hover {
+      background-color: tokens.color("primary-light");
+      color: tokens.color("text-on-primary");
+    }
+  }
+}
+
+// Empty State Styling
+.history-empty {
+  flex: 1;
+  @include mixins.flex-center;
+  gap: spacing("xl");
+  padding: spacing("xl");
+
+  .empty-state {
+    text-align: center;
+    max-width: 500px;
+
+    i {
+      @include mixins.font-size("huge");
+      margin-bottom: spacing("md");
+      color: tokens.color("border");
+      @include mixins.flex-center;
+      background-color: tokens.color("background");
+      border-radius: map.get(tokens.$border-radius, "round");
+      box-shadow: map.get(tokens.$shadows, "md");
+      width: 100px;
+      height: 100px;
+    }
+
+    h3 {
+      @include mixins.font-size("lg");
+      font-weight: 600;
+      margin-bottom: spacing("sm");
+      color: tokens.color("text");
+    }
+
+    p {
+      @include mixins.font-size("base");
+      color: tokens.color("text-muted");
+      line-height: 1.5;
+      margin-bottom: spacing("md");
+    }
+  }
+
+  .demo-data {
+    @include mixins.flex-center;
+    gap: spacing("md");
+
+    .btn-primary {
+      @include mixins.primary-button;
+    }
+    .btn-outline {
+      @include mixins.button-base;
+      background-color: transparent;
+      border: 1px solid tokens.color("primary");
+      color: tokens.color("primary");
+
+      &:hover {
+        background-color: tokens.color("primary-bg");
+      }
+    }
+  }
+}
+
+// Dashboard Header
+.dashboard-header {
+  @include mixins.flex-between;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: spacing("md");
+  padding-bottom: spacing("md");
+  border-bottom: 1px solid tokens.color("border");
+  margin-bottom: spacing("lg");
+
+  .filter-section,
+  .metrics-toggle,
+  .view-options {
+    display: flex;
+    flex-direction: column;
+    gap: spacing("sm");
+  }
+
+  .filter-section {
+    flex-basis: 250px;
+  }
+  .metrics-toggle {
+    flex: 1;
+    min-width: 200px;
+  }
+  .view-options {
+    flex-basis: 200px;
+  }
+}
+
+// Metrics Buttons
+.metrics-buttons {
+  @include mixins.flex-center;
+  flex-wrap: wrap;
+  gap: spacing("sm");
+}
+
+.metric-toggle {
+  @include mixins.button-base;
+  border-radius: map.get(tokens.$border-radius, "round");
+  padding: spacing("xs") spacing("md");
+  @include mixins.font-size("sm");
+  @include mixins.flex-center;
+  gap: spacing("xs");
+  border-width: 2px;
+  border-color: transparent;
+
+  i.fa-circle {
+    font-size: 10px;
+  }
+
+  &.active {
+    background-color: tokens.color("hover");
+    border-color: currentColor;
+    font-weight: 500;
+  }
+}
+
+// Stats Cards
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: spacing("md");
+  margin-bottom: spacing("lg");
+}
+
+.stat-card {
+  @include mixins.card;
+  padding: spacing("md");
+  @include mixins.flex-column;
+  gap: spacing("sm");
+  border-left-width: 4px;
+
+  .stat-title {
+    @include mixins.font-size("sm");
+    color: tokens.color("text-muted");
+    font-weight: 500;
+  }
+
+  .stat-value {
+    @include mixins.font-size("xxl");
+    font-weight: 600;
+    color: tokens.color("text");
+
+    &.excellent {
+      color: tokens.color("success");
+    }
+    &.good {
+      color: tokens.color("accent-dark");
+    }
+    &.average {
+      color: tokens.color("warning");
+    }
+    &.poor {
+      color: tokens.color("error");
+    }
+  }
+
+  .stat-change,
+  .stat-detail {
+    @include mixins.font-size("sm");
+    color: tokens.color("text-muted");
+    @include mixins.flex-center;
+    gap: spacing("xs");
+  }
+}
+
+// Chart Grid
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: spacing("lg");
+  margin-bottom: spacing("lg");
+}
+
+.chart-container {
+  @include mixins.card;
+  padding: spacing("md");
+  @include mixins.flex-column;
+
+  .chart-header {
+    @include mixins.flex-between;
+    margin-bottom: spacing("md");
+    flex-shrink: 0;
+
+    h3 {
+      margin: 0;
+      @include mixins.font-size("md");
+      font-weight: 500;
+      color: tokens.color("text");
+      @include mixins.flex-center;
+      gap: spacing("sm");
+    }
+  }
+
+  .chart-actions {
+    @include mixins.flex-center;
+    gap: spacing("sm");
+  }
+
+  .chart-btn {
+    @include mixins.button-base;
+    padding: spacing("xs") spacing("sm");
+    background-color: tokens.color("primary-bg");
+    color: tokens.color("primary");
+
+    &:hover {
+      background-color: tokens.color("primary-light");
+      color: tokens.color("text-on-primary");
+    }
+  }
+}
+
+// Responsive Adjustments
+@include mixins.breakpoint(xl) {
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-chart .chart-area {
+    min-height: 250px;
+  }
+}
+
+@include mixins.breakpoint(md) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats-cards {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+@include mixins.breakpoint(sm) {
+  .dashboard-header {
+    gap: spacing("sm");
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}

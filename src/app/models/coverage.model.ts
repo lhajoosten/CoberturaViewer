@@ -74,6 +74,8 @@ export interface PackageInfo {
 
     /** Complexity */
     complexity?: number;
+
+    expanded?: boolean; // Optional: Whether the package is expanded by default
 }
 
 /**
@@ -206,6 +208,14 @@ export interface CoverageInsight {
 
     /** Visual icon representing the insight type */
     icon: string;
+
+    expanded?: boolean; // Optional: Whether the insight is expanded by default
+
+    /** Additional information or context for the insight */
+    details?: string;
+
+    /** Optional URL for more information or action */
+    link?: string;
 }
 
 /**
@@ -261,6 +271,8 @@ export interface TimeRange {
  * Used for displaying coverage data in visualizations
  */
 export interface Coverage {
+    name: string;
+
     /** Name of the class */
     className: string;
 
@@ -292,13 +304,16 @@ export interface Coverage {
     isNamespace?: boolean;
 
     /** Whether this node represents a logical domain grouping */
-    isDomainGroup?: boolean;
+    isGroupedNode?: boolean;
 
     /** Size metric used for visualization */
     value?: number;
 
     /** Child nodes contained within this element */
     children?: Coverage[];
+
+    /** Original data reference for this node */
+    originalData?: ClassInfo | PackageInfo | Coverage | null;
 }
 
 /**

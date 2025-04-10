@@ -18,6 +18,11 @@ export class CoverageStoreService {
         return this.coverageData.asObservable();
     }
 
+    // New method to get the current value directly
+    getCurrentCoverageData(): CoverageData | null {
+        return this.coverageData.getValue();
+    }
+
     clearData(): void {
         this.coverageData.next(null);
     }
