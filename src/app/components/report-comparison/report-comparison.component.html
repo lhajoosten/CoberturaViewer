@@ -13,8 +13,8 @@
                 <div *ngFor="let report of availableReports" class="report-item"
                     [class.selected]="baseReport?.name === report.name" (click)="selectBaseReport(report)">
                     <div class="report-name">{{ report.name }}</div>
-                    <div class="report-coverage" [ngClass]="getCoverageClass(report.lineRate)">
-                        {{ report.lineRate.toFixed(2) }}%
+                    <div class="report-coverage" [ngClass]="getCoverageClass(report.lineCoverage)">
+                        {{ report.lineCoverage.toFixed(2) }}%
                     </div>
                 </div>
 
@@ -31,8 +31,8 @@
                     [class.selected]="comparisonReport?.name === report.name"
                     [class.disabled]="baseReport?.name === report.name" (click)="selectComparisonReport(report)">
                     <div class="report-name">{{ report.name }}</div>
-                    <div class="report-coverage" [ngClass]="getCoverageClass(report.lineRate)">
-                        {{ report.lineRate.toFixed(2) }}%
+                    <div class="report-coverage" [ngClass]="getCoverageClass(report.lineCoverage)">
+                        {{ report.lineCoverage.toFixed(2) }}%
                     </div>
                 </div>
 
@@ -55,32 +55,32 @@
             <div class="comparison-card">
                 <h4>Line Coverage</h4>
                 <div class="comparison-values">
-                    <div class="base-value" [ngClass]="getCoverageClass(baseReport?.lineRate || 0)">
-                        {{ baseReport?.lineRate?.toFixed(2) }}%
+                    <div class="base-value" [ngClass]="getCoverageClass(baseReport?.lineCoverage || 0)">
+                        {{ baseReport?.lineCoverage?.toFixed(2) }}%
                     </div>
                     <div class="arrow">→</div>
-                    <div class="comparison-value" [ngClass]="getCoverageClass(comparisonReport?.lineRate || 0)">
-                        {{ comparisonReport?.lineRate?.toFixed(2) }}%
+                    <div class="comparison-value" [ngClass]="getCoverageClass(comparisonReport?.lineCoverage || 0)">
+                        {{ comparisonReport?.lineCoverage?.toFixed(2) }}%
                     </div>
                 </div>
-                <div class="difference" [ngClass]="getChangeClass(comparisonData.summary.lineRate)">
-                    {{ getDiffLabel(comparisonData.summary.lineRate) }}
+                <div class="difference" [ngClass]="getChangeClass(comparisonData.summary.lineCoverage)">
+                    {{ getDiffLabel(comparisonData.summary.lineCoverage) }}
                 </div>
             </div>
 
             <div class="comparison-card">
                 <h4>Branch Coverage</h4>
                 <div class="comparison-values">
-                    <div class="base-value" [ngClass]="getCoverageClass(baseReport?.branchRate || 0)">
-                        {{ baseReport?.branchRate?.toFixed(2) }}%
+                    <div class="base-value" [ngClass]="getCoverageClass(baseReport?.branchCoverage || 0)">
+                        {{ baseReport?.branchCoverage?.toFixed(2) }}%
                     </div>
                     <div class="arrow">→</div>
-                    <div class="comparison-value" [ngClass]="getCoverageClass(comparisonReport?.branchRate || 0)">
-                        {{ comparisonReport?.branchRate?.toFixed(2) }}%
+                    <div class="comparison-value" [ngClass]="getCoverageClass(comparisonReport?.branchCoverage || 0)">
+                        {{ comparisonReport?.branchCoverage?.toFixed(2) }}%
                     </div>
                 </div>
-                <div class="difference" [ngClass]="getChangeClass(comparisonData.summary.branchRate)">
-                    {{ getDiffLabel(comparisonData.summary.branchRate) }}
+                <div class="difference" [ngClass]="getChangeClass(comparisonData.summary.branchCoverage)">
+                    {{ getDiffLabel(comparisonData.summary.branchCoverage) }}
                 </div>
             </div>
 
@@ -120,14 +120,14 @@
                             <span *ngIf="pkg.exists === 'base-only'" class="tag removed">Removed</span>
                             <span *ngIf="pkg.exists === 'comparison-only'" class="tag added">Added</span>
                         </td>
-                        <td [ngClass]="getCoverageClass(pkg.baseLineRate)">
-                            {{ pkg.baseLineRate.toFixed(2) }}%
+                        <td [ngClass]="getCoverageClass(pkg.baselineCoverage)">
+                            {{ pkg.baselineCoverage.toFixed(2) }}%
                         </td>
-                        <td [ngClass]="getCoverageClass(pkg.compLineRate)">
-                            {{ pkg.compLineRate.toFixed(2) }}%
+                        <td [ngClass]="getCoverageClass(pkg.complineCoverage)">
+                            {{ pkg.complineCoverage.toFixed(2) }}%
                         </td>
-                        <td [ngClass]="getChangeClass(pkg.lineRateDiff)">
-                            {{ getDiffLabel(pkg.lineRateDiff) }}
+                        <td [ngClass]="getChangeClass(pkg.lineCoverageDiff)">
+                            {{ getDiffLabel(pkg.lineCoverageDiff) }}
                         </td>
                     </tr>
                 </tbody>
@@ -149,21 +149,21 @@
                     <!-- Get top classes with biggest changes across all packages -->
                     <ng-container *ngFor="let pkg of comparisonData.packages">
                         <ng-container *ngFor="let cls of pkg.classDiffs.slice(0, 3)">
-                            <tr *ngIf="Math.abs(cls.lineRateDiff) > 0">
+                            <tr *ngIf="Math.abs(cls.lineCoverageDiff) > 0">
                                 <td class="class-name">
                                     {{ cls.name }}
                                     <span class="package-path">{{ pkg.name }}</span>
                                     <span *ngIf="cls.exists === 'base-only'" class="tag removed">Removed</span>
                                     <span *ngIf="cls.exists === 'comparison-only'" class="tag added">Added</span>
                                 </td>
-                                <td [ngClass]="getCoverageClass(cls.baseLineRate)">
-                                    {{ cls.baseLineRate.toFixed(2) }}%
+                                <td [ngClass]="getCoverageClass(cls.baselineCoverage)">
+                                    {{ cls.baselineCoverage.toFixed(2) }}%
                                 </td>
-                                <td [ngClass]="getCoverageClass(cls.compLineRate)">
-                                    {{ cls.compLineRate.toFixed(2) }}%
+                                <td [ngClass]="getCoverageClass(cls.complineCoverage)">
+                                    {{ cls.complineCoverage.toFixed(2) }}%
                                 </td>
-                                <td [ngClass]="getChangeClass(cls.lineRateDiff)">
-                                    {{ getDiffLabel(cls.lineRateDiff) }}
+                                <td [ngClass]="getChangeClass(cls.lineCoverageDiff)">
+                                    {{ getDiffLabel(cls.lineCoverageDiff) }}
                                 </td>
                             </tr>
                         </ng-container>

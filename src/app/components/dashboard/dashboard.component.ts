@@ -16,8 +16,8 @@ import { NotificationService } from '../../services/utils/notification.service';
 interface CoverageSnapshot {
     timestamp: string;
     date: Date;
-    lineRate: number;
-    branchRate: number;
+    lineCoverage: number;
+    branchCoverage: number;
     linesCovered: number;
     linesValid: number;
 }
@@ -192,7 +192,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
      */
     getOverallCoverage(): string {
         const data = this.coverageStore.getCurrentCoverageData();
-        return data ? data.summary.lineRate.toFixed(1) : '0.0';
+        return data ? data.summary.lineCoverage.toFixed(1) : '0.0';
     }
 
     /**
@@ -202,7 +202,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const data = this.coverageStore.getCurrentCoverageData();
         if (!data) return 'poor';
 
-        const coverage = data.summary.lineRate;
+        const coverage = data.summary.lineCoverage;
         if (coverage >= 90) return 'excellent';
         if (coverage >= 75) return 'good';
         if (coverage >= 50) return 'average';
@@ -288,8 +288,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const snapshot: CoverageSnapshot = {
             timestamp,
             date: new Date(),
-            lineRate: data.summary.lineRate,
-            branchRate: data.summary.branchRate,
+            lineCoverage: data.summary.lineCoverage,
+            branchCoverage: data.summary.branchCoverage,
             linesCovered: data.summary.linesCovered,
             linesValid: data.summary.linesValid
         };
@@ -300,8 +300,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         // Add new snapshot (if it's different from the last one)
         const lastSnapshot = history.length > 0 ? history[history.length - 1] : null;
         if (!lastSnapshot ||
-            lastSnapshot.lineRate !== snapshot.lineRate ||
-            lastSnapshot.branchRate !== snapshot.branchRate) {
+            lastSnapshot.lineCoverage !== snapshot.lineCoverage ||
+            lastSnapshot.branchCoverage !== snapshot.branchCoverage) {
 
             // Store the full data with the snapshot for later retrieval
             const fullSnapshot = {

@@ -132,10 +132,10 @@
                     <span>{{ tooltipNode.linesCovered }} lines</span>
                 </div>
 
-                <div class="tooltip-row" *ngIf="tooltipNode.branchRate !== undefined">
+                <div class="tooltip-row" *ngIf="tooltipNode.branchCoverage !== undefined">
                     <span>Branch Rate:</span>
-                    <span [ngClass]="getCoverageClass(tooltipNode.branchRate)">
-                        {{ tooltipNode.branchRate.toFixed(1) }}%
+                    <span [ngClass]="getCoverageClass(tooltipNode.branchCoverage)">
+                        {{ tooltipNode.branchCoverage.toFixed(1) }}%
                     </span>
                 </div>
 
@@ -162,15 +162,15 @@
                 <div class="coverage-summary">
                     <div class="coverage-indicator">
                         <div class="coverage-label">Line Coverage</div>
-                        <div class="coverage-value" [ngClass]="getCoverageClass(selectedNode.coverage)">
-                            {{ selectedNode.coverage.toFixed(1) }}%
+                        <div class="coverage-value" [ngClass]="getCoverageClass(selectedNode.lineCoverage)">
+                            {{ selectedNode.lineCoverage.toFixed(1) }}%
                         </div>
                     </div>
 
                     <div class="coverage-progress">
                         <div class="progress-bar">
-                            <div class="progress-fill" [style.width.%]="selectedNode.coverage"
-                                [ngClass]="getCoverageClass(selectedNode.coverage)"></div>
+                            <div class="progress-fill" [style.width.%]="selectedNode.lineCoverage"
+                                [ngClass]="getCoverageClass(selectedNode.lineCoverage)"></div>
                         </div>
                         <div class="progress-label">
                             {{ selectedNode.linesCovered }} / {{ selectedNode.linesValid }} lines covered
@@ -184,10 +184,10 @@
                         <div class="metric-value">{{ selectedNode.linesValid }}</div>
                     </div>
 
-                    <div class="metric-card" *ngIf="selectedNode.branchRate !== undefined">
+                    <div class="metric-card" *ngIf="selectedNode.branchCoverage !== undefined">
                         <div class="metric-label">Branch Coverage</div>
-                        <div class="metric-value" [ngClass]="getCoverageClass(selectedNode.branchRate)">
-                            {{ selectedNode.branchRate.toFixed(1) }}%
+                        <div class="metric-value" [ngClass]="getCoverageClass(selectedNode.branchCoverage)">
+                            {{ selectedNode.branchCoverage.toFixed(1) }}%
                         </div>
                     </div>
 
@@ -218,10 +218,10 @@
                             <div class="list-col name-col">{{ child.name }}</div>
                             <div class="list-col coverage-col">
                                 <div class="mini-progress">
-                                    <div class="mini-progress-bar" [style.width.%]="child.coverage"
-                                        [ngClass]="getCoverageClass(child.coverage)"></div>
+                                    <div class="mini-progress-bar" [style.width.%]="child.lineCoverage"
+                                        [ngClass]="getCoverageClass(child.lineCoverage)"></div>
                                 </div>
-                                <span [ngClass]="getCoverageClass(child.coverage)">{{ child.coverage.toFixed(1)
+                                <span [ngClass]="getCoverageClass(child.lineCoverage)">{{ child.lineCoverage.toFixed(1)
                                     }}%</span>
                             </div>
                             <div class="list-col lines-col">{{ child.linesValid }}</div>

@@ -107,8 +107,8 @@
             <div class="stat-card">
                 <div class="stat-title">Current Line Coverage</div>
                 <div class="stat-value"
-                    [ngClass]="getCoverageClass(filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.lineRate : 0)">
-                    {{ filteredHistory.length ? (filteredHistory[filteredHistory.length-1].data.summary.lineRate ||
+                    [ngClass]="getCoverageClass(filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.lineCoverage : 0)">
+                    {{ filteredHistory.length ? (filteredHistory[filteredHistory.length-1].data.summary.lineCoverage ||
                     0).toFixed(2) : '0.00' }}%
                 </div>
                 <div class="stat-change" [class.positive]="coverageVelocity > 0" [class.negative]="coverageVelocity < 0"
@@ -125,8 +125,9 @@
             <div class="stat-card">
                 <div class="stat-title">Current Branch Coverage</div>
                 <div class="stat-value"
-                    [ngClass]="getCoverageClass(filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.branchRate : 0)">
-                    {{ filteredHistory.length ? (filteredHistory[filteredHistory.length-1].data.summary.branchRate ||
+                    [ngClass]="getCoverageClass(filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.branchCoverage : 0)">
+                    {{ filteredHistory.length ? (filteredHistory[filteredHistory.length-1].data.summary.branchCoverage
+                    ||
                     0).toFixed(2) : '0.00' }}%
                 </div>
                 <div class="stat-detail">
@@ -320,13 +321,13 @@
                                 Date
                                 <i class="fas" [ngClass]="getSortIconClass('date')"></i>
                             </th>
-                            <th (click)="sortHistory('lineRate')" class="sortable">
+                            <th (click)="sortHistory('lineCoverage')" class="sortable">
                                 Line Coverage
-                                <i class="fas" [ngClass]="getSortIconClass('lineRate')"></i>
+                                <i class="fas" [ngClass]="getSortIconClass('lineCoverage')"></i>
                             </th>
-                            <th (click)="sortHistory('branchRate')" class="sortable">
+                            <th (click)="sortHistory('branchCoverage')" class="sortable">
                                 Branch Coverage
-                                <i class="fas" [ngClass]="getSortIconClass('branchRate')"></i>
+                                <i class="fas" [ngClass]="getSortIconClass('branchCoverage')"></i>
                             </th>
                             <th>Lines Covered</th>
                             <th>Actions</th>
@@ -336,11 +337,11 @@
                         <tr *ngFor="let entry of filteredHistory" [class.selected-entry]="isSelectedEntry(entry)"
                             (click)="selectHistoryEntry(entry)">
                             <td>{{ formatDate(entry.date) }}</td>
-                            <td [ngClass]="getCoverageClass(entry.data.summary.lineRate)">
-                                {{ entry.data.summary.lineRate.toFixed(2) }}%
+                            <td [ngClass]="getCoverageClass(entry.data.summary.lineCoverage)">
+                                {{ entry.data.summary.lineCoverage.toFixed(2) }}%
                             </td>
-                            <td [ngClass]="getCoverageClass(entry.data.summary.branchRate)">
-                                {{ entry.data.summary.branchRate.toFixed(2) }}%
+                            <td [ngClass]="getCoverageClass(entry.data.summary.branchCoverage)">
+                                {{ entry.data.summary.branchCoverage.toFixed(2) }}%
                             </td>
                             <td>
                                 {{ entry.data.summary.linesCovered }} / {{ entry.data.summary.linesValid }}

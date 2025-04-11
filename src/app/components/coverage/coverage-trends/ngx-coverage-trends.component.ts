@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from "@angular/common";
 import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef, HostListener, AfterViewInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { NgxChartsModule } from "@swimlane/ngx-charts";
-import { BehaviorSubject, Subscription } from "rxjs";
+import { Subscription } from "rxjs";
 import { HistoryEntry, ChartMetric, TimeRange, CoverageData } from "../../../models/coverage.model";
 import { CoverageStoreService } from "../../../services/coverage-store.service";
 import { ThemeService } from "../../../services/utils/theme.service";
@@ -88,7 +88,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
     currentPage = 1;
     pageSize = 10;
     totalPages = 1;
-    sortField: 'date' | 'lineRate' | 'branchRate' = 'date';
+    sortField: 'date' | 'lineCoverage' | 'branchCoverage' = 'date';
     sortDirection: 'asc' | 'desc' = 'desc';
 
     // Chart dimensions
@@ -123,10 +123,10 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
 
     // Metric definitions
     metrics: ChartMetric[] = [
-        { id: 'lineRate', label: 'Line Coverage', color: '#4caf50', enabled: true, accessor: (d, _, __) => d.data.summary.lineRate },
-        { id: 'branchRate', label: 'Branch Coverage', color: '#2196f3', enabled: true, accessor: (d, _, __) => d.data.summary.branchRate },
-        { id: 'methodRate', label: 'Method Coverage', color: '#ff9800', enabled: false, accessor: (d, _, __) => d.data.summary.methodRate || 0 },
-        { id: 'classRate', label: 'Class Coverage', color: '#f44336', enabled: false, accessor: (d, _, __) => d.data.summary.classRate || 0 }
+        { id: 'lineCoverage', label: 'Line Coverage', color: '#4caf50', enabled: true, accessor: (d: { data: { summary: { lineCoverage: any; }; }; }, _: any, __: any) => d.data.summary.lineCoverage },
+        { id: 'branchCoverage', label: 'Branch Coverage', color: '#2196f3', enabled: true, accessor: (d: { data: { summary: { branchCoverage: any; }; }; }, _: any, __: any) => d.data.summary.branchCoverage },
+        { id: 'methodRate', label: 'Method Coverage', color: '#ff9800', enabled: false, accessor: (d: { data: { summary: { methodRate: any; }; }; }, _: any, __: any) => d.data.summary.methodRate || 0 },
+        { id: 'classRate', label: 'Class Coverage', color: '#f44336', enabled: false, accessor: (d: { data: { summary: { classRate: any; }; }; }, _: any, __: any) => d.data.summary.classRate || 0 }
     ];
 
     // Available time ranges
@@ -360,7 +360,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         // Get active line rate data
         const data = this.filteredHistory.map(entry => ({
             x: entry.date.getTime(),
-            y: entry.data.summary.lineRate
+            y: entry.data.summary.lineCoverage
         }));
 
         // Calculate regression
@@ -727,7 +727,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         const latestEntry = this.filteredHistory[this.filteredHistory.length - 1];
         if (!latestEntry.data.packages) return 0;
 
-        return latestEntry.data.packages.reduce((total, pkg) => {
+        return latestEntry.data.packages.reduce((total: any, pkg: { classes: string | any[]; }) => {
             return total + (pkg.classes?.length || 0);
         }, 0);
     }
@@ -758,30 +758,30 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
             date.setDate(date.getDate() - (90 - i));
 
             // Start with base coverage
-            let lineRate = 65 + (Math.sin(i / 5) * 3); // Oscillating baseline
+            let lineCoverage = 65 + (Math.sin(i / 5) * 3); // Oscillating baseline
 
             // Add general upward trend
-            lineRate += (i / 90) * 15;
+            lineCoverage += (i / 90) * 15;
 
             // Add some randomness
-            lineRate += (Math.random() * 2) - 1;
+            lineCoverage += (Math.random() * 2) - 1;
 
             // Ensure within bounds
-            lineRate = Math.max(40, Math.min(95, lineRate));
+            lineCoverage = Math.max(40, Math.min(95, lineCoverage));
 
             // Branch rate usually trails a bit behind line rate
-            const branchRate = lineRate - (5 + Math.random() * 5);
+            const branchCoverage = lineCoverage - (5 + Math.random() * 5);
 
             demoHistory.push({
                 date: date,
                 data: {
                     summary: {
-                        lineRate: lineRate,
-                        branchRate: branchRate,
+                        lineCoverage: lineCoverage,
+                        branchCoverage: branchCoverage,
                         linesValid: 3000 + Math.floor(Math.random() * 200),
-                        linesCovered: Math.floor((3000 + Math.floor(Math.random() * 200)) * (lineRate / 100)),
-                        methodRate: lineRate - (Math.random() * 3),
-                        classRate: lineRate + (Math.random() * 3),
+                        linesCovered: Math.floor((3000 + Math.floor(Math.random() * 200)) * (lineCoverage / 100)),
+                        methodCoverage: lineCoverage - (Math.random() * 3),
+                        classCoverage: lineCoverage + (Math.random() * 3),
                         complexity: 0,
                         timestamp: date.getTime().toString()
                     },
@@ -893,9 +893,9 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
                 if (dateStr.includes(searchLower)) return true;
 
                 // Search in coverage values
-                const lineRateStr = entry.data.summary.lineRate.toFixed(2);
-                const branchRateStr = entry.data.summary.branchRate.toFixed(2);
-                if (lineRateStr.includes(searchLower) || branchRateStr.includes(searchLower)) return true;
+                const lineCoverageStr = entry.data.summary.lineCoverage.toFixed(2);
+                const branchCoverageStr = entry.data.summary.branchCoverage.toFixed(2);
+                if (lineCoverageStr.includes(searchLower) || branchCoverageStr.includes(searchLower)) return true;
 
                 return false;
             });
@@ -923,11 +923,11 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
                 case 'date':
                     comparison = a.date.getTime() - b.date.getTime();
                     break;
-                case 'lineRate':
-                    comparison = a.data.summary.lineRate - b.data.summary.lineRate;
+                case 'lineCoverage':
+                    comparison = a.data.summary.lineCoverage - b.data.summary.lineCoverage;
                     break;
-                case 'branchRate':
-                    comparison = a.data.summary.branchRate - b.data.summary.branchRate;
+                case 'branchCoverage':
+                    comparison = a.data.summary.branchCoverage - b.data.summary.branchCoverage;
                     break;
                 default:
                     comparison = a.date.getTime() - b.date.getTime();
@@ -940,7 +940,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
     /**
      * Sort history data by field
      */
-    sortHistory(field: 'date' | 'lineRate' | 'branchRate'): void {
+    sortHistory(field: 'date' | 'lineCoverage' | 'branchCoverage'): void {
         if (this.sortField === field) {
             // Toggle direction if same field
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1017,7 +1017,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         if (this.filteredHistory.length < 2) {
             this.coverageVelocity = 0;
             this.averageCoverage = this.filteredHistory.length ?
-                this.filteredHistory[0].data.summary.lineRate : 0;
+                this.filteredHistory[0].data.summary.lineCoverage : 0;
             return;
         }
 
@@ -1025,7 +1025,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         const oldestEntry = this.filteredHistory[0];
         const newestEntry = this.filteredHistory[this.filteredHistory.length - 1];
 
-        const coverageDiff = newestEntry.data.summary.lineRate - oldestEntry.data.summary.lineRate;
+        const coverageDiff = newestEntry.data.summary.lineCoverage - oldestEntry.data.summary.lineCoverage;
         const daysDiff = (newestEntry.date.getTime() - oldestEntry.date.getTime()) / (1000 * 60 * 60 * 24);
         const weeksDiff = Math.max(daysDiff / 7, 1); // Avoid division by zero
 
@@ -1033,13 +1033,13 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
 
         // Calculate average coverage
         this.averageCoverage = this.filteredHistory.reduce(
-            (sum, entry) => sum + entry.data.summary.lineRate, 0
+            (sum, entry) => sum + entry.data.summary.lineCoverage, 0
         ) / this.filteredHistory.length;
 
         // Generate projection data
         if (this.coverageVelocity > 0) {
-            const weeksToTarget = this.targetCoverage > newestEntry.data.summary.lineRate ?
-                (this.targetCoverage - newestEntry.data.summary.lineRate) / this.coverageVelocity : 0;
+            const weeksToTarget = this.targetCoverage > newestEntry.data.summary.lineCoverage ?
+                (this.targetCoverage - newestEntry.data.summary.lineCoverage) / this.coverageVelocity : 0;
 
             const targetDate = new Date(newestEntry.date);
             targetDate.setDate(targetDate.getDate() + Math.ceil(weeksToTarget * 7));
@@ -1165,7 +1165,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         const weeklyData: { week: string, avgCoverage: number }[] = [];
 
         weekMap.forEach((entries, week) => {
-            const totalCoverage = entries.reduce((sum, entry) => sum + entry.data.summary.lineRate, 0);
+            const totalCoverage = entries.reduce((sum, entry) => sum + entry.data.summary.lineCoverage, 0);
             weeklyData.push({
                 week,
                 avgCoverage: totalCoverage / entries.length
@@ -1217,11 +1217,11 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
 
         // Extract classes for distribution
         const allClasses: { name: string, coverage: number }[] = [];
-        latestEntry.data.packages.forEach(pkg => {
-            pkg.classes.forEach(cls => {
+        latestEntry.data.packages.forEach((pkg: { classes: any[]; }) => {
+            pkg.classes.forEach((cls: { name: any; lineCoverage: any; }) => {
                 allClasses.push({
                     name: cls.name,
-                    coverage: cls.lineRate
+                    coverage: cls.lineCoverage
                 });
             });
         });

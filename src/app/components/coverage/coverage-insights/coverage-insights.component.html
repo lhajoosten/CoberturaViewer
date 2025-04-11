@@ -80,32 +80,32 @@
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-title">Total Coverage</div>
-          <div class="metric-value" [ngClass]="getCoverageClass(coverageData.summary.lineRate)">
-            {{ coverageData.summary.lineRate.toFixed(1) }}%
+          <div class="metric-value" [ngClass]="getCoverageClass(coverageData.summary.lineCoverage)">
+            {{ coverageData.summary.lineCoverage.toFixed(1) }}%
           </div>
           <div class="metric-subtitle">
             {{ coverageData.summary.linesCovered }} / {{ coverageData.summary.linesValid }} lines covered
           </div>
           <div class="metric-progress">
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="coverageData.summary.lineRate"
-                [ngClass]="getCoverageClass(coverageData.summary.lineRate)"></div>
+              <div class="progress-fill" [style.width.%]="coverageData.summary.lineCoverage"
+                [ngClass]="getCoverageClass(coverageData.summary.lineCoverage)"></div>
             </div>
           </div>
         </div>
 
         <div class="metric-card">
           <div class="metric-title">Branch Coverage</div>
-          <div class="metric-value" [ngClass]="getCoverageClass(coverageData.summary.branchRate)">
-            {{ coverageData.summary.branchRate.toFixed(1) }}%
+          <div class="metric-value" [ngClass]="getCoverageClass(coverageData.summary.branchCoverage)">
+            {{ coverageData.summary.branchCoverage.toFixed(1) }}%
           </div>
           <div class="metric-subtitle">
             Conditional paths covered
           </div>
           <div class="metric-progress">
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="coverageData.summary.branchRate"
-                [ngClass]="getCoverageClass(coverageData.summary.branchRate)"></div>
+              <div class="progress-fill" [style.width.%]="coverageData.summary.branchCoverage"
+                [ngClass]="getCoverageClass(coverageData.summary.branchCoverage)"></div>
             </div>
           </div>
         </div>
@@ -347,15 +347,15 @@
                 </div>
               </div>
 
-              <div class="detail-item" *ngIf="selectedRiskClass.branchRate !== undefined">
+              <div class="detail-item" *ngIf="selectedRiskClass.branchCoverage !== undefined">
                 <span class="detail-label">Branch Coverage:</span>
-                <span class="detail-value" [ngClass]="getCoverageClass(selectedRiskClass.branchRate)">
-                  {{ selectedRiskClass.branchRate.toFixed(1) }}%
+                <span class="detail-value" [ngClass]="getCoverageClass(selectedRiskClass.branchCoverage)">
+                  {{ selectedRiskClass.branchCoverage.toFixed(1) }}%
                 </span>
                 <div class="detail-progress">
                   <div class="progress-bar">
-                    <div class="progress-fill" [style.width.%]="selectedRiskClass.branchRate"
-                      [ngClass]="getCoverageClass(selectedRiskClass.branchRate)"></div>
+                    <div class="progress-fill" [style.width.%]="selectedRiskClass.branchCoverage"
+                      [ngClass]="getCoverageClass(selectedRiskClass.branchCoverage)"></div>
                   </div>
                 </div>
               </div>
@@ -378,11 +378,11 @@
                     {{ getRiskLevelText(100 - selectedRiskClass.coverage, 10, 50) }} risk
                   </span>
                 </li>
-                <li *ngIf="selectedRiskClass.branchRate !== undefined">
+                <li *ngIf="selectedRiskClass.branchCoverage !== undefined">
                   <span class="factor-label">Branch Coverage Gap:</span>
-                  <span>{{ (100 - selectedRiskClass.branchRate).toFixed(1) }}%</span>
-                  <span class="risk-level" [ngClass]="getRiskLevel(100 - selectedRiskClass.branchRate, 10, 50)">
-                    {{ getRiskLevelText(100 - selectedRiskClass.branchRate, 10, 50) }} risk
+                  <span>{{ (100 - selectedRiskClass.branchCoverage).toFixed(1) }}%</span>
+                  <span class="risk-level" [ngClass]="getRiskLevel(100 - selectedRiskClass.branchCoverage, 10, 50)">
+                    {{ getRiskLevelText(100 - selectedRiskClass.branchCoverage, 10, 50) }} risk
                   </span>
                 </li>
               </ul>
@@ -395,7 +395,8 @@
                   first</li>
                 <li *ngIf="selectedRiskClass.linesValid > 300">Consider breaking this class into smaller, more focused
                   components</li>
-                <li *ngIf="selectedRiskClass.branchRate && selectedRiskClass.branchRate < 50">Add tests for conditional
+                <li *ngIf="selectedRiskClass.branchCoverage && selectedRiskClass.branchCoverage < 50">Add tests for
+                  conditional
                   logic branches</li>
                 <li>Use coverage tools to identify specific untested methods</li>
                 <li>Prioritize this class in your testing roadmap</li>
@@ -471,16 +472,17 @@
             </div>
           </div>
 
-          <div class="package-card" *ngFor="let pkg of filteredPackages" [ngClass]="getCoverageClass(pkg.lineRate)">
+          <div class="package-card" *ngFor="let pkg of filteredPackages" [ngClass]="getCoverageClass(pkg.lineCoverage)">
             <div class="package-header">
               <h4>{{ pkg.name || 'Default Package' }}</h4>
-              <div class="package-coverage" [ngClass]="getCoverageClass(pkg.lineRate)">
-                {{ pkg.lineRate.toFixed(1) }}%
+              <div class="package-coverage" [ngClass]="getCoverageClass(pkg.lineCoverage)">
+                {{ pkg.lineCoverage.toFixed(1) }}%
               </div>
             </div>
             <div class="package-progress">
               <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="pkg.lineRate" [ngClass]="getCoverageClass(pkg.lineRate)">
+                <div class="progress-fill" [style.width.%]="pkg.lineCoverage"
+                  [ngClass]="getCoverageClass(pkg.lineCoverage)">
                 </div>
               </div>
             </div>
@@ -491,15 +493,15 @@
 
             <!-- Classes within this package -->
             <div class="package-classes-list" *ngIf="showAllPackageClasses || pkg.expanded">
-              <div class="class-item" *ngFor="let cls of pkg.classes" [ngClass]="getCoverageClass(cls.lineRate)">
+              <div class="class-item" *ngFor="let cls of pkg.classes" [ngClass]="getCoverageClass(cls.lineCoverage)">
                 <div class="class-name" [title]="cls.name">{{ cls.name }}</div>
-                <div class="class-coverage" [ngClass]="getCoverageClass(cls.lineRate)">
-                  {{ cls.lineRate.toFixed(1) }}%
+                <div class="class-coverage" [ngClass]="getCoverageClass(cls.lineCoverage)">
+                  {{ cls.lineCoverage.toFixed(1) }}%
                 </div>
                 <div class="class-progress">
                   <div class="progress-bar">
-                    <div class="progress-fill" [style.width.%]="cls.lineRate"
-                      [ngClass]="getCoverageClass(cls.lineRate)"></div>
+                    <div class="progress-fill" [style.width.%]="cls.lineCoverage"
+                      [ngClass]="getCoverageClass(cls.lineCoverage)"></div>
                   </div>
                 </div>
               </div>

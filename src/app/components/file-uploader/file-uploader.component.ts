@@ -121,7 +121,7 @@ export class FileUploaderComponent implements OnInit, OnDestroy {
                     // Show success notification
                     this.notificationService.showSuccess(
                         'File Loaded Successfully',
-                        `Loaded coverage data with ${coverageData.summary.lineRate.toFixed(1)}% line coverage`
+                        `Loaded coverage data with ${coverageData.summary.lineCoverage.toFixed(1)}% line coverage`
                     );
                 } else {
                     this.errorMessage = 'Failed to parse the Cobertura XML file';
@@ -177,7 +177,7 @@ export class FileUploaderComponent implements OnInit, OnDestroy {
             const coverageData = this.parserService.parseCoberturaXml(fileContent);
             if (coverageData) {
                 this.coverageStore.setCoverageData(coverageData);
-                this.notificationService.showSuccess('Historical File Loaded', `Loaded ${fileName} with ${coverageData.summary.lineRate.toFixed(1)}% coverage`);
+                this.notificationService.showSuccess('Historical File Loaded', `Loaded ${fileName} with ${coverageData.summary.lineCoverage.toFixed(1)}% coverage`);
             }
         } catch (error) {
             console.error('Error loading from history:', error);
@@ -221,8 +221,8 @@ export class FileUploaderComponent implements OnInit, OnDestroy {
     private generateSampleCoverageData() {
         return {
             summary: {
-                lineRate: 78.5,
-                branchRate: 65.3,
+                lineCoverage: 78.5,
+                branchCoverage: 65.3,
                 methodRate: 72.8,
                 classRate: 70.2,
                 complexity: 34,
@@ -233,13 +233,13 @@ export class FileUploaderComponent implements OnInit, OnDestroy {
             packages: [
                 {
                     name: 'com.example.model',
-                    lineRate: 92.7,
-                    branchRate: 85.0,
+                    lineCoverage: 92.7,
+                    branchCoverage: 85.0,
                     classes: Array(5).fill(0).map((_, i) => ({
                         name: `Model${i + 1}`,
                         filename: `Model${i + 1}.java`,
-                        lineRate: 90 + Math.random() * 10,
-                        branchRate: 85 + Math.random() * 15,
+                        lineCoverage: 90 + Math.random() * 10,
+                        branchCoverage: 85 + Math.random() * 15,
                         lines: Array(Math.floor(50 + Math.random() * 50)).fill(0).map((_, j) => ({
                             number: j + 1,
                             hits: Math.random() > 0.1 ? 1 : 0,
@@ -249,13 +249,13 @@ export class FileUploaderComponent implements OnInit, OnDestroy {
                 },
                 {
                     name: 'com.example.service',
-                    lineRate: 75.2,
-                    branchRate: 62.8,
+                    lineCoverage: 75.2,
+                    branchCoverage: 62.8,
                     classes: Array(8).fill(0).map((_, i) => ({
                         name: `Service${i + 1}`,
                         filename: `Service${i + 1}.java`,
-                        lineRate: 65 + Math.random() * 25,
-                        branchRate: 55 + Math.random() * 25,
+                        lineCoverage: 65 + Math.random() * 25,
+                        branchCoverage: 55 + Math.random() * 25,
                         lines: Array(Math.floor(30 + Math.random() * 100)).fill(0).map((_, j) => ({
                             number: j + 1,
                             hits: Math.random() > 0.3 ? 1 : 0,
@@ -265,13 +265,13 @@ export class FileUploaderComponent implements OnInit, OnDestroy {
                 },
                 {
                     name: 'com.example.controller',
-                    lineRate: 65.8,
-                    branchRate: 48.5,
+                    lineCoverage: 65.8,
+                    branchCoverage: 48.5,
                     classes: Array(4).fill(0).map((_, i) => ({
                         name: `Controller${i + 1}`,
                         filename: `Controller${i + 1}.java`,
-                        lineRate: 55 + Math.random() * 25,
-                        branchRate: 40 + Math.random() * 25,
+                        lineCoverage: 55 + Math.random() * 25,
+                        branchCoverage: 40 + Math.random() * 25,
                         lines: Array(Math.floor(40 + Math.random() * 60)).fill(0).map((_, j) => ({
                             number: j + 1,
                             hits: Math.random() > 0.45 ? 1 : 0,

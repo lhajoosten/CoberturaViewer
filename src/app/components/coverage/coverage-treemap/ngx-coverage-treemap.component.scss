@@ -2,6 +2,11 @@
 @use "../../../../styles/_mixins" as mixins;
 @use "sass:map";
 
+// Use the spacing function directly for convenience
+@function spacing($key) {
+  @return tokens.spacing($key);
+}
+
 .treemap-container {
   @include mixins.card;
   display: flex;
@@ -10,14 +15,37 @@
   height: 100%;
   overflow: hidden;
   position: relative;
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 // Control Panel Styles
 .control-panel {
-  @include mixins.flex-between;
+  @include mixins.flex-column;
   padding: spacing("md") spacing("lg");
   background-color: tokens.color("card-header-bg");
   border-bottom: 1px solid tokens.color("border");
+  flex-shrink: 0;
+
+  // Title and Actions Row
+  .header-row {
+    @include mixins.flex-between;
+    margin-bottom: spacing("md");
+
+    h2 {
+      margin: 0;
+      @include mixins.font-size("xl");
+      font-weight: 600;
+      color: tokens.color("text");
+      @include mixins.flex-center;
+      gap: spacing("sm");
+
+      i {
+        color: tokens.color("accent");
+      }
+    }
+  }
 
   // Filter Row Layout
   .filter-row {
@@ -25,6 +53,10 @@
     flex-wrap: wrap;
     gap: spacing("md");
     margin-bottom: spacing("md");
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
   // Filter Group Base Styles
@@ -37,231 +69,411 @@
       font-weight: 500;
       margin-bottom: spacing("xs");
       color: tokens.color("text-muted");
+      display: block;
     }
 
-    &.search-group {
-      flex: 2;
+    select,
+    .range-input {
+      width: 100%;
+      @include mixins.input-base;
+      padding: spacing("xs") spacing("sm");
+      @include mixins.font-size("sm");
+      border-radius: 4px;
+      transition: all 0.2s ease;
+
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(tokens.color("accent"), 0.2);
+        border-color: tokens.color("accent");
+      }
+    }
+
+    .range-values {
+      @include mixins.flex-between;
+      @include mixins.font-size("xs");
+      color: tokens.color("text-muted");
+      margin-top: spacing("xs");
     }
   }
-}
 
-// Slider and Input Styles
-.slider-container {
-  @include mixins.flex-center;
-  gap: spacing("sm");
-  background-color: tokens.color("surface");
-  border-radius: map.get(tokens.$border-radius, "md");
-  padding: spacing("xs") spacing("sm");
-  border: 1px solid tokens.color("border");
+  // Actions Group
+  .actions-group {
+    @include mixins.flex-center;
+    gap: spacing("sm");
 
-  input[type="range"] {
-    flex: 1;
-    cursor: pointer;
-    accent-color: tokens.color("primary");
-    appearance: none;
-    background: transparent;
+    .action-btn {
+      @include mixins.button-base;
+      width: 36px;
+      height: 36px;
+      border-radius: map.get(tokens.$border-radius, "md");
+      background-color: rgba(tokens.color("accent"), 0.1);
+      color: tokens.color("accent-dark");
+      @include mixins.font-size("md");
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        background-color: tokens.color("accent");
+        color: tokens.color("text-on-accent");
+        transform: translateY(-2px);
+      }
+    }
+
+    .threshold-btn {
+      @include mixins.button-base;
+      padding: spacing("xs") spacing("sm");
+      border-radius: map.get(tokens.$border-radius, "md");
+      background-color: transparent;
+      @include mixins.font-size("sm");
+      color: tokens.color("text-muted");
+      border: 1px solid tokens.color("border");
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: tokens.color("accent");
+        color: tokens.color("accent");
+        transform: translateY(-2px);
+      }
+
+      &.active {
+        background-color: tokens.color("accent-bg");
+        color: tokens.color("accent-dark");
+        border-color: tokens.color("accent");
+      }
+    }
+  }
+
+  // Range Slider Customization
+  .range-slider {
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background-color: tokens.color("border");
+    outline: none;
+    -webkit-appearance: none;
+    margin: spacing("xs") 0;
+
+    &:focus {
+      outline: none;
+    }
 
     &::-webkit-slider-thumb {
+      -webkit-appearance: none;
       appearance: none;
-      height: 16px;
       width: 16px;
-      background: tokens.color("primary");
+      height: 16px;
       border-radius: 50%;
+      background-color: tokens.color("accent");
       cursor: pointer;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+        background-color: tokens.color("accent-dark");
+      }
+    }
+
+    &::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border: none;
+      border-radius: 50%;
+      background-color: tokens.color("accent");
+      cursor: pointer;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+        background-color: tokens.color("accent-dark");
+      }
+    }
+
+    &::-ms-thumb {
+      width: 16px;
+      height: 16px;
+      border: none;
+      border-radius: 50%;
+      background-color: tokens.color("accent");
+      cursor: pointer;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+        background-color: tokens.color("accent-dark");
+      }
     }
   }
-
-  .slider-value {
-    min-width: 40px;
-    font-weight: 600;
-    @include mixins.font-size("sm");
-    text-align: right;
-    color: tokens.color("primary");
-    background-color: tokens.color("primary-bg");
-    padding: spacing("xs") spacing("sm");
-    border-radius: map.get(tokens.$border-radius, "md");
-  }
 }
 
-// Search Container
-.search-container {
-  position: relative;
-
-  input {
-    @include mixins.input-base;
-    padding-right: spacing("xxl");
-  }
-
-  i {
-    position: absolute;
-    right: spacing("md");
-    top: 50%;
-    transform: translateY(-50%);
-    color: tokens.color("text-muted");
-  }
-}
-
-// Sort and Action Controls
-.sort-group,
-.action-buttons {
-  @include mixins.flex-center;
-  flex-wrap: wrap;
-  gap: spacing("md");
-}
-
-// Visualization Container
-.visualization-container {
-  position: relative;
+// TreeMap Visualization
+.treemap-visualization {
   flex: 1;
   overflow: hidden;
+  position: relative;
+  background-color: rgba(tokens.color("background"), 0.3);
+}
 
-  // Loading and Empty States
-  .loading-overlay,
-  .empty-state {
-    @include mixins.flex-center;
-    background-color: rgba(tokens.color("background"), 0.8);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+// TreeMap Rect Styling
+.treemap-rect {
+  stroke: tokens.color("card-bg");
+  stroke-width: 1.25;
+  transition: opacity 0.2s, transform 0.2s;
+  cursor: pointer;
+  outline: none;
+
+  &:hover {
+    opacity: 0.9;
+    transform: scale(1.01);
+    stroke: tokens.color("text");
+    stroke-width: 2;
     z-index: 10;
   }
 
-  .loading-spinner {
-    @include mixins.loading-spinner;
+  &:focus {
+    stroke: tokens.color("accent");
+    stroke-width: 2;
+    stroke-dasharray: 5, 2;
   }
 
-  .empty-state {
-    flex-direction: column;
-    text-align: center;
-    color: tokens.color("text-muted");
+  &.excellent {
+    fill: tokens.color("success");
+  }
+  &.good {
+    fill: tokens.color("accent");
+  }
+  &.moderate {
+    fill: tokens.color("warning");
+  }
+  &.poor {
+    fill: tokens.color("error");
+  }
+  &.empty {
+    fill: tokens.color("border");
+  }
+}
 
-    i {
-      @include mixins.font-size("huge");
-      margin-bottom: spacing("md");
-    }
+// TreeMap Labels
+.treemap-label {
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  transition: opacity 0.2s ease;
 
-    p {
-      @include mixins.font-size("base");
+  .label-name {
+    fill: tokens.color("text-on-primary");
+    font-weight: 500;
+    @include mixins.font-size("xs");
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .label-value {
+    fill: tokens.color("text-on-primary");
+    @include mixins.font-size("xs");
+    opacity: 0.9;
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  &.light-text {
+    .label-name,
+    .label-value {
+      fill: tokens.color("text");
+      text-shadow: none;
     }
   }
 }
 
-// Tooltip Styles
-.tooltip {
-  @include mixins.tooltip;
-
-  .tooltip-content {
-    display: flex;
-    flex-direction: column;
-  }
+// Tooltip
+.treemap-tooltip {
+  position: absolute;
+  background-color: tokens.color("card-bg");
+  border: 1px solid tokens.color("border");
+  border-radius: map.get(tokens.$border-radius, "md");
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  z-index: 100;
+  max-width: 320px;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  overflow: hidden;
 
   .tooltip-header {
-    padding: spacing("sm") spacing("md");
     background-color: tokens.color("card-header-bg");
+    padding: spacing("sm") spacing("md");
     border-bottom: 1px solid tokens.color("border");
+    border-radius: map.get(tokens.$border-radius, "md")
+      map.get(tokens.$border-radius, "md") 0 0;
   }
 
   .node-type {
-    @include mixins.flex-center;
-    padding: 0.25rem 0.5rem;
+    display: inline-block;
+    padding: 2px 6px;
     border-radius: map.get(tokens.$border-radius, "sm");
-    text-transform: uppercase;
     @include mixins.font-size("xs");
     font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: spacing("xs");
 
     &.package {
-      background-color: tokens.color("info-bg");
+      background-color: rgba(tokens.color("info"), 0.1);
       color: tokens.color("info");
     }
+
     &.class {
-      background-color: tokens.color("accent-bg");
+      background-color: rgba(tokens.color("accent"), 0.1);
       color: tokens.color("accent-dark");
     }
-    &.grouped {
-      background-color: tokens.color("warning-bg");
-      color: tokens.color("warning");
+
+    &.method {
+      background-color: rgba(tokens.color("success"), 0.1);
+      color: tokens.color("success");
     }
   }
 
   .tooltip-title {
+    margin: 0;
+    @include mixins.font-size("sm");
     font-weight: 600;
-    word-break: break-word;
     color: tokens.color("text");
+    word-break: break-word;
   }
 
-  .tooltip-metrics {
+  .tooltip-content {
     padding: spacing("sm") spacing("md");
+  }
 
-    .tooltip-row {
+  .tooltip-metric {
+    @include mixins.flex-between;
+    margin-bottom: spacing("xs");
+    @include mixins.font-size("xs");
+    padding: spacing("xs") 0;
+    border-bottom: 1px solid rgba(tokens.color("border"), 0.5);
+
+    &:last-child {
+      margin-bottom: 0;
+      border-bottom: none;
+    }
+
+    .metric-name {
+      color: tokens.color("text-muted");
+    }
+
+    .metric-value {
+      font-weight: 500;
+
+      &.excellent {
+        color: tokens.color("success");
+      }
+      &.good {
+        color: tokens.color("accent-dark");
+      }
+      &.moderate {
+        color: tokens.color("warning");
+      }
+      &.poor {
+        color: tokens.color("error");
+      }
+    }
+  }
+
+  .tooltip-progress {
+    margin-top: spacing("md");
+
+    .progress-label {
       @include mixins.flex-between;
       margin-bottom: spacing("xs");
-      @include mixins.font-size("sm");
+      @include mixins.font-size("xs");
 
-      span:first-child {
+      .label {
         color: tokens.color("text-muted");
       }
 
-      span:last-child {
+      .value {
         font-weight: 500;
-        color: tokens.color("text");
+
+        &.excellent {
+          color: tokens.color("success");
+        }
+        &.good {
+          color: tokens.color("accent-dark");
+        }
+        &.moderate {
+          color: tokens.color("warning");
+        }
+        &.poor {
+          color: tokens.color("error");
+        }
+      }
+    }
+
+    .progress-bar {
+      height: 4px;
+      background-color: tokens.color("border");
+      border-radius: 2px;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+
+        &.excellent {
+          background-color: tokens.color("success");
+        }
+        &.good {
+          background-color: tokens.color("accent-dark");
+        }
+        &.moderate {
+          background-color: tokens.color("warning");
+        }
+        &.poor {
+          background-color: tokens.color("error");
+        }
       }
     }
   }
 }
 
-// Responsive Adjustments
-@include mixins.breakpoint(md) {
-  .control-panel {
-    .filter-row {
-      flex-direction: column;
-      gap: spacing("sm");
-    }
+// Legend
+.treemap-legend {
+  position: absolute;
+  right: spacing("md");
+  bottom: spacing("md");
+  background-color: rgba(tokens.color("card-bg"), 0.9);
+  border: 1px solid tokens.color("border");
+  border-radius: map.get(tokens.$border-radius, "md");
+  padding: spacing("sm") spacing("md");
+  display: flex;
+  flex-direction: column;
+  gap: spacing("xs");
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  @include mixins.font-size("xs");
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
 
-    .filter-group {
-      width: 100%;
-    }
-  }
-}
-
-@include mixins.breakpoint(sm) {
-  .control-panel {
-    padding: spacing("sm");
-  }
-}
-
-// Coverage Legend
-.coverage-legend {
-  @include mixins.flex-center;
-  justify-content: center;
-  gap: spacing("md");
-  padding: spacing("md");
-  background-color: tokens.color("card-header-bg");
-  border-top: 1px solid tokens.color("border");
-
-  .legend-title {
-    @include mixins.font-size("sm");
-    color: tokens.color("text-muted");
-    font-weight: 500;
-  }
-
-  .legend-items {
-    @include mixins.flex-center;
-    gap: spacing("md");
+  &:hover {
+    background-color: tokens.color("card-bg");
   }
 
   .legend-item {
     @include mixins.flex-center;
-    gap: spacing("xs");
-    @include mixins.font-size("sm");
+    gap: spacing("sm");
     color: tokens.color("text-muted");
+    padding: spacing("xs") spacing("sm");
+    border-radius: 4px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(tokens.color("border"), 0.3);
+      color: tokens.color("text");
+    }
   }
 
-  .color-box {
-    width: 12px;
-    height: 12px;
-    border-radius: map.get(tokens.$border-radius, "sm");
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
     &.excellent {
       background-color: tokens.color("success");
@@ -274,6 +486,330 @@
     }
     &.poor {
       background-color: tokens.color("error");
+    }
+    &.empty {
+      background-color: tokens.color("border");
+    }
+  }
+}
+
+// Badges for showing metrics
+.metric-badges {
+  position: absolute;
+  left: spacing("md");
+  bottom: spacing("md");
+  display: flex;
+  gap: spacing("xs");
+  z-index: 50;
+
+  .metric-badge {
+    background-color: rgba(tokens.color("card-bg"), 0.9);
+    border: 1px solid tokens.color("border");
+    border-radius: map.get(tokens.$border-radius, "md");
+    padding: spacing("xs") spacing("sm");
+    @include mixins.font-size("xs");
+    @include mixins.flex-center;
+    gap: spacing("xs");
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+    .badge-label {
+      color: tokens.color("text-muted");
+    }
+
+    .badge-value {
+      font-weight: 600;
+
+      &.excellent {
+        color: tokens.color("success");
+      }
+      &.good {
+        color: tokens.color("accent-dark");
+      }
+      &.moderate {
+        color: tokens.color("warning");
+      }
+      &.poor {
+        color: tokens.color("error");
+      }
+    }
+  }
+}
+
+// Loading and Empty States
+.loading-overlay,
+.empty-state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  @include mixins.flex-center;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.loading-spinner {
+  @include mixins.loading-spinner;
+  margin-bottom: spacing("md");
+}
+
+.empty-message {
+  @include mixins.font-size("md");
+  color: tokens.color("text-muted");
+  text-align: center;
+  max-width: 80%;
+
+  h3 {
+    color: tokens.color("text");
+    margin-bottom: spacing("sm");
+  }
+
+  i {
+    display: block;
+    @include mixins.font-size("huge");
+    margin-bottom: spacing("md");
+    opacity: 0.5;
+    color: tokens.color("border");
+  }
+
+  p {
+    margin-bottom: spacing("md");
+  }
+
+  .btn-primary {
+    @include mixins.primary-button;
+    padding: spacing("sm") spacing("md");
+    margin-top: spacing("md");
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// Context Menu
+.context-menu {
+  position: absolute;
+  background-color: tokens.color("card-bg");
+  border: 1px solid tokens.color("border");
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  overflow: hidden;
+  min-width: 180px;
+  animation: fadeIn 0.15s ease-out;
+
+  .menu-item {
+    padding: spacing("sm") spacing("md");
+    @include mixins.font-size("sm");
+    color: tokens.color("text");
+    @include mixins.flex-between;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background-color: tokens.color("primary-bg");
+      color: tokens.color("primary");
+    }
+
+    &.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: transparent;
+        color: tokens.color("text");
+      }
+    }
+
+    .menu-icon {
+      color: tokens.color("text-muted");
+      transition: all 0.15s ease;
+    }
+
+    &:hover .menu-icon {
+      color: tokens.color("primary");
+    }
+  }
+
+  .menu-divider {
+    height: 1px;
+    background-color: tokens.color("border");
+    margin: spacing("xs") 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Path Navigation
+.path-navigation {
+  background-color: tokens.color("card-header-bg");
+  border-bottom: 1px solid tokens.color("border");
+  padding: spacing("xs") spacing("lg");
+  @include mixins.flex-between;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: tokens.color("border");
+    border-radius: 3px;
+  }
+
+  .path-breadcrumbs {
+    @include mixins.flex-center;
+    gap: spacing("xs");
+    @include mixins.font-size("sm");
+
+    .breadcrumb-item {
+      white-space: nowrap;
+      @include mixins.flex-center;
+      gap: spacing("xs");
+
+      &.clickable {
+        cursor: pointer;
+        color: tokens.color("primary");
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .separator {
+      color: tokens.color("text-muted");
+    }
+  }
+
+  .path-actions {
+    @include mixins.flex-center;
+    gap: spacing("xs");
+
+    .action-btn {
+      @include mixins.button-base;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background-color: transparent;
+      color: tokens.color("text-muted");
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: tokens.color("accent-bg");
+        color: tokens.color("accent-dark");
+      }
+
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+          background-color: transparent;
+          color: tokens.color("text-muted");
+        }
+      }
+    }
+  }
+}
+
+// Responsive Adjustments
+@include mixins.breakpoint(md) {
+  .control-panel {
+    padding: spacing("sm") spacing("md");
+
+    .header-row h2 {
+      @include mixins.font-size("lg");
+    }
+
+    .filter-row {
+      gap: spacing("sm");
+    }
+
+    .filter-group {
+      min-width: 150px;
+    }
+
+    .actions-group {
+      flex-wrap: wrap;
+    }
+  }
+
+  .treemap-legend {
+    right: spacing("sm");
+    bottom: spacing("sm");
+    padding: spacing("xs");
+  }
+
+  .metric-badges {
+    left: spacing("sm");
+    bottom: spacing("sm");
+    flex-wrap: wrap;
+  }
+
+  .path-navigation {
+    padding: spacing("xs") spacing("md");
+  }
+}
+
+@include mixins.breakpoint(sm) {
+  .control-panel {
+    .header-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: spacing("sm");
+
+      h2 {
+        @include mixins.font-size("md");
+      }
+
+      .actions-group {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    .filter-row {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    .filter-group {
+      width: 100%;
+      min-width: auto;
+    }
+  }
+
+  .treemap-tooltip {
+    max-width: 280px;
+  }
+
+  .treemap-legend,
+  .metric-badges {
+    position: static;
+    margin: spacing("sm");
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .path-navigation {
+    .path-actions {
+      display: none;
     }
   }
 }

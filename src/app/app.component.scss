@@ -1,4 +1,4 @@
-@use "../styles/tokens" as tokens;
+@use "../styles/_tokens" as tokens;
 @use "../styles/_mixins" as mixins;
 @use "sass:map";
 
@@ -37,7 +37,7 @@
   height: 4rem;
   background-color: tokens.color("surface");
   border-radius: map.get(tokens.$border-radius, "lg");
-  padding: 0 spacing("lg");
+  padding: 0 tokens.spacing("lg");
   box-shadow: map.get(tokens.$shadows, "base");
   max-width: 1600px;
   margin: 0 auto;
@@ -65,7 +65,7 @@
   @include mixins.flex-between;
   background-color: tokens.color("surface");
   border-radius: map.get(tokens.$border-radius, "lg");
-  padding: spacing("lg");
+  padding: tokens.spacing("lg");
   box-shadow: map.get(tokens.$shadows, "base");
   max-width: 1600px;
   margin: 0 auto;
@@ -80,7 +80,7 @@
   .footer-links {
     a {
       @include mixins.flex-center;
-      gap: spacing("sm");
+      gap: tokens.spacing("sm");
       color: tokens.color("text-muted");
       text-decoration: none;
 
@@ -111,8 +111,8 @@ app-theme-toggle {
 .compare-btn {
   @include mixins.primary-button;
   @include mixins.flex-center;
-  gap: spacing("sm");
-  padding: spacing("sm") spacing("md");
+  gap: tokens.spacing("sm");
+  padding: tokens.spacing("sm") tokens.spacing("md");
   font-weight: 500;
   @include mixins.font-size("base");
   box-shadow: map.get(tokens.$shadows, "sm");
@@ -158,7 +158,7 @@ app-theme-toggle {
 
 @include mixins.breakpoint(sm) {
   .compare-btn {
-    padding: spacing("sm");
+    padding: tokens.spacing("sm");
     border-radius: 50%;
     aspect-ratio: 1/1;
     justify-content: center;
@@ -194,15 +194,15 @@ app-theme-toggle {
 
   .header-content,
   .footer-content {
-    padding: 0 spacing("md");
+    padding: 0 tokens.spacing("md");
   }
 
   .header-content {
     flex-direction: row;
     flex-wrap: wrap;
     height: auto;
-    padding: spacing("md");
-    gap: spacing("md");
+    padding: tokens.spacing("md");
+    gap: tokens.spacing("md");
     justify-content: space-between;
   }
 
@@ -221,14 +221,14 @@ app-theme-toggle {
     margin-left: auto;
 
     .compare-btn {
-      padding: spacing("sm");
+      padding: tokens.spacing("sm");
     }
   }
 }
 
 @include mixins.breakpoint(sm) {
   .header-content {
-    padding: spacing("xs") spacing("sm");
+    padding: tokens.spacing("xs") tokens.spacing("sm");
   }
 
   .logo h1 {

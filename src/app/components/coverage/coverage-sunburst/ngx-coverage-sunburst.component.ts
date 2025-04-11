@@ -82,7 +82,7 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
                             name: 'All Code',
                             node: {
                                 name: 'All Code',
-                                coverage: data.summary.lineRate,
+                                coverage: data.summary.lineCoverage,
                                 value: data.summary.linesValid,
                                 children: data.packages
                             }
@@ -160,7 +160,7 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
             this.chartData = coverageData.packages.map(pkg => ({
                 name: pkg.name || 'Default Package',
                 value: pkg.classes.reduce((sum, cls) => sum + cls.lines.length, 0),
-                coverage: pkg.lineRate,
+                coverage: pkg.lineCoverage,
                 extra: {
                     isPackage: true,
                     children: pkg.classes
@@ -172,7 +172,7 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
             this.chartData = packageClasses.map((cls: any) => ({
                 name: cls.name,
                 value: cls.lines?.length || 0,
-                coverage: cls.lineRate,
+                coverage: cls.lineCoverage,
                 extra: {
                     isPackage: false,
                     filename: cls.filename

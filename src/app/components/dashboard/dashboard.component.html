@@ -65,8 +65,8 @@
                     <div class="recent-item" *ngFor="let snapshot of snapshots.slice().reverse().slice(0, 5)"
                         (click)="loadSnapshot(snapshot)">
                         <div class="recent-date">{{ formatDate(snapshot.date) }}</div>
-                        <div class="recent-coverage" [ngClass]="getCoverageClass(snapshot.lineRate)">
-                            {{ snapshot.lineRate.toFixed(1) }}%
+                        <div class="recent-coverage" [ngClass]="getCoverageClass(snapshot.lineCoverage)">
+                            {{ snapshot.lineCoverage.toFixed(1) }}%
                         </div>
                         <div class="recent-meta">
                             {{ snapshot.linesCovered }} / {{ snapshot.linesValid }} lines

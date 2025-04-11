@@ -29,8 +29,8 @@ export class CoverageDataService {
         // Initialize root node
         const root: TreeNode = {
             name: 'Overall Coverage',
-            coverage: coverageData.summary.lineRate || 0,
-            branchRate: coverageData.summary.branchRate || 0,
+            lineCoverage: coverageData.summary.lineCoverage || 0,
+            branchCoverage: coverageData.summary.branchCoverage || 0,
             complexity: coverageData.summary.complexity || 0,
             linesValid: 0,
             linesCovered: 0,
@@ -113,8 +113,8 @@ export class CoverageDataService {
                     const classNode: TreeNode = {
                         name: simplifyNames ? this.simplifyClassName(clsInfo.name, pkgInfo.name) : clsInfo.name,
                         packageName: pkgInfo.name,
-                        coverage: clsInfo.lineRate || 0,
-                        branchRate: clsInfo.branchRate || 0,
+                        lineCoverage: clsInfo.lineCoverage || 0,
+                        branchCoverage: clsInfo.branchCoverage || 0,
                         complexity: clsInfo.complexity || 0,
                         linesValid: classLinesValid,
                         linesCovered: clsInfo.linesCovered ?? 0,
@@ -148,8 +148,8 @@ export class CoverageDataService {
                     const otherNode: TreeNode = {
                         name: `Other (${smallClassNodes.length} small classes)`,
                         packageName: pkgInfo.name,
-                        coverage: this.clampRate(groupCoverage),
-                        branchRate: 0,
+                        lineCoverage: this.clampRate(groupCoverage),
+                        branchCoverage: 0,
                         complexity: smallClassNodes.reduce((sum, node) => sum + (node.complexity || 0), 0),
                         linesValid: totalSmallLines,
                         linesCovered: totalSmallCovered,
@@ -178,8 +178,8 @@ export class CoverageDataService {
                     // Create package node
                     const packageNode: TreeNode = {
                         name: displayName,
-                        coverage: this.clampRate(packageCoverage),
-                        branchRate: pkgInfo.branchRate || 0,
+                        lineCoverage: this.clampRate(packageCoverage),
+                        branchCoverage: pkgInfo.branchCoverage || 0,
                         complexity: pkgInfo.complexity || 0,
                         linesValid: packageLinesValid,
                         linesCovered: packageLinesCovered,
@@ -213,7 +213,7 @@ export class CoverageDataService {
                 // Create domain node
                 const domainNode: TreeNode = {
                     name: domain,
-                    coverage: this.clampRate(domainCoverage),
+                    lineCoverage: this.clampRate(domainCoverage),
                     linesValid: domainLinesValid,
                     linesCovered: domainLinesCovered,
                     isNamespace: true,
@@ -237,7 +237,7 @@ export class CoverageDataService {
         root.value = totalRootLinesValid;
         root.linesValid = totalRootLinesValid;
         root.linesCovered = totalRootLinesCovered;
-        root.coverage = totalRootLinesValid > 0 ?
+        root.lineCoverage = totalRootLinesValid > 0 ?
             this.clampRate((totalRootLinesCovered / totalRootLinesValid) * 100) : 0;
 
         if (root.children?.length === 0) {

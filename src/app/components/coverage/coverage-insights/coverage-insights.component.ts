@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CoverageStoreService } from '../../../services/coverage-store.service';
-import { CoverageData, CoverageInsight, ClassRisk } from '../../../models/coverage.model';
+import { CoverageData, CoverageInsight, ClassRisk } from '../../../models/coverage.model'; // Adjusted import
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../services/utils/theme.service';
 import { NotificationService } from '../../../services/utils/notification.service';
@@ -188,14 +188,12 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
 
         const container = this.elementRef.nativeElement.querySelector('.insights-container');
         if (container) {
-            if (this.isFullscreen) {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
             }
         }
     }
@@ -248,8 +246,8 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
     /**
      * Get count of items above a threshold
      */
-    getCountByThreshold(items: Array<{ lineRate: number }>, threshold: number): number {
-        return items.filter(item => item.lineRate >= threshold).length;
+    getCountByThreshold(items: Array<{ lineCoverage: number }>, threshold: number): number {
+        return items.filter(item => item.lineCoverage >= threshold).length;
     }
 
     /**
@@ -259,7 +257,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         if (!this.coverageData) return 0;
 
         return this.coverageData.packages.reduce((count, pkg) => {
-            return count + pkg.classes.filter(cls => cls.lineRate >= threshold).length;
+            return count + pkg.classes.filter(cls => cls.lineCoverage >= threshold).length;
         }, 0);
     }
 
@@ -569,7 +567,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         this.insights = [];
 
         // Overall coverage assessment
-        const overallCoverage = this.coverageData.summary.lineRate;
+        const overallCoverage = this.coverageData.summary.lineCoverage;
         if (overallCoverage >= this.thresholds.excellent) {
             this.insights.push({
                 type: 'success',
@@ -601,7 +599,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         }
 
         // Branch vs line coverage
-        const branchCoverage = this.coverageData.summary.branchRate;
+        const branchCoverage = this.coverageData.summary.branchCoverage;
         const coverageDiff = overallCoverage - branchCoverage;
 
         if (coverageDiff > 15) {
@@ -629,21 +627,21 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
             this.insights.push({
                 type: 'success',
                 title: 'Well-Tested Packages',
-                description: `${highCoveragePackages} out of ${packageCount} packages (${packageCoveragePercent.toFixed(0)}%) have good coverage (>${this.thresholds.good}%).`,
+                description: `${highCoveragePackages} out of <span class="math-inline">\{packageCount\} packages \(</span>{packageCoveragePercent.toFixed(0)}%) have good coverage (>${this.thresholds.good}%).`,
                 icon: 'fas fa-boxes'
             });
         } else if (packageCoveragePercent <= 40) {
             this.insights.push({
                 type: 'danger',
                 title: 'Many Poorly-Tested Packages',
-                description: `Only ${highCoveragePackages} out of ${packageCount} packages (${packageCoveragePercent.toFixed(0)}%) have good coverage (>${this.thresholds.good}%).`,
+                description: `Only ${highCoveragePackages} out of <span class="math-inline">\{packageCount\} packages \(</span>{packageCoveragePercent.toFixed(0)}%) have good coverage (>${this.thresholds.good}%).`,
                 icon: 'fas fa-boxes'
             });
         } else {
             this.insights.push({
                 type: 'warning',
                 title: 'Mixed Package Coverage',
-                description: `${highCoveragePackages} out of ${packageCount} packages (${packageCoveragePercent.toFixed(0)}%) have good coverage (>${this.thresholds.good}%).`,
+                description: `${highCoveragePackages} out of <span class="math-inline">\{packageCount\} packages \(</span>{packageCoveragePercent.toFixed(0)}%) have good coverage (>${this.thresholds.good}%).`,
                 icon: 'fas fa-boxes'
             });
         }
@@ -659,14 +657,14 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
                 this.insights.push({
                     type: 'danger',
                     title: 'Many Untested Classes',
-                    description: `${untested} classes (${percentage.toFixed(1)}%) have no test coverage at all.`,
+                    description: `<span class="math-inline">\{untested\} classes \(</span>{percentage.toFixed(1)}%) have no test coverage at all.`,
                     icon: 'fas fa-file-code'
                 });
             } else {
                 this.insights.push({
                     type: 'warning',
                     title: 'Some Untested Classes',
-                    description: `${untested} classes (${percentage.toFixed(1)}%) have no test coverage at all.`,
+                    description: `<span class="math-inline">\{untested\} classes \(</span>{percentage.toFixed(1)}%) have no test coverage at all.`,
                     icon: 'fas fa-file-code'
                 });
             }
@@ -694,7 +692,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
             this.insights.push({
                 type: 'success',
                 title: 'Majority of Classes Well Tested',
-                description: `${this.classCountByLevel.excellent} classes (${((this.classCountByLevel.excellent / classCount) * 100).toFixed(0)}%) have excellent test coverage (>${this.thresholds.excellent}%).`,
+                description: `<span class="math-inline">\{this\.classCountByLevel\.excellent\} classes \(</span>{((this.classCountByLevel.excellent / classCount) * 100).toFixed(0)}%) have excellent test coverage (>${this.thresholds.excellent}%).`,
                 icon: 'fas fa-chart-pie'
             });
         }
@@ -703,7 +701,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
             this.insights.push({
                 type: 'danger',
                 title: 'Many Poorly Tested Classes',
-                description: `${this.classCountByLevel.poor} classes (${((this.classCountByLevel.poor / classCount) * 100).toFixed(0)}%) have poor test coverage (<${this.thresholds.average}%).`,
+                description: `<span class="math-inline">\{this\.classCountByLevel\.poor\} classes \(</span>{((this.classCountByLevel.poor / classCount) * 100).toFixed(0)}%) have poor test coverage (<${this.thresholds.average}%).`,
                 icon: 'fas fa-chart-pie'
             });
         }
@@ -716,7 +714,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         if (!this.coverageData) return 0;
 
         return this.coverageData.packages.reduce((count, pkg) => {
-            return count + pkg.classes.filter(cls => cls.lineRate === 0).length;
+            return count + pkg.classes.filter(cls => cls.lineCoverage === 0).length;
         }, 0);
     }
 
@@ -737,11 +735,11 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         // Count classes in each coverage level
         for (const pkg of this.coverageData.packages) {
             for (const cls of pkg.classes) {
-                if (cls.lineRate >= this.thresholds.excellent) {
+                if (cls.lineCoverage >= this.thresholds.excellent) {
                     this.classCountByLevel.excellent++;
-                } else if (cls.lineRate >= this.thresholds.good) {
+                } else if (cls.lineCoverage >= this.thresholds.good) {
                     this.classCountByLevel.good++;
-                } else if (cls.lineRate >= this.thresholds.average) {
+                } else if (cls.lineCoverage >= this.thresholds.average) {
                     this.classCountByLevel.average++;
                 } else {
                     this.classCountByLevel.poor++;
@@ -780,9 +778,9 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
                 // 2. Large class (lines of code)
                 // 3. Low branch coverage (complex code)
 
-                const coverageRisk = 1 - (cls.lineRate / 100); // 0 to 1, higher is riskier
+                const coverageRisk = 1 - (cls.lineCoverage / 100); // 0 to 1, higher is riskier
                 const sizeRisk = Math.min(cls.lines.length / 500, 1); // Normalize, max at 500 lines
-                const branchRisk = 1 - (cls.branchRate / 100); // 0 to 1, higher is riskier
+                const branchRisk = 1 - (cls.branchCoverage / 100); // 0 to 1, higher is riskier
 
                 // Weight the factors - coverage is most important
                 const weightedRisk = (coverageRisk * 0.5) + (sizeRisk * 0.3) + (branchRisk * 0.2);
@@ -794,10 +792,10 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
                 if (riskScore > 40) {
                     allClasses.push({
                         name: cls.name,
-                        path: `${pkg.name}.${cls.name}`,
-                        coverage: cls.lineRate,
+                        path: `<span class="math-inline">\{pkg\.name\}\.</span>{cls.name}`,
+                        coverage: cls.lineCoverage,
                         linesValid: cls.lines.length,
-                        branchRate: cls.branchRate,
+                        branchCoverage: cls.branchCoverage,
                         riskScore
                     });
                 }
@@ -819,7 +817,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         this.recommendations = [];
 
         // Base recommendations on insights and high-risk classes
-        const overallCoverage = this.coverageData.summary.lineRate;
+        const overallCoverage = this.coverageData.summary.lineCoverage;
 
         // Overall coverage recommendations
         if (overallCoverage < this.thresholds.average) {
@@ -829,7 +827,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         }
 
         // Branch coverage recommendations
-        const branchCoverage = this.coverageData.summary.branchRate;
+        const branchCoverage = this.coverageData.summary.branchCoverage;
         const coverageDiff = overallCoverage - branchCoverage;
 
         if (coverageDiff > 15) {
@@ -875,10 +873,10 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
 
         // Add more specific recommendations
         if (this.coverageData.packages.length > 5) {
-            const lowCoveragePackages = this.coverageData.packages.filter(pkg => pkg.lineRate < this.thresholds.average);
+            const lowCoveragePackages = this.coverageData.packages.filter(pkg => pkg.lineCoverage < this.thresholds.average);
             if (lowCoveragePackages.length > 0) {
                 this.recommendations.push(
-                    `Focus on improving coverage in low-coverage packages: ${lowCoveragePackages.slice(0, 3).map(pkg => pkg.name || 'Default').join(', ')}${lowCoveragePackages.length > 3 ? ', etc.' : ''}`
+                    `Focus on improving coverage in low-coverage packages: <span class="math-inline">\{lowCoveragePackages\.slice\(0, 3\)\.map\(pkg \=\> pkg\.name \|\| 'Default'\)\.join\(', '\)\}</span>{lowCoveragePackages.length > 3 ? ', etc.' : ''}`
                 );
             }
         }
@@ -901,8 +899,8 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         const content = `# Coverage Analysis Report
 
         ## Summary
-        - **Overall Coverage**: ${this.coverageData.summary.lineRate.toFixed(1)}%
-        - **Branch Coverage**: ${this.coverageData.summary.branchRate.toFixed(1)}%
+        - **Overall Coverage**: ${this.coverageData.summary.lineCoverage.toFixed(1)}%
+        - **Branch Coverage**: ${this.coverageData.summary.lineCoverage.toFixed(1)}%
         - **Lines Covered**: ${this.coverageData.summary.linesCovered} / ${this.coverageData.summary.linesValid}
         - **Packages**: ${this.coverageData.packages.length} 
         - **Classes**: ${this.getTotalClassCount()}

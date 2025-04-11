@@ -1,3 +1,9 @@
-@import url("./styles/_styles.scss");
-@import url("./styles/_tokens.scss");
-@import url("./styles/_mixins.scss");
+// Import base styles
+@use "./styles/_tokens" as tokens;
+@use "./styles/_mixins" as mixins;
+@use "./styles/_styles" as styles;
+
+// Any global styles can go here
+:root {
+  --transition-base: all 0.3s ease;
+}

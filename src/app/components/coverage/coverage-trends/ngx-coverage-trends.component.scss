@@ -2,12 +2,20 @@
 @use "../../../../styles/_mixins" as mixins;
 @use "sass:map";
 
+// Use the spacing function directly for convenience
+@function spacing($key) {
+  @return tokens.spacing($key);
+}
+
 .trends-container {
   @include mixins.card;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 // Toolbar Styling
@@ -42,12 +50,21 @@
     height: 36px;
     background-color: tokens.color("primary-bg");
     color: tokens.color("primary");
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
 
     &:hover {
       background-color: tokens.color("primary-light");
       color: tokens.color("text-on-primary");
+      transform: translateY(-2px);
     }
   }
+}
+
+.view-content {
+  flex: 1;
+  padding: spacing("lg");
+  overflow-y: auto;
 }
 
 // Empty State Styling
@@ -65,12 +82,14 @@
       @include mixins.font-size("huge");
       margin-bottom: spacing("md");
       color: tokens.color("border");
-      @include mixins.flex-center;
-      background-color: tokens.color("background");
-      border-radius: map.get(tokens.$border-radius, "round");
-      box-shadow: map.get(tokens.$shadows, "md");
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(tokens.color("background"), 0.5);
+      border-radius: 50%;
       width: 100px;
       height: 100px;
+      margin: 0 auto spacing("md");
     }
 
     h3 {
@@ -91,18 +110,29 @@
   .demo-data {
     @include mixins.flex-center;
     gap: spacing("md");
+    flex-wrap: wrap;
 
     .btn-primary {
       @include mixins.primary-button;
+      padding: spacing("sm") spacing("md");
+      transition: all 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+      }
     }
+    
     .btn-outline {
       @include mixins.button-base;
       background-color: transparent;
       border: 1px solid tokens.color("primary");
       color: tokens.color("primary");
+      padding: spacing("sm") spacing("md");
+      transition: all 0.2s ease;
 
       &:hover {
         background-color: tokens.color("primary-bg");
+        transform: translateY(-2px);
       }
     }
   }
@@ -111,8 +141,6 @@
 // Dashboard Header
 .dashboard-header {
   @include mixins.flex-between;
-  justify-content: space-between;
-  align-items: flex-start;
   flex-wrap: wrap;
   gap: spacing("md");
   padding-bottom: spacing("md");
@@ -129,13 +157,84 @@
 
   .filter-section {
     flex-basis: 250px;
+    
+    .section-label {
+      @include mixins.font-size("sm");
+      font-weight: 500;
+      color: tokens.color("text-muted");
+    }
+    
+    .date-filter {
+      @include mixins.flex-center;
+      gap: spacing("sm");
+      
+      input, select {
+        @include mixins.input-base;
+        padding: spacing("xs") spacing("sm");
+        @include mixins.font-size("sm");
+        border-radius: 4px;
+      }
+      
+      .apply-btn {
+        @include mixins.button-base;
+        padding: spacing("xs") spacing("sm");
+        background-color: tokens.color("accent-bg");
+        color: tokens.color("accent-dark");
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background-color: tokens.color("accent-light");
+          color: tokens.color("text-on-accent");
+        }
+      }
+    }
   }
+  
   .metrics-toggle {
     flex: 1;
     min-width: 200px;
+    
+    .section-label {
+      @include mixins.font-size("sm");
+      font-weight: 500;
+      color: tokens.color("text-muted");
+    }
   }
+  
   .view-options {
     flex-basis: 200px;
+    
+    .section-label {
+      @include mixins.font-size("sm");
+      font-weight: 500;
+      color: tokens.color("text-muted");
+    }
+    
+    .view-buttons {
+      @include mixins.flex-center;
+      gap: spacing("xs");
+      
+      .view-btn {
+        @include mixins.button-base;
+        padding: spacing("xs") spacing("sm");
+        border: 1px solid tokens.color("border");
+        background-color: tokens.color("card-bg");
+        color: tokens.color("text-muted");
+        transition: all 0.2s ease;
+        border-radius: 4px;
+        
+        &:hover {
+          background-color: tokens.color("primary-bg");
+        }
+        
+        &.active {
+          background-color: tokens.color("primary");
+          color: tokens.color("text-on-primary");
+          border-color: tokens.color("primary");
+        }
+      }
+    }
   }
 }
 
@@ -153,17 +252,74 @@
   @include mixins.font-size("sm");
   @include mixins.flex-center;
   gap: spacing("xs");
-  border-width: 2px;
-  border-color: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 
   i.fa-circle {
     font-size: 10px;
   }
+  
+  &:hover {
+    background-color: rgba(tokens.color("border"), 0.3);
+  }
 
   &.active {
-    background-color: tokens.color("hover");
-    border-color: currentColor;
+    background-color: rgba(tokens.color("primary"), 0.05);
+    border-color: tokens.color("primary");
+    color: tokens.color("primary");
     font-weight: 500;
+  }
+  
+  &.line-coverage {
+    color: tokens.color("accent-dark");
+    
+    &:hover {
+      background-color: rgba(tokens.color("accent"), 0.05);
+    }
+    
+    &.active {
+      background-color: rgba(tokens.color("accent"), 0.1);
+      border-color: tokens.color("accent");
+    }
+  }
+  
+  &.branch-coverage {
+    color: tokens.color("info");
+    
+    &:hover {
+      background-color: rgba(tokens.color("info"), 0.05);
+    }
+    
+    &.active {
+      background-color: rgba(tokens.color("info"), 0.1);
+      border-color: tokens.color("info");
+    }
+  }
+  
+  &.method-coverage {
+    color: tokens.color("success");
+    
+    &:hover {
+      background-color: rgba(tokens.color("success"), 0.05);
+    }
+    
+    &.active {
+      background-color: rgba(tokens.color("success"), 0.1);
+      border-color: tokens.color("success");
+    }
+  }
+  
+  &.complexity {
+    color: tokens.color("warning");
+    
+    &:hover {
+      background-color: rgba(tokens.color("warning"), 0.05);
+    }
+    
+    &.active {
+      background-color: rgba(tokens.color("warning"), 0.1);
+      border-color: tokens.color("warning");
+    }
   }
 }
 
@@ -177,15 +333,37 @@
 
 .stat-card {
   @include mixins.card;
-  padding: spacing("md");
+  padding: spacing("md") spacing("lg");
   @include mixins.flex-column;
   gap: spacing("sm");
   border-left-width: 4px;
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+  
+  &.line-coverage {
+    border-left-color: tokens.color("accent-dark");
+  }
+  
+  &.branch-coverage {
+    border-left-color: tokens.color("info");
+  }
+  
+  &.method-coverage {
+    border-left-color: tokens.color("success");
+  }
+  
+  &.complexity {
+    border-left-color: tokens.color("warning");
+  }
 
   .stat-title {
     @include mixins.font-size("sm");
     color: tokens.color("text-muted");
     font-weight: 500;
+    margin-bottom: spacing("xs");
   }
 
   .stat-value {
@@ -207,12 +385,75 @@
     }
   }
 
-  .stat-change,
+  .stat-change {
+    @include mixins.font-size("sm");
+    @include mixins.flex-center;
+    gap: spacing("xs");
+    font-weight: 500;
+    
+    &.positive {
+      color: tokens.color("success");
+    }
+    
+    &.negative {
+      color: tokens.color("error");
+    }
+    
+    &.neutral {
+      color: tokens.color("text-muted");
+    }
+  }
+  
   .stat-detail {
     @include mixins.font-size("sm");
     color: tokens.color("text-muted");
     @include mixins.flex-center;
     gap: spacing("xs");
+  }
+  
+  .metric-progress {
+    margin-top: spacing("sm");
+    
+    .progress-bar {
+      height: 6px;
+      background-color: tokens.color("border");
+      border-radius: 3px;
+      overflow: hidden;
+      
+      .progress-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+        
+        &.excellent {
+          background-color: tokens.color("success");
+        }
+        &.good {
+          background-color: tokens.color("accent-dark");
+        }
+        &.average {
+          background-color: tokens.color("warning");
+        }
+        &.poor {
+          background-color: tokens.color("error");
+        }
+        
+        &.line-coverage {
+          background-color: tokens.color("accent-dark");
+        }
+        
+        &.branch-coverage {
+          background-color: tokens.color("info");
+        }
+        
+        &.method-coverage {
+          background-color: tokens.color("success");
+        }
+        
+        &.complexity {
+          background-color: tokens.color("warning");
+        }
+      }
+    }
   }
 }
 
@@ -229,10 +470,14 @@
   @include mixins.card;
   padding: spacing("md");
   @include mixins.flex-column;
+  border-radius: 8px;
+  overflow: hidden;
 
   .chart-header {
     @include mixins.flex-between;
     margin-bottom: spacing("md");
+    padding-bottom: spacing("sm");
+    border-bottom: 1px solid rgba(tokens.color("border"), 0.5);
     flex-shrink: 0;
 
     h3 {
@@ -242,6 +487,10 @@
       color: tokens.color("text");
       @include mixins.flex-center;
       gap: spacing("sm");
+      
+      i {
+        color: tokens.color("primary");
+      }
     }
   }
 
@@ -252,13 +501,350 @@
 
   .chart-btn {
     @include mixins.button-base;
-    padding: spacing("xs") spacing("sm");
-    background-color: tokens.color("primary-bg");
-    color: tokens.color("primary");
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background-color: tokens.color("card-bg");
+    color: tokens.color("text-muted");
+    border: 1px solid tokens.color("border");
+    transition: all 0.2s ease;
 
     &:hover {
-      background-color: tokens.color("primary-light");
-      color: tokens.color("text-on-primary");
+      background-color: tokens.color("primary-bg");
+      color: tokens.color("primary");
+    }
+  }
+  
+  .chart-area {
+    flex: 1;
+    min-height: 300px;
+    position: relative;
+    
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+  }
+  
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing("sm");
+    padding-top: spacing("sm");
+    margin-top: spacing("sm");
+    border-top: 1px solid rgba(tokens.color("border"), 0.5);
+    
+    .legend-item {
+      @include mixins.flex-center;
+      gap: spacing("xs");
+      @include mixins.font-size("xs");
+      color: tokens.color("text-muted");
+      padding: spacing("xs") spacing("sm");
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(tokens.color("border"), 0.3);
+        color: tokens.color("text");
+      }
+      
+      &.active {
+        background-color: tokens.color("primary-bg");
+        color: tokens.color("primary");
+      }
+      
+      .color-box {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        
+        &.line-coverage {
+          background-color: tokens.color("accent-dark");
+        }
+        
+        &.branch-coverage {
+          background-color: tokens.color("info");
+        }
+        
+        &.method-coverage {
+          background-color: tokens.color("success");
+        }
+        
+        &.complexity {
+          background-color: tokens.color("warning");
+        }
+      }
+    }
+  }
+}
+
+.main-chart {
+  grid-column: 1 / -1;
+  
+  .chart-area {
+    min-height: 350px;
+  }
+}
+
+// Table View
+.trends-table-container {
+  @include mixins.card;
+  margin-bottom: spacing("lg");
+  padding: 0;
+  overflow: hidden;
+  
+  .table-header {
+    @include mixins.flex-between;
+    padding: spacing("md");
+    background-color: tokens.color("card-header-bg");
+    border-bottom: 1px solid tokens.color("border");
+    
+    h3 {
+      margin: 0;
+      @include mixins.font-size("md");
+      font-weight: 500;
+      @include mixins.flex-center;
+      gap: spacing("sm");
+      
+      i {
+        color: tokens.color("primary");
+      }
+    }
+    
+    .header-actions {
+      @include mixins.flex-center;
+      gap: spacing("sm");
+      
+      .search-input {
+        position: relative;
+        
+        input {
+          @include mixins.input-base;
+          padding: spacing("xs") spacing("xs") spacing("xs") spacing("lg");
+          @include mixins.font-size("sm");
+          width: 200px;
+        }
+        
+        i {
+          position: absolute;
+          left: spacing("xs");
+          top: 50%;
+          transform: translateY(-50%);
+          color: tokens.color("text-muted");
+          pointer-events: none;
+        }
+      }
+      
+      .action-btn {
+        @include mixins.button-base;
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        background-color: tokens.color("card-bg");
+        color: tokens.color("text-muted");
+        border: 1px solid tokens.color("border");
+        
+        &:hover {
+          background-color: tokens.color("primary-bg");
+          color: tokens.color("primary");
+        }
+      }
+    }
+  }
+  
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      
+      th {
+        text-align: left;
+        padding: spacing("sm") spacing("md");
+        color: tokens.color("text-muted");
+        font-weight: 500;
+        @include mixins.font-size("sm");
+        white-space: nowrap;
+        border-bottom: 2px solid tokens.color("border");
+        background-color: tokens.color("background");
+        user-select: none;
+        
+        &.sortable {
+          cursor: pointer;
+          
+          &:hover {
+            color: tokens.color("primary");
+          }
+          
+          i {
+            margin-left: spacing("xs");
+          }
+        }
+      }
+      
+      td {
+        padding: spacing("sm") spacing("md");
+        @include mixins.font-size("sm");
+        border-bottom: 1px solid tokens.color("border");
+        
+        .date-cell {
+          white-space: nowrap;
+        }
+        
+        .metric-cell {
+          @include mixins.flex-between;
+          
+          .metric-value {
+            font-weight: 500;
+            
+            &.excellent {
+              color: tokens.color("success");
+            }
+            &.good {
+              color: tokens.color("accent-dark");
+            }
+            &.average {
+              color: tokens.color("warning");
+            }
+            &.poor {
+              color: tokens.color("error");
+            }
+          }
+        }
+        
+        .change-cell {
+          @include mixins.flex-center;
+          gap: spacing("xs");
+          white-space: nowrap;
+          font-weight: 500;
+          
+          &.positive {
+            color: tokens.color("success");
+          }
+          
+          &.negative {
+            color: tokens.color("error");
+          }
+          
+          &.neutral {
+            color: tokens.color("text-muted");
+          }
+        }
+        
+        .actions-cell {
+          @include mixins.flex-center;
+          gap: spacing("xs");
+          
+          .action-btn {
+            @include mixins.button-base;
+            width: 28px;
+            height: 28px;
+            background-color: transparent;
+            color: tokens.color("text-muted");
+            border-radius: 4px;
+            
+            &:hover {
+              background-color: tokens.color("primary-bg");
+              color: tokens.color("primary");
+            }
+          }
+        }
+        
+        .progress-cell {
+          width: 100px;
+          
+          .progress-bar {
+            height: 5px;
+            background-color: tokens.color("border");
+            border-radius: 2.5px;
+            overflow: hidden;
+            
+            .progress-fill {
+              height: 100%;
+              
+              &.excellent {
+                background-color: tokens.color("success");
+              }
+              &.good {
+                background-color: tokens.color("accent-dark");
+              }
+              &.average {
+                background-color: tokens.color("warning");
+              }
+              &.poor {
+                background-color: tokens.color("error");
+              }
+            }
+          }
+        }
+      }
+      
+      tr {
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+          background-color: rgba(tokens.color("primary"), 0.02);
+        }
+      }
+    }
+  }
+  
+  .table-footer {
+    @include mixins.flex-between;
+    padding: spacing("sm") spacing("md");
+    background-color: tokens.color("card-header-bg");
+    border-top: 1px solid tokens.color("border");
+    
+    .footer-info {
+      @include mixins.font-size("sm");
+      color: tokens.color("text-muted");
+    }
+    
+    .pagination {
+      @include mixins.flex-center;
+      gap: spacing("xs");
+      
+      .page-btn {
+        @include mixins.button-base;
+        min-width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        @include mixins.font-size("sm");
+        background-color: transparent;
+        color: tokens.color("text-muted");
+        
+        &:hover:not(.disabled) {
+          background-color: tokens.color("primary-bg");
+          color: tokens.color("primary");
+        }
+        
+        &.active {
+          background-color: tokens.color("primary");
+          color: tokens.color("text-on-primary");
+        }
+        
+        &.disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
     }
   }
 }
@@ -270,27 +856,112 @@
   }
 
   .main-chart .chart-area {
-    min-height: 250px;
+    min-height: 300px;
   }
 }
 
 @include mixins.breakpoint(md) {
+  .toolbar {
+    padding: spacing("sm") spacing("md");
+    
+    h2 {
+      @include mixins.font-size("lg");
+    }
+  }
+  
+  .view-content {
+    padding: spacing("md");
+  }
+
   .dashboard-header {
     flex-direction: column;
     align-items: stretch;
+    gap: spacing("sm");
+    
+    .filter-section,
+    .metrics-toggle,
+    .view-options {
+      width: 100%;
+    }
   }
 
   .stats-cards {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
+  
+  .chart-container {
+    padding: spacing("sm");
+    
+    .chart-header h3 {
+      @include mixins.font-size("base");
+    }
+    
+    .chart-area {
+      min-height: 250px;
+    }
+  }
+  
+  .main-chart .chart-area {
+    min-height: 280px;
+  }
+  
+  .trends-table-container {
+    .table-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: spacing("sm");
+      
+      .header-actions {
+        width: 100%;
+        
+        .search-input {
+          flex: 1;
+          
+          input {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
 }
 
 @include mixins.breakpoint(sm) {
-  .dashboard-header {
-    gap: spacing("sm");
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .toolbar-actions {
+      margin-top: spacing("sm");
+      width: 100%;
+      justify-content: flex-end;
+    }
   }
 
   .stats-cards {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: spacing("sm");
+  }
+  
+  .chart-grid {
+    gap: spacing("md");
+  }
+  
+  .chart-container {
+    .chart-legend {
+      justify-content: center;
+    }
+  }
+  
+  .trends-table-container {
+    .table-footer {
+      flex-direction: column;
+      gap: spacing("sm");
+      align-items: center;
+      
+      .footer-info {
+        text-align: center;
+      }
+    }
   }
 }

@@ -33,10 +33,10 @@ export class CoberturaParserService {
 
             // Initialize summary with defaults and placeholders for aggregation
             const summary: CoverageSummary = {
-                lineRate: this.parseRate(coverageElement.getAttribute('line-rate')),
-                branchRate: this.parseRate(coverageElement.getAttribute('branch-rate')),
-                methodRate: this.parseRate(coverageElement.getAttribute('method-rate') || coverageElement.getAttribute('methods')),
-                classRate: this.parseRate(coverageElement.getAttribute('class-rate') || coverageElement.getAttribute('classes')),
+                lineCoverage: this.parseRate(coverageElement.getAttribute('line-rate')),
+                branchCoverage: this.parseRate(coverageElement.getAttribute('branch-rate')),
+                methodCoverage: this.parseRate(coverageElement.getAttribute('method-rate') || coverageElement.getAttribute('methods')),
+                classCoverage: this.parseRate(coverageElement.getAttribute('class-rate') || coverageElement.getAttribute('classes')),
                 complexity: parseFloat(coverageElement.getAttribute('complexity') || '0'),
                 linesValid: 0, // Will be aggregated
                 linesCovered: 0, // Will be aggregated
@@ -122,15 +122,15 @@ export class CoberturaParserService {
 
 
                     // Calculate rates
-                    const classLineRate = classLinesValid > 0 ? (classLinesCovered / classLinesValid) * 100 : 0;
-                    const classBranchRate = classBranchesValidForRate > 0 ? (classBranchesCoveredForRate / classBranchesValidForRate) * 100 : 0;
+                    const classlineCoverage = classLinesValid > 0 ? (classLinesCovered / classLinesValid) * 100 : 0;
+                    const classbranchCoverage = classBranchesValidForRate > 0 ? (classBranchesCoveredForRate / classBranchesValidForRate) * 100 : 0;
                     const classComplexity = parseFloat(clsElement.getAttribute('complexity') || '0') || methods.reduce((sum, m) => sum + m.complexity, 0); // Sum method complexity if class attr missing
 
                     classes.push({
                         name: className,
                         filename: clsElement.getAttribute('filename') || '',
-                        lineRate: this.clampRate(classLineRate), // Use calculated rate & clamp
-                        branchRate: this.clampRate(classBranchRate), // Use calculated rate & clamp
+                        lineCoverage: this.clampRate(classlineCoverage), // Use calculated rate & clamp
+                        branchCoverage: this.clampRate(classbranchCoverage), // Use calculated rate & clamp
                         complexity: classComplexity,
                         methods: methods,
                         lines: lines,
@@ -144,23 +144,23 @@ export class CoberturaParserService {
                     pkgBranchesValid += classBranchesValidForRate; // Use counts used for rate
                     pkgBranchesCovered += classBranchesCoveredForRate;
                     pkgMethodsValid += methods.length;
-                    pkgMethodsCovered += methods.filter(m => m.lineRate > 0).length;
+                    pkgMethodsCovered += methods.filter(m => m.lineCoverage > 0).length;
                     pkgComplexity += classComplexity;
                     pkgConditionsValid += classBranchesValid;
                     pkgConditionsCovered += classBranchesCovered;
                 }
 
                 // Calculate package rates
-                const pkgLineRate = pkgLinesValid > 0 ? (pkgLinesCovered / pkgLinesValid) * 100 : 0;
-                const pkgBranchRate = pkgBranchesValid > 0 ? (pkgBranchesCovered / pkgBranchesValid) * 100 : 0;
+                const pkglineCoverage = pkgLinesValid > 0 ? (pkgLinesCovered / pkgLinesValid) * 100 : 0;
+                const pkgbranchCoverage = pkgBranchesValid > 0 ? (pkgBranchesCovered / pkgBranchesValid) * 100 : 0;
                 const pkgMethodRate = pkgMethodsValid > 0 ? (pkgMethodsCovered / pkgMethodsValid) * 100 : 0;
                 const finalPkgComplexity = parseFloat(pkgElement.getAttribute('complexity') || '0') || pkgComplexity;
 
                 packages.push({
                     name: packageName,
-                    lineRate: this.clampRate(pkgLineRate),
-                    branchRate: this.clampRate(pkgBranchRate),
-                    methodRate: this.clampRate(pkgMethodRate),
+                    lineCoverage: this.clampRate(pkglineCoverage),
+                    branchCoverage: this.clampRate(pkgbranchCoverage),
+                    methodCoverage: this.clampRate(pkgMethodRate),
                     // conditionRate: ..., // Calculate if needed
                     complexity: finalPkgComplexity,
                     classes
@@ -171,8 +171,8 @@ export class CoberturaParserService {
                 summary.linesCovered += pkgLinesCovered;
                 summary.methodsValid = (summary.methodsValid ?? 0) + pkgMethodsValid;
                 summary.methodsCovered = (summary.methodsCovered ?? 0) + pkgMethodsCovered;
-                summary.branchRate = this.clampRate((summary.branchRate + pkgBranchRate) / 2); // Average for summary
-                summary.lineRate = this.clampRate((summary.lineRate + pkgLineRate) / 2); // Average for summary
+                summary.branchCoverage = this.clampRate((summary.branchCoverage + pkgbranchCoverage) / 2); // Average for summary
+                summary.lineCoverage = this.clampRate((summary.lineCoverage + pkglineCoverage) / 2); // Average for summary
                 summary.complexity += finalPkgComplexity;
                 summary.conditionsValid! += pkgConditionsValid;
                 summary.conditionsCovered! += pkgConditionsCovered;
@@ -181,8 +181,8 @@ export class CoberturaParserService {
             }
 
             // Final summary rate calculation (if needed)
-            if (summary.lineRate === 0 && summary.linesValid > 0) { /* ... */ }
-            if (summary.methodRate === 0 && (summary.methodsValid ?? 0) > 0) { /* ... */ }
+            if (summary.lineCoverage === 0 && summary.linesValid > 0) { /* ... */ }
+            if (summary.methodCoverage === 0 && (summary.methodsValid ?? 0) > 0) { /* ... */ }
             // ... clamp summary rates ...
 
             if (summary.linesValid === 0 && packages.length === 0) { /* ... error handling ... */ }

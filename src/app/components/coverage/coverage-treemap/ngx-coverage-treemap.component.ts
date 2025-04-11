@@ -4,7 +4,7 @@ import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ViewChild, E
 import { FormsModule } from "@angular/forms";
 import { NgxChartsModule } from "@swimlane/ngx-charts";
 import { Subscription } from "rxjs";
-import { Coverage, TreeNode, ClassInfo, CoverageData } from "../../../models/coverage.model";
+import { TreeNode, ClassInfo, CoverageData } from "../../../models/coverage.model";
 import { ExclusionPattern } from "../../../models/treemap-config.model";
 import { CoverageDataService } from "../../../services/coverage-data.service";
 import { CoverageStoreService } from "../../../services/coverage-store.service";
@@ -41,7 +41,7 @@ import { ThemeService } from "../../../services/utils/theme.service";
 export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
     @Input() isDarkTheme = false;
 
-    @Output() nodeSelected = new EventEmitter<Coverage>();
+    @Output() nodeSelected = new EventEmitter<any>();
 
     @ViewChild('chartContainer', { static: false }) chartContainer!: ElementRef;
 
@@ -274,13 +274,13 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
                 name: child.name,
                 value: child.value || child.linesValid,
                 extra: {
-                    coverage: child.coverage,
+                    coverage: child.lineCoverage,
                     isNamespace: child.isNamespace,
                     isGroupedNode: child.isGroupedNode,
                     packageName: child.packageName,
                     linesValid: child.linesValid,
                     linesCovered: child.linesCovered,
-                    branchRate: child.branchRate,
+                    branchCoverage: child.branchCoverage,
                     filename: child.filename,
                     originalData: child.originalData,
                     isDomainGroup: child.isDomainGroup
@@ -288,7 +288,7 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
             };
 
             // Customize color based on coverage
-            nodeData.color = this.getCoverageColorValue(child.coverage);
+            nodeData.color = this.getCoverageColorValue(child.lineCoverage);
 
             // Process children
             if (child.children && child.children.length > 0) {
@@ -306,15 +306,15 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
                     const childData = {
                         name: grandchild.name,
                         value: grandchild.value || grandchild.linesValid,
-                        color: this.getCoverageColorValue(grandchild.coverage),
+                        color: this.getCoverageColorValue(grandchild.lineCoverage),
                         extra: {
-                            coverage: grandchild.coverage,
+                            lineCoverage: grandchild.lineCoverage,
                             isNamespace: grandchild.isNamespace,
                             isGroupedNode: grandchild.isGroupedNode,
                             packageName: grandchild.packageName || child.name,
                             linesValid: grandchild.linesValid,
                             linesCovered: grandchild.linesCovered,
-                            branchRate: grandchild.branchRate,
+                            branchCoverage: grandchild.branchCoverage,
                             filename: grandchild.filename,
                             originalData: grandchild.originalData
                         }
@@ -363,7 +363,7 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
  */
     private shouldFilterNode(node: TreeNode): boolean {
         // Coverage threshold filter
-        if (this.minCoverage > 0 && node.coverage < this.minCoverage) {
+        if (this.minCoverage > 0 && node.lineCoverage < this.minCoverage) {
             return true;
         }
 
@@ -481,7 +481,7 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
                 coverage: node.extra.coverage,
                 linesValid: node.extra.linesValid,
                 linesCovered: node.extra.linesCovered,
-                branchRate: node.extra.branchRate,
+                branchCoverage: node.extra.branchCoverage,
                 filename: node.extra.filename,
                 isDomainGroup: node.extra.isDomainGroup
             };
@@ -537,12 +537,12 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
                 // Fallback if node not found in map
                 this.selectedNode = {
                     name: node.name,
-                    coverage: node.extra.coverage,
+                    lineCoverage: node.extra.coverage,
                     isNamespace: node.extra.isNamespace,
                     packageName: node.extra.packageName,
                     linesValid: node.extra.linesValid,
                     linesCovered: node.extra.linesCovered,
-                    branchRate: node.extra.branchRate,
+                    branchCoverage: node.extra.branchCoverage,
                     filename: node.extra.filename,
                     children: [],
                     value: node.value
@@ -605,13 +605,13 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
         this.similarClasses = pkg.classes
             .filter(cls =>
                 cls.name !== classInfo.name &&
-                Math.abs(cls.lineRate - classInfo.lineRate) < 15
+                Math.abs(cls.lineCoverage - classInfo.lineCoverage) < 15
             )
             .slice(0, 5) // Limit to 5 similar classes
             .map(cls => ({
                 name: cls.name,
                 packageName: packageName,
-                coverage: cls.lineRate,
+                coverage: cls.lineCoverage,
                 linesValid: cls.linesValid || 0,
                 linesCovered: cls.linesCovered || 0
             }));
@@ -638,7 +638,7 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
         const node: TreeNode = {
             name: item.name,
             packageName: item.packageName,
-            coverage: item.coverage,
+            lineCoverage: item.coverage,
             linesValid: item.linesValid,
             linesCovered: item.linesCovered,
             isNamespace: false,
