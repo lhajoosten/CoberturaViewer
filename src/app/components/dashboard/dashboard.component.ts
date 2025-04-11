@@ -14,7 +14,7 @@ import { NgxCoverageTrendsComponent } from '../coverage/coverage-trends/ngx-cove
 import { NotificationService } from '../../common/utils/notification.utility';
 import { CoverageSnapshot } from '../../common/models/coverage.model';
 import { ModalService } from '../../common/utils/modal.utility';
-import { saveAs } from 'file-saver';
+import * as fileSaver from 'file-saver';
 
 @Component({
     selector: 'app-dashboard',
@@ -335,7 +335,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
             // Create a Blob and save
             const blob = new Blob([svgString], { type: 'image/svg+xml' });
-            saveAs(blob, 'coverage-visualization.svg');
+            fileSaver.saveAs(blob, 'coverage-visualization.svg');
 
             this.notificationService.showSuccess('Export Complete', 'Coverage visualization exported as SVG');
         } catch (error) {

@@ -12,6 +12,7 @@ import { NotificationService } from '../../../common/utils/notification.utility'
 import { ThemeService } from '../../../common/utils/theme.utility';
 import { FileUploaderComponent } from '../../file-uploader/file-uploader.component';
 import { CoverageData } from '../../../common/models/coverage.model';
+import * as html2canvas from 'html2canvas';
 
 
 interface Breadcrumb {
@@ -782,28 +783,21 @@ export class NgxCoverageSunburstComponent implements OnInit, AfterViewInit, OnDe
         this.notificationService.showInfo('Exporting Chart', 'Preparing chart image...');
 
         // Use html2canvas to take a screenshot
-        import('html2canvas').then(html2canvas => {
-            html2canvas.default(container, {
-                backgroundColor: this.isDarkTheme ? '#121829' : '#ffffff',
-                scale: 2 // Higher quality
-            }).then(canvas => {
-                try {
-                    // Convert to image and trigger download
-                    const link = document.createElement('a');
-                    link.download = `coverage-chart-${new Date().toISOString().split('T')[0]}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                } catch (err) {
-                    console.error('Failed to export chart:', err);
-                    this.notificationService.showError('Export Failed', 'Could not generate image');
-                }
-            }).catch(err => {
-                console.error('Canvas generation error:', err);
-                this.notificationService.showError('Export Failed', 'Error generating chart image');
-            });
-        }).catch(error => {
-            console.error('Failed to load html2canvas:', error);
-            this.notificationService.showError('Export Failed', 'Could not load required libraries');
+
+        html2canvas.default(container).then(canvas => {
+            try {
+                // Convert to image and trigger download
+                const link = document.createElement('a');
+                link.download = `coverage-chart-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error('Failed to export chart:', err);
+                this.notificationService.showError('Export Failed', 'Could not generate image');
+            }
+        }).catch(err => {
+            console.error('Canvas generation error:', err);
+            this.notificationService.showError('Export Failed', 'Error generating chart image');
         });
     }
 
