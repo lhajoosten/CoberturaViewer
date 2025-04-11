@@ -85,7 +85,7 @@ $spacing-scale: (
   // 32px
   "xxl": 3rem,
   // 48px
-  "xxxl": 4rem // 64px,,,,,,,,,
+  "xxxl": 4rem // 64px,,,,,,,,,,,,
 );
 
 // ========================================================
@@ -119,26 +119,36 @@ $border-radius: (
   "lg": 6px,
   "xl": 8px,
   "round": 50%,
+  "pill": 9999px,
+  "circle": 50%,
 );
 
 // ========================================================
 // SHADOWS
 // ========================================================
 $shadows: (
+  "xs": 0 0.5px 1px rgba(91, 42, 195, 0.05),
   "sm": 0 1px 2px rgba(91, 42, 195, 0.05),
   "base": 0 1px 3px rgba(91, 42, 195, 0.1),
   "md": 0 2px 4px rgba(91, 42, 195, 0.1),
   "lg": 0 2px 8px rgba(91, 42, 195, 0.15),
   "xl": 0 4px 16px rgba(91, 42, 195, 0.15),
+  "elevated": 0 4px 8px rgba(91, 42, 195, 0.2),
+  "hover": 0 1px 3px rgba(91, 42, 195, 0.2),
+  "inner": inset 0 1px 3px rgba(91, 42, 195, 0.2),
 );
 
 // Shadow for dark mode
 $shadows-dark: (
+  "xs": 0 0.5px 1px rgba(0, 0, 0, 0.2),
   "sm": 0 1px 2px rgba(0, 0, 0, 0.2),
   "base": 0 1px 3px rgba(0, 0, 0, 0.3),
   "md": 0 2px 4px rgba(0, 0, 0, 0.3),
   "lg": 0 2px 8px rgba(0, 0, 0, 0.4),
   "xl": 0 4px 16px rgba(0, 0, 0, 0.4),
+  "elevated": 0 4px 8px rgba(0, 0, 0, 0.5),
+  "hover": 0 1px 3px rgba(0, 0, 0, 0.3),
+  "inner": inset 0 1px 3px rgba(0, 0, 0, 0.3),
 );
 
 // ========================================================

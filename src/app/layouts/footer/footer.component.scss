@@ -1,5 +1,6 @@
 @use "../../../styles/tokens" as tokens;
 @use "../../../styles/mixins" as mixins;
+@use "sass:color";
 
 .app-footer {
   background-color: tokens.color("surface");
@@ -185,15 +186,15 @@
 
   .dark-theme & {
     &.status-success i {
-      color: lighten(tokens.color("success"), 10%);
+      color: color.adjust(tokens.color("success"), $lightness: 10%);
     }
 
     &.status-warning i {
-      color: lighten(tokens.color("warning"), 10%);
+      color: color.adjust(tokens.color("warning"), $lightness: 10%);
     }
 
     &.status-error i {
-      color: lighten(tokens.color("error"), 10%);
+      color: color.adjust(tokens.color("error"), $lightness: 10%);
     }
   }
 }
