@@ -97,11 +97,11 @@
       }
 
       .clear-btn:hover {
-        color: tokens.color("error-light");
+        color: tokens.color("error");
       }
 
       .search-input {
-        background-color: tokens.color("input-bg-dark");
+        background-color: tokens.color("background-dark");
         border-color: tokens.color("border-dark");
         color: tokens.color("text-dark");
 
@@ -151,7 +151,7 @@
     color: tokens.color("text-dark");
 
     .empty-icon {
-      color: tokens.color("success-light");
+      color: tokens.color("success");
     }
 
     p {
@@ -207,7 +207,6 @@
     &.sortable {
       cursor: pointer;
       user-select: none;
-      transition: background-color 0.2s;
 
       &:hover {
         background-color: rgba(tokens.color("primary"), 0.05);

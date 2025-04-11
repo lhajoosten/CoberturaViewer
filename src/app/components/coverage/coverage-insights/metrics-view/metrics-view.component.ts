@@ -11,7 +11,8 @@ import { CoverageData } from '../../../../common/models/coverage.model';
 })
 export class MetricsViewComponent implements OnChanges {
   @Input() coverageData!: CoverageData;
-  @Input() thresholds!: { excellent: number; good: number; average: number };
+  @Input() thresholds!: { excellent: number; good: number; average: number; };
+  @Input() isDarkTheme = false;
 
   // Summary metrics
   packageCount = 0;

@@ -40,10 +40,12 @@
 
     <!-- Views -->
     <ng-container [ngSwitch]="activeView">
-      <app-metrics-view *ngSwitchCase="'metrics'" [coverageData]="coverageData" [thresholds]="thresholds">
+      <app-metrics-view *ngSwitchCase="'metrics'" [coverageData]="coverageData" [thresholds]="thresholds"
+        [isDarkTheme]="isDarkTheme">
       </app-metrics-view>
 
-      <app-insights-view *ngSwitchCase="'insights'" [insights]="insights" [isDarkTheme]="isDarkTheme">
+      <app-insights-view *ngSwitchCase="'insights'" [insights]="insights" [thresholds]="thresholds"
+        [isDarkTheme]="isDarkTheme">
       </app-insights-view>
 
       <app-risks-view *ngSwitchCase="'risks'" [highRiskClasses]="highRiskClasses" [thresholds]="thresholds"
@@ -55,7 +57,7 @@
       </app-distribution-view>
 
       <app-recommendations-view *ngSwitchCase="'recommendations'" [recommendations]="recommendations"
-        [isDarkTheme]="isDarkTheme">
+        [thresholds]="thresholds" [isDarkTheme]="isDarkTheme">
       </app-recommendations-view>
     </ng-container>
   </div>

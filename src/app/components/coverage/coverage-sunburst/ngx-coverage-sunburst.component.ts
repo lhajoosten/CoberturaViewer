@@ -7,6 +7,7 @@ import { BehaviorSubject, Subscription } from "rxjs";
 import { CoverageData } from "../../../common/models/coverage.model";
 import { CoverageStoreService } from "../../../common/services/coverage-store.service";
 import { ThemeService } from "../../../common/utils/theme.utility";
+import { NotificationService } from "../../../common/utils/notification.utility";
 
 @Component({
     selector: 'app-ngx-coverage-sunburst',
@@ -58,7 +59,8 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
 
     constructor(
         private coverageStoreService: CoverageStoreService,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        private notificationService: NotificationService
     ) { }
 
     ngOnInit(): void {
@@ -317,7 +319,7 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
     exportChart(): void {
         const svg = this.chartContainer.nativeElement.querySelector('svg');
         if (!svg) {
-            console.error('SVG element not found');
+            this.notificationService.showWarning('Export Failed', 'No chart found to export');
             return;
         }
 
@@ -333,7 +335,7 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
             // Get canvas context
             const context = canvas.getContext('2d');
             if (!context) {
-                console.error('Failed to get canvas context');
+                this.notificationService.showError('Export Failed', 'Failed to get canvas context');
                 return;
             }
 
@@ -359,6 +361,9 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
                         a.click();
                         document.body.removeChild(a);
                         URL.revokeObjectURL(url);
+
+                        // Show notification
+                        this.notificationService.showSuccess('Export Complete', 'Chart exported successfully');
                     }
                 });
             };
@@ -366,6 +371,7 @@ export class NgxCoverageSunburstComponent implements OnInit, OnDestroy {
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         } catch (error) {
             console.error('Error exporting chart:', error);
+            this.notificationService.showError('Export Failed', 'Could not export the chart');
         }
     }
 

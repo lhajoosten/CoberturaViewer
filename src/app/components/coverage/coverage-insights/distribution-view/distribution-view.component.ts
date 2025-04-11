@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoverageData } from '../../../../common/models/coverage.model';
+import { NotificationService } from '../../../../common/utils/notification.utility';
 
 interface ChartSegment {
   name: string;
@@ -24,6 +25,8 @@ export class DistributionViewComponent implements OnChanges {
   coverageDistribution: ChartSegment[] = [];
   lineDistribution: ChartSegment[] = [];
   packageDistribution: Array<{ name: string; percentage: number; color: string }> = [];
+
+  constructor(private notificationService: NotificationService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['coverageData'] && this.coverageData) {

@@ -1,5 +1,6 @@
 import { Component, HostListener, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CoberturaParserService } from '../../common/services/cobertura-parser.service';
 import { CoverageStoreService } from '../../common/services/coverage-store.service';
 import { Subscription } from 'rxjs';
@@ -11,7 +12,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 @Component({
     selector: 'app-file-uploader',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     templateUrl: './file-uploader.component.html',
     styleUrls: ['./file-uploader.component.scss'],
     animations: [

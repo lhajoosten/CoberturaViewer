@@ -6,7 +6,6 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: tokens.color("background");
-  transition: background-color 0.3s ease;
 
   &.dark-theme {
     @include mixins.dark-mode;
@@ -191,7 +190,7 @@
 // Main content
 .dashboard-content {
   flex: 1;
-  padding: tokens.spacing("lg");
+  padding: 0px 8rem;
   transition: padding 0.3s ease;
 
   @include mixins.breakpoint(md) {
@@ -586,6 +585,7 @@
 // Dashboard with tabs
 .tabs-container {
   @include mixins.card;
+  padding: 0;
   overflow: hidden;
   border-radius: tokens.border-radius("xl");
   box-shadow: tokens.shadow("md");
@@ -742,8 +742,10 @@
 }
 
 .tab-content {
-  padding: tokens.spacing("lg");
-  min-height: 400px;
+  // padding: 1.5rem 0;
+  // min-height: 400px;
+
+  border-radius: 0;
 
   @include mixins.breakpoint(md) {
     padding: tokens.spacing("md");

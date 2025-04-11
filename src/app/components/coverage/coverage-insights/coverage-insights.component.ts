@@ -45,9 +45,7 @@ type ViewType = 'metrics' | 'insights' | 'risks' | 'distribution' | 'recommendat
 })
 export class CoverageInsightsComponent implements OnInit, OnDestroy {
     @Input() isDarkTheme = false;
-
-    // Subscriptions
-    private subscriptions: Subscription[] = [];
+    private themeSubscription: Subscription | null = null;
 
     // Coverage data
     coverageData: CoverageData | null = null;
@@ -87,41 +85,23 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadThresholds();
-        this.setupSubscriptions();
+
+        this.themeSubscription = this.themeService.darkTheme$.subscribe(isDark => {
+            this.isDarkTheme = isDark;
+        });
+
+        this.coverageStore.getCoverageData().subscribe(data => {
+            this.coverageData = data;
+            if (data) {
+                this.processData();
+            }
+        });
     }
 
     ngOnDestroy(): void {
-        this.unsubscribeAll();
-    }
-
-    /**
-     * Set up all subscriptions
-     */
-    private setupSubscriptions(): void {
-        // Subscribe to coverage data
-        this.subscriptions.push(
-            this.coverageStore.getCoverageData().subscribe(data => {
-                this.coverageData = data;
-                if (data) {
-                    this.processData();
-                }
-            })
-        );
-
-        // Subscribe to theme changes
-        this.subscriptions.push(
-            this.themeService.darkTheme$.subscribe(isDark => {
-                this.isDarkTheme = isDark;
-            })
-        );
-    }
-
-    /**
-     * Clean up all subscriptions
-     */
-    private unsubscribeAll(): void {
-        this.subscriptions.forEach(sub => sub.unsubscribe());
-        this.subscriptions = [];
+        if (this.themeSubscription) {
+            this.themeSubscription.unsubscribe();
+        }
     }
 
     /**

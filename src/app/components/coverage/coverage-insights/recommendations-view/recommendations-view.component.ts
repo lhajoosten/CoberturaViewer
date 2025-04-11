@@ -23,5 +23,6 @@ export interface Recommendation {
 })
 export class RecommendationsViewComponent {
   @Input() recommendations: Recommendation[] = [];
+  @Input() thresholds!: { excellent: number; good: number; average: number; };
   @Input() isDarkTheme = false;
 }

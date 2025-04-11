@@ -11,6 +11,7 @@ import { CoverageInsight } from '../../../../common/models/coverage.model';
 })
 export class InsightsViewComponent {
   @Input() insights: CoverageInsight[] = [];
+  @Input() thresholds!: { excellent: number; good: number; average: number; };
   @Input() isDarkTheme = false;
 
   toggleInsight(insight: CoverageInsight): void {

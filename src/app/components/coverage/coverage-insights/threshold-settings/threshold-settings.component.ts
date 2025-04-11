@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { NotificationService } from '../../../../common/utils/notification.utility';
 
 const DEFAULT_THRESHOLDS = {
   excellent: 90,
@@ -18,6 +20,7 @@ const DEFAULT_THRESHOLDS = {
 export class ThresholdSettingsComponent implements OnInit {
   @Input() thresholds = { ...DEFAULT_THRESHOLDS };
   @Input() showSettings = false;
+  @Input() isDarkTheme = false;
   @Output() thresholdsUpdated = new EventEmitter<any>();
   @Output() toggleSettings = new EventEmitter<void>();
 
@@ -27,6 +30,8 @@ export class ThresholdSettingsComponent implements OnInit {
     good: false,
     average: false
   };
+
+  constructor(private notificationService: NotificationService) { }
 
   get hasErrors(): boolean {
     return this.errors.excellent || this.errors.good || this.errors.average;
@@ -79,12 +84,20 @@ export class ThresholdSettingsComponent implements OnInit {
   resetThresholds(): void {
     this.currentThresholds = { ...DEFAULT_THRESHOLDS };
     this.validateThresholds();
+    this.notificationService.showInfo(
+      'Settings Reset', 
+      'Threshold values have been reset to defaults'
+    );
   }
 
   applyThresholds(): void {
     if (this.hasErrors) return;
 
     this.thresholdsUpdated.emit({ ...this.currentThresholds });
+    this.notificationService.showSuccess(
+      'Settings Saved', 
+      'Coverage threshold settings have been updated'
+    );
     this.onClose();
   }
 

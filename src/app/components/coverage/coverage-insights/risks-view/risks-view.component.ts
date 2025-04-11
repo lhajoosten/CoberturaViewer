@@ -13,7 +13,7 @@ import { ClassNameOnlyPipe } from '../../../../common/pipes/class-name-only.pipe
 })
 export class RisksViewComponent implements OnChanges {
   @Input() highRiskClasses: ClassRisk[] = [];
-  @Input() thresholds: any;
+  @Input() thresholds!: { excellent: number; good: number; average: number; };
   @Input() isDarkTheme = false;
 
   // Search and filtering

@@ -85,7 +85,7 @@ $spacing-scale: (
   // 32px
   "xxl": 3rem,
   // 48px
-  "xxxl": 4rem // 64px,,,,,,,,,,,,
+  "xxxl": 4rem // 64px,,,,,,,,,,,,,,,,
 );
 
 // ========================================================
@@ -226,7 +226,11 @@ $color-map: (
   "warning-bg": $warning-bg,
   "error": $error-color,
   "error-bg": $error-bg,
-  "hover": $primary-light
+  "hover": $primary-light,
+  "hover-background": $primary-bg,
+  "hover-background-dark": $primary-bg,
+  "hover-bg": $primary-bg,
+  "hover-bg-dark": $primary-bg
 );
 
 // ========================================================

@@ -745,7 +745,13 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
      * Save exclusion patterns to localStorage
      */
     private saveExclusionPatterns(): void {
-        localStorage.setItem('treemap-exclusion-patterns', JSON.stringify(this.exclusionPatterns));
+        try {
+            localStorage.setItem('exclusion-patterns', JSON.stringify(this.exclusionPatterns));
+            this.notificationService.showSuccess('Settings Saved', 'Exclusion patterns have been saved');
+        } catch (error) {
+            console.error('Error saving exclusion patterns:', error);
+            this.notificationService.showError('Save Failed', 'Could not save exclusion patterns');
+        }
     }
 
     /**

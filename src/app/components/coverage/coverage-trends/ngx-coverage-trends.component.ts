@@ -1465,6 +1465,55 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         }
     }
 
+    // /**
+    //  * Export history data to file
+    //  */
+    // exportHistoryData(): void {
+    //     try {
+    //         const historyData = this.exportOptions.includeAll 
+    //             ? this.originalSnapshots 
+    //             : this.filteredSnapshots;
+
+    //         if (historyData.length === 0) {
+    //             this.notificationService.showWarning(
+    //                 'No Data', 
+    //                 'There is no history data to export'
+    //             );
+    //             return;
+    //         }
+
+    //         // Prepare data for export
+    //         const dataToExport = JSON.stringify({
+    //             version: '1.0',
+    //             exportDate: new Date().toISOString(),
+    //             history: historyData
+    //         }, null, 2);
+
+    //         // Create a blob and download
+    //         const blob = new Blob([dataToExport], { type: 'application/json' });
+    //         const url = window.URL.createObjectURL(blob);
+    //         const a = document.createElement('a');
+    //         a.href = url;
+    //         a.download = `coverage-history-${new Date().toISOString().split('T')[0]}.json`;
+    //         document.body.appendChild(a);
+    //         a.click();
+    //         document.body.removeChild(a);
+    //         window.URL.revokeObjectURL(url);
+
+    //         this.closeImportExportModal();
+    //         this.notificationService.showSuccess(
+    //             'Export Complete', 
+    //             `${historyData.length} history entries exported successfully`
+    //         );
+    //     } catch (error) {
+    //         console.error('Error exporting history data:', error);
+    //         this.notificationService.showError(
+    //             'Export Failed', 
+    //             'An error occurred while exporting history data'
+    //         );
+    //     }
+    // }
+
     /**
      * Close import/export modal
      */

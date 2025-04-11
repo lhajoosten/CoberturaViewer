@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
     Notification,
     NotificationType,
@@ -14,21 +15,60 @@ export class NotificationService {
     private notifications: Notification[] = [];
     private container: HTMLElement | null = null;
     private nextId = 1;
+    private isBrowser: boolean;
+    private isDarkTheme = false;
 
-    constructor() {
-        this.createContainer();
+    constructor(@Inject(PLATFORM_ID) platformId: Object) {
+        this.isBrowser = isPlatformBrowser(platformId);
+        if (this.isBrowser) {
+            this.createContainer();
+            // Check if dark theme is active
+            this.isDarkTheme = document.body.classList.contains('dark-theme');
+            // Listen for theme changes
+            this.setupThemeListener();
+        }
+    }
+
+    /**
+     * Set up a MutationObserver to track theme changes on the body element
+     */
+    private setupThemeListener(): void {
+        if (!this.isBrowser) return;
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                if (mutation.attributeName === 'class') {
+                    this.isDarkTheme = document.body.classList.contains('dark-theme');
+                    // Update container class
+                    if (this.container) {
+                        if (this.isDarkTheme) {
+                            this.container.classList.add('dark-theme');
+                        } else {
+                            this.container.classList.remove('dark-theme');
+                        }
+                    }
+                }
+            });
+        });
+
+        observer.observe(document.body, { attributes: true });
     }
 
     /**
      * Create a container for notifications if it doesn't exist
      */
     private createContainer(): void {
-        if (typeof document === 'undefined') return; // Server-side rendering check
+        if (!this.isBrowser) return;
 
         // Create container if it doesn't exist
         if (!this.container) {
             this.container = document.createElement('div');
             this.container.className = 'toast-container';
+            // Check current theme state immediately
+            this.isDarkTheme = document.body.classList.contains('dark-theme');
+            if (this.isDarkTheme) {
+                this.container.classList.add('dark-theme');
+            }
             document.body.appendChild(this.container);
         }
     }
@@ -81,7 +121,7 @@ export class NotificationService {
      * @param duration How long to display (ms)
      */
     private show(type: NotificationType, title: string, message: string, duration: number): void {
-        if (typeof document === 'undefined') return; // Server-side rendering check
+        if (!this.isBrowser) return;
 
         this.createContainer();
 
@@ -117,8 +157,12 @@ export class NotificationService {
             const element = document.getElementById(`toast-${id}`);
             if (element && this.container) {
                 element.classList.add('fade-out');
+                element.classList.remove('fade-in');
+
                 setTimeout(() => {
-                    this.container?.removeChild(element);
+                    if (element.parentNode === this.container) {
+                        this.container?.removeChild(element);
+                    }
                 }, 300);
             }
         }
@@ -153,23 +197,47 @@ export class NotificationService {
         }
 
         element.innerHTML = `
-      <div class="toast-icon">
-        <i class="${icon}"></i>
-      </div>
-      <div class="toast-content">
-        <div class="toast-title">${notification.title}</div>
-        <div class="toast-message">${notification.message}</div>
-      </div>
-      <button class="toast-close" aria-label="Close">
-        <i class="fas fa-times"></i>
-      </button>
-    `;
+            <div class="toast-icon">
+                <i class="${icon}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${notification.title}</div>
+                <div class="toast-message">${notification.message}</div>
+            </div>
+            <button class="toast-close" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
 
         // Add click handler for close button
         element.querySelector('.toast-close')?.addEventListener('click', () => {
             this.remove(notification.id);
         });
 
-        this.container.appendChild(element);
+        // Always insert newest notifications at top
+        if (this.container.firstChild) {
+            this.container.insertBefore(element, this.container.firstChild);
+        } else {
+            this.container.appendChild(element);
+        }
+    }
+
+    clearAll(): void {
+        if (!this.container) return;
+
+        // Add fade-out animation to all toasts
+        const toasts = this.container.querySelectorAll('.toast');
+        toasts.forEach(toast => {
+            toast.classList.add('fade-out');
+            toast.classList.remove('fade-in');
+        });
+
+        // Remove them after animation completes
+        setTimeout(() => {
+            this.notifications = [];
+            while (this.container && this.container.firstChild) {
+                this.container.removeChild(this.container.firstChild);
+            }
+        }, 300);
     }
 }

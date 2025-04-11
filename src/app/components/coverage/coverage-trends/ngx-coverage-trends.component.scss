@@ -3,6 +3,7 @@
 
 .trends-container {
   @include mixins.card;
+  border-radius: 0;
   position: relative;
   height: 100%;
   display: flex;
@@ -720,7 +721,6 @@
   }
 
   tr {
-    transition: background-color 0.2s;
     cursor: pointer;
 
     &:hover {

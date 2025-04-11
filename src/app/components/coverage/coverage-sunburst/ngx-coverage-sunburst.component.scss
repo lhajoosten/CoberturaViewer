@@ -3,6 +3,7 @@
 
 .sunburst-container {
   @include mixins.card;
+  border-radius: 0;
   position: relative;
   height: 100%;
   display: flex;

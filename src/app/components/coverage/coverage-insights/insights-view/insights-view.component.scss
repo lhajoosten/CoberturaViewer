@@ -1,5 +1,6 @@
 @use "../../../../../styles/_tokens" as tokens;
 @use "../../../../../styles/_mixins" as mixins;
+@use "sass:color";
 
 .insights-view {
   padding: tokens.spacing("md");
@@ -98,30 +99,30 @@
     }
 
     &.success {
-      border-left-color: lighten(tokens.color("success"), 10%);
+      border-left-color: color.adjust(tokens.color("success"), $lightness: 10%);
       .insight-icon {
-        color: lighten(tokens.color("success"), 10%);
+        color: color.adjust(tokens.color("success"), $lightness: 10%);
       }
     }
 
     &.warning {
-      border-left-color: lighten(tokens.color("warning"), 10%);
+      border-left-color: color.adjust(tokens.color("warning"), $lightness: 10%);
       .insight-icon {
-        color: lighten(tokens.color("warning"), 10%);
+        color: color.adjust(tokens.color("warning"), $lightness: 10%);
       }
     }
 
     &.danger {
-      border-left-color: lighten(tokens.color("error"), 10%);
+      border-left-color: color.adjust(tokens.color("error"), $lightness: 10%);
       .insight-icon {
-        color: lighten(tokens.color("error"), 10%);
+        color: color.adjust(tokens.color("error"), $lightness: 10%);
       }
     }
 
     &.info {
-      border-left-color: lighten(tokens.color("info"), 10%);
+      border-left-color: color.adjust(tokens.color("info"), $lightness: 10%);
       .insight-icon {
-        color: lighten(tokens.color("info"), 10%);
+        color: color.adjust(tokens.color("info"), $lightness: 10%);
       }
     }
   }

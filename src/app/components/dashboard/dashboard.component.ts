@@ -14,6 +14,7 @@ import { NgxCoverageTrendsComponent } from '../coverage/coverage-trends/ngx-cove
 import { NotificationService } from '../../common/utils/notification.utility';
 import { CoverageSnapshot } from '../../common/models/coverage.model';
 import { ModalService } from '../../common/utils/modal.utility';
+import { saveAs } from 'file-saver';
 
 @Component({
     selector: 'app-dashboard',
@@ -312,14 +313,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
     /**
      * Export current view as an image
      */
-    exportCurrentView(): void {
-        this.isLoading = true;
+    exportCurrentViewAsSVG(): void {
+        const element = document.querySelector('.coverage-visualization svg') as SVGElement;
+        if (!element) {
+            this.notificationService.showWarning('No Data', 'No SVG visualization available to export');
+            return;
+        }
 
-        // Simulate export process
-        setTimeout(() => {
-            this.isLoading = false;
-            this.notificationService.showSuccess('Export Complete', 'Current view has been exported');
-        }, 800);
+        try {
+            // Clone the SVG to avoid modifying the original
+            const clonedSvg = element.cloneNode(true) as SVGElement;
+
+            // Ensure it has proper dimensions by casting to SVGGraphicsElement to access getBBox
+            const bbox = (element as SVGGraphicsElement).getBBox();
+            clonedSvg.setAttribute('width', bbox.width.toString());
+            clonedSvg.setAttribute('height', bbox.height.toString());
+
+            // Convert to string
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(clonedSvg);
+
+            // Create a Blob and save
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+            saveAs(blob, 'coverage-visualization.svg');
+
+            this.notificationService.showSuccess('Export Complete', 'Coverage visualization exported as SVG');
+        } catch (error) {
+            console.error('SVG export error:', error);
+            this.notificationService.showError('Export Error', 'Failed to export as SVG');
+        }
     }
 
     /**
