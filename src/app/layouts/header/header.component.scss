@@ -3,7 +3,7 @@
 @use "sass:color";
 
 .app-header {
-  background-color: tokens.color("primary");
+  background: linear-gradient(15deg, #5b2ac3 15%, #00ff95 100%);
   color: tokens.color("text-on-primary");
   padding: tokens.spacing("md") 0;
   box-shadow: tokens.shadow("base");
@@ -13,7 +13,7 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 
   &.dark-theme {
-    background-color: tokens.color("primary-dark");
+    background: linear-gradient(15deg, #5b2ac3 15%, #00ff95 100%);
     color: tokens.color("text-on-primary-dark");
     box-shadow: tokens.shadow("base", true);
   }

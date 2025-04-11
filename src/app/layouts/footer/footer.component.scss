@@ -3,7 +3,7 @@
 @use "sass:color";
 
 .app-footer {
-  background-color: tokens.color("surface");
+  background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
   color: tokens.color("text");
   padding: tokens.spacing("lg") 0;
   border-top: 1px solid tokens.color("border");
@@ -11,7 +11,7 @@
     border-color 0.3s ease;
 
   &.dark-theme {
-    background-color: tokens.color("surface-dark");
+    background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
     color: tokens.color("text-dark");
     border-top-color: tokens.color("border-dark");
   }
@@ -146,7 +146,7 @@
   margin-top: tokens.spacing("md");
   @include mixins.flex-between;
   font-size: tokens.font-size("xs");
-  color: tokens.color("text-muted");
+  color: tokens.color("text-on-primary-dark");
   border-top: 1px solid rgba(tokens.color("border"), 0.5);
   padding-top: tokens.spacing("sm");
 
@@ -158,7 +158,7 @@
   }
 
   .dark-theme & {
-    color: tokens.color("text-muted-dark");
+    color: tokens.color("text-on-primary-dark");
     border-top-color: rgba(tokens.color("border-dark"), 0.5);
   }
 }
