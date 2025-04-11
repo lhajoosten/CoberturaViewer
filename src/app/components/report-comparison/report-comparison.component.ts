@@ -1,12 +1,13 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReportSummary } from '../../models/report.model';
+import { ReportComparisonResult, ReportSummary } from '../../common/models/report.model';
 import { Router } from '@angular/router';
-import { CoberturaParserService } from '../../services/cobertura-parser.service';
+import { CoberturaParserService } from '../../common/services/cobertura-parser.service';
 import { Subscription } from 'rxjs';
-import { NotificationService } from '../../services/utils/notification.service';
-import { ThemeService } from '../../services/utils/theme.service';
+import { NotificationService } from '../../common/utils/notification.utility';
+import { ThemeService } from '../../common/utils/theme.utility';
+import { CoverageData } from '../../common/models/coverage.model';
 
 @Component({
     selector: 'app-report-comparison',
@@ -66,8 +67,8 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
                             this.availableReports.push({
                                 name: fileName,
                                 date: new Date(),
-                                lineRate: data.summary.lineRate,
-                                branchRate: data.summary.branchRate,
+                                lineCoverage: data.summary.lineCoverage,
+                                branchCoverage: data.summary.branchCoverage,
                                 linesValid: data.summary.linesValid,
                                 linesCovered: data.summary.linesCovered
                             });
@@ -137,7 +138,7 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
                 throw new Error('Failed to parse reports');
             }
 
-            // Generate comparison data
+            // Generate comparison data with proper typing
             this.comparisonData = this.compareReports(baseData, comparisonData);
 
         } catch (e) {
@@ -148,17 +149,33 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
         }
     }
 
-    compareReports(baseData: any, comparisonData: any): any {
+    private compareReports(baseData: CoverageData, comparisonData: CoverageData): ReportComparisonResult {
         // Calculate overall differences
         const summaryDiff = {
-            lineRate: comparisonData.summary.lineRate - baseData.summary.lineRate,
-            branchRate: comparisonData.summary.branchRate - baseData.summary.branchRate,
+            lineCoverage: comparisonData.summary.lineCoverage - baseData.summary.lineCoverage,
+            branchCoverage: comparisonData.summary.branchCoverage - baseData.summary.branchCoverage,
             linesCovered: comparisonData.summary.linesCovered - baseData.summary.linesCovered,
             linesValid: comparisonData.summary.linesValid - baseData.summary.linesValid
         };
 
         // Package level differences
-        const packageDiffs: any[] = [];
+        const packageDiffs: Array<{
+            name: string;
+            exists: 'both' | 'base-only' | 'comparison-only';
+            lineCoverageDiff: number;
+            branchCoverageDiff: number;
+            baselineCoverage: number;
+            complineCoverage: number;
+            classDiffs: Array<{
+                name: string;
+                exists: 'both' | 'base-only' | 'comparison-only';
+                lineCoverageDiff: number;
+                branchCoverageDiff: number;
+                baselineCoverage: number;
+                complineCoverage: number;
+                lineCount: number;
+            }>;
+        }> = [];
 
         // Build a map of base packages for easy lookup
         const basePackageMap = new Map();
@@ -175,10 +192,10 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
                 packageDiffs.push({
                     name: compPkg.name,
                     exists: 'both',
-                    lineRateDiff: compPkg.lineRate - basePkg.lineRate,
-                    branchRateDiff: compPkg.branchRate - basePkg.branchRate,
-                    baseLineRate: basePkg.lineRate,
-                    compLineRate: compPkg.lineRate,
+                    lineCoverageDiff: compPkg.lineCoverage - basePkg.lineCoverage,
+                    branchCoverageDiff: compPkg.branchCoverage - basePkg.branchCoverage,
+                    baselineCoverage: basePkg.lineCoverage,
+                    complineCoverage: compPkg.lineCoverage,
                     classDiffs: this.compareClasses(basePkg.classes, compPkg.classes)
                 });
             } else {
@@ -186,10 +203,10 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
                 packageDiffs.push({
                     name: compPkg.name,
                     exists: 'comparison-only',
-                    lineRateDiff: compPkg.lineRate,
-                    branchRateDiff: compPkg.branchRate,
-                    baseLineRate: 0,
-                    compLineRate: compPkg.lineRate,
+                    lineCoverageDiff: compPkg.lineCoverage,
+                    branchCoverageDiff: compPkg.branchCoverage,
+                    baselineCoverage: 0,
+                    complineCoverage: compPkg.lineCoverage,
                     classDiffs: []
                 });
             }
@@ -203,16 +220,16 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
             packageDiffs.push({
                 name,
                 exists: 'base-only',
-                lineRateDiff: -pkg.lineRate,
-                branchRateDiff: -pkg.branchRate,
-                baseLineRate: pkg.lineRate,
-                compLineRate: 0,
+                lineCoverageDiff: -pkg.lineCoverage,
+                branchCoverageDiff: -pkg.branchCoverage,
+                baselineCoverage: pkg.lineCoverage,
+                complineCoverage: 0,
                 classDiffs: []
             });
         });
 
         // Sort by absolute diff magnitude (largest first)
-        packageDiffs.sort((a, b) => Math.abs(b.lineRateDiff) - Math.abs(a.lineRateDiff));
+        packageDiffs.sort((a, b) => Math.abs(b.lineCoverageDiff) - Math.abs(a.lineCoverageDiff));
 
         return {
             summary: summaryDiff,
@@ -220,8 +237,24 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
         };
     }
 
-    private compareClasses(baseClasses: any[], compClasses: any[]): any[] {
-        const classDiffs: any[] = [];
+    private compareClasses(baseClasses: any[], compClasses: any[]): Array<{
+        name: string;
+        exists: 'both' | 'base-only' | 'comparison-only';
+        lineCoverageDiff: number;
+        branchCoverageDiff: number;
+        baselineCoverage: number;
+        complineCoverage: number;
+        lineCount: number;
+    }> {
+        const classDiffs: Array<{
+            name: string;
+            exists: 'both' | 'base-only' | 'comparison-only';
+            lineCoverageDiff: number;
+            branchCoverageDiff: number;
+            baselineCoverage: number;
+            complineCoverage: number;
+            lineCount: number;
+        }> = [];
 
         // Build map of base classes
         const baseClassMap = new Map();
@@ -238,10 +271,10 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
                 classDiffs.push({
                     name: compCls.name,
                     exists: 'both',
-                    lineRateDiff: compCls.lineRate - baseCls.lineRate,
-                    branchRateDiff: compCls.branchRate - baseCls.branchRate,
-                    baseLineRate: baseCls.lineRate,
-                    compLineRate: compCls.lineRate,
+                    lineCoverageDiff: compCls.lineCoverage - baseCls.lineCoverage,
+                    branchCoverageDiff: compCls.branchCoverage - baseCls.branchCoverage,
+                    baselineCoverage: baseCls.lineCoverage,
+                    complineCoverage: compCls.lineCoverage,
                     lineCount: compCls.lines.length
                 });
             } else {
@@ -249,10 +282,10 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
                 classDiffs.push({
                     name: compCls.name,
                     exists: 'comparison-only',
-                    lineRateDiff: compCls.lineRate,
-                    branchRateDiff: compCls.branchRate,
-                    baseLineRate: 0,
-                    compLineRate: compCls.lineRate,
+                    lineCoverageDiff: compCls.lineCoverage,
+                    branchCoverageDiff: compCls.branchCoverage,
+                    baselineCoverage: 0,
+                    complineCoverage: compCls.lineCoverage,
                     lineCount: compCls.lines.length
                 });
             }
@@ -266,16 +299,16 @@ export class ReportComparisonComponent implements OnInit, OnDestroy {
             classDiffs.push({
                 name,
                 exists: 'base-only',
-                lineRateDiff: -cls.lineRate,
-                branchRateDiff: -cls.branchRate,
-                baseLineRate: cls.lineRate,
-                compLineRate: 0,
+                lineCoverageDiff: -cls.lineCoverage,
+                branchCoverageDiff: -cls.branchCoverage,
+                baselineCoverage: cls.lineCoverage,
+                complineCoverage: 0,
                 lineCount: cls.lines.length
             });
         });
 
         // Sort by absolute diff (largest first)
-        classDiffs.sort((a, b) => Math.abs(b.lineRateDiff) - Math.abs(a.lineRateDiff));
+        classDiffs.sort((a, b) => Math.abs(b.lineCoverageDiff) - Math.abs(a.lineCoverageDiff));
 
         return classDiffs;
     }

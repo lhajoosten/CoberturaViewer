@@ -1,72 +1,133 @@
-<div class="uploader-container card" [class.dark-theme]="isDarkTheme">
-    <h2>Upload Coverage Report</h2>
-    <p class="uploader-description">
-        Drop your Cobertura XML file below or select from your device to analyze coverage.
-    </p>
-
-    <div class="drop-zone" [class.active]="isDragOver" [class.loading]="isLoading">
-        <input type="file" id="file-upload" accept=".xml" (change)="onFileSelected($event)" [disabled]="isLoading" />
-
-        <div class="upload-icon">
-            <i class="fas fa-cloud-upload-alt"></i>
-        </div>
-
-        <div class="upload-text">
-            <h3>Drop Cobertura XML File Here</h3>
-            <p>or</p>
-            <label for="file-upload" class="upload-button">
-                Choose File
-            </label>
-        </div>
-
-        <div class="loading-spinner" *ngIf="isLoading">
-            <div class="spinner"></div>
-            <span>Processing...</span>
-        </div>
+<div class="uploader-container" [class.dark-theme]="isDarkTheme">
+    <div class="uploader-header">
+        <h2>Upload Coverage Report</h2>
+        <p class="uploader-description">
+            Drop your Cobertura XML file below or select from your device to analyze coverage.
+        </p>
     </div>
 
-    <div class="error-container" *ngIf="errorMessage">
+    <div class="drop-zone" [class.active]="isDragOver" [class.loading]="isLoading" (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+
+        <input type="file" #fileInput id="file-upload" accept=".xml" (change)="onFileSelected($event)"
+            [disabled]="isLoading" />
+
+        <ng-container *ngIf="!isLoading; else loadingTemplate">
+            <div class="upload-icon" [class.active]="isDragOver">
+                <i class="fas" [ngClass]="isDragOver ? 'fa-file-import' : 'fa-cloud-upload-alt'"></i>
+            </div>
+
+            <div class="upload-text">
+                <h3>{{ isDragOver ? 'Release to Upload' : 'Drop Cobertura XML File Here' }}</h3>
+                <p>or</p>
+                <button class="upload-button" (click)="fileInput.click()">
+                    <i class="fas fa-folder-open"></i> Choose File
+                </button>
+            </div>
+
+            <div class="file-types">
+                <span class="file-type">
+                    <i class="fas fa-file-code"></i> XML
+                </span>
+            </div>
+        </ng-container>
+
+        <ng-template #loadingTemplate>
+            <div class="loading-text">
+                <span>Processing coverage report...</span>
+                <p class="loading-detail">This might take a moment for large files</p>
+            </div>
+            <div class="loading-spinner">
+                <div class="spinner-wrapper">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </ng-template>
+    </div>
+
+    <!-- Error message -->
+    <div class="feedback-container" [@fadeInOut] *ngIf="errorMessage">
         <div class="error-message">
             <i class="fas fa-exclamation-circle"></i>
-            <span>{{ errorMessage }}</span>
+            <div class="error-content">
+                <strong>Error Processing File</strong>
+                <span>{{ errorMessage }}</span>
+            </div>
+            <button class="dismiss-btn" (click)="clearError()">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 
-    <div class="history-container" *ngIf="previousFiles.length > 0">
-        <h3>Recent Files</h3>
-        <ul class="history-list">
-            <li *ngFor="let file of previousFiles">
-                <button (click)="loadFromHistory(file)" class="history-button">
-                    <i class="fas fa-file-code"></i>
-                    <span>{{ file }}</span>
+    <!-- Recent files section -->
+    <div class="quick-actions">
+        <div class="recent-files" *ngIf="previousFiles.length > 0">
+            <div class="section-header">
+                <h3><i class="fas fa-history"></i> Recent Files</h3>
+                <button class="clear-btn" (click)="clearRecentFiles()" title="Clear history">
+                    <i class="fas fa-trash-alt"></i>
                 </button>
-            </li>
-        </ul>
+            </div>
+            <div class="recent-list">
+                <button *ngFor="let file of previousFiles" class="recent-item" (click)="loadFromHistory(file)"
+                    title="Load {{file}}">
+                    <i class="fas fa-file-code"></i>
+                    <span class="filename">{{ truncateFilename(file) }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sample data section -->
+        <div class="sample-data">
+            <div class="section-header">
+                <h3><i class="fas fa-vial"></i> Demo Options</h3>
+            </div>
+            <button (click)="loadSampleData('basic')" class="sample-button">
+                <i class="fas fa-chart-pie"></i>
+                <span>Basic Sample</span>
+            </button>
+            <button (click)="loadSampleData('complex')" class="sample-button">
+                <i class="fas fa-chart-line"></i>
+                <span>Complex Sample</span>
+            </button>
+        </div>
     </div>
 
-    <div class="sample-container">
-        <button (click)="loadSampleData()" class="sample-button">
-            <i class="fas fa-vial"></i>
-            <span>Load Sample Data</span>
-        </button>
-        <p class="sample-note">
-            No Cobertura XML file available? Try with our sample data.
-        </p>
-    </div>
-
-    <div class="info-container">
-        <h3>About Cobertura XML Files</h3>
-        <p>
-            Cobertura XML is a standardized format for code coverage reports that can be generated from:
-        </p>
-        <ul>
-            <li><strong>Java:</strong> JaCoCo, Cobertura Maven/Gradle plugins</li>
-            <li><strong>JavaScript/TypeScript:</strong> Istanbul, nyc</li>
-            <li><strong>.NET:</strong> OpenCover, Coverlet</li>
-            <li><strong>Python:</strong> coverage.py with cobertura plugin</li>
-        </ul>
-        <p>
-            Many CI/CD systems and code analysis tools also support exporting coverage in Cobertura format.
-        </p>
+    <!-- Help section -->
+    <div class="help-section">
+        <details>
+            <summary>
+                <i class="fas fa-info-circle"></i>
+                About Cobertura XML Format
+            </summary>
+            <div class="info-container">
+                <p>
+                    Cobertura XML is a standardized format for code coverage reports generated by various tools:
+                </p>
+                <ul class="tools-list">
+                    <li>
+                        <i class="fab fa-java"></i>
+                        <strong>Java:</strong> JaCoCo, Cobertura plugins
+                    </li>
+                    <li>
+                        <i class="fab fa-js"></i>
+                        <strong>Javascript:</strong> Istanbul, nyc
+                    </li>
+                    <li>
+                        <i class="fab fa-microsoft"></i>
+                        <strong>.NET:</strong> OpenCover, Coverlet
+                    </li>
+                    <li>
+                        <i class="fab fa-python"></i>
+                        <strong>Python:</strong> coverage.py, pytest-cov
+                    </li>
+                </ul>
+                <div class="info-note">
+                    <i class="fas fa-lightbulb"></i>
+                    <p>Many CI/CD systems like Jenkins, GitHub Actions, and GitLab CI support exporting coverage in
+                        Cobertura format.</p>
+                </div>
+            </div>
+        </details>
     </div>
 </div>

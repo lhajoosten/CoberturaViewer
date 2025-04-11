@@ -1,0 +1,288 @@
+@use "../../../../../styles/_tokens" as tokens;
+@use "../../../../../styles/_mixins" as mixins;
+
+.distribution-view {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.spacing("xl");
+
+  &.dark-theme {
+    color: tokens.color("text-dark");
+  }
+}
+
+.distribution-section {
+  background-color: tokens.color("card-bg");
+  border-radius: tokens.border-radius("lg");
+  padding: tokens.spacing("lg");
+  box-shadow: tokens.shadow("sm");
+
+  .dark-theme & {
+    background-color: tokens.color("card-bg-dark");
+    box-shadow: tokens.shadow("sm", true);
+  }
+}
+
+.section-header {
+  margin-bottom: tokens.spacing("lg");
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: tokens.spacing("xs");
+    margin: 0 0 tokens.spacing("xs") 0;
+    font-weight: 500;
+
+    i {
+      color: tokens.color("primary");
+
+      .dark-theme & {
+        color: tokens.color("primary-light");
+      }
+    }
+  }
+
+  .section-desc {
+    color: tokens.color("text-muted");
+    margin: 0;
+    font-size: tokens.font-size("sm");
+
+    .dark-theme & {
+      color: tokens.color("text-muted-dark");
+    }
+  }
+}
+
+// Chart container
+.distribution-chart-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: tokens.spacing("lg");
+  align-items: center;
+
+  @include mixins.breakpoint-up(md) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// Pie chart styles
+.pie-chart {
+  width: 100%;
+  max-width: 250px;
+  margin: 0 auto;
+  position: relative;
+
+  svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .pie-segment {
+    transition: transform 0.2s ease;
+    transform-origin: center;
+
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+
+  .pie-center {
+    .pie-total {
+      font-size: 18px;
+      font-weight: 600;
+      fill: tokens.color("text");
+
+      .dark-theme & {
+        fill: tokens.color("text-dark");
+      }
+    }
+
+    .pie-total-label {
+      font-size: 10px;
+      font-weight: 400;
+      fill: tokens.color("text-muted");
+
+      .dark-theme & {
+        fill: tokens.color("text-muted-dark");
+      }
+    }
+  }
+}
+
+// Chart legend
+.chart-legend,
+.bar-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: tokens.spacing("md");
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("sm");
+
+  .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .legend-info {
+    flex-grow: 1;
+  }
+
+  .legend-name {
+    font-weight: 500;
+    font-size: tokens.font-size("sm");
+    margin-bottom: tokens.spacing("xxs");
+  }
+
+  .legend-value {
+    display: flex;
+    gap: tokens.spacing("xs");
+    font-size: tokens.font-size("xs");
+
+    .value {
+      font-weight: 500;
+    }
+
+    .percentage {
+      color: tokens.color("text-muted");
+
+      .dark-theme & {
+        color: tokens.color("text-muted-dark");
+      }
+    }
+  }
+}
+
+// Stacked bar chart
+.bar-chart-container {
+  margin: tokens.spacing("md") 0;
+}
+
+.stacked-bar {
+  display: flex;
+  height: 28px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: tokens.border-radius("md");
+  background-color: tokens.color("surface");
+
+  .dark-theme & {
+    background-color: tokens.color("surface-dark");
+  }
+}
+
+.bar-segment {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: inset 0 0 0 2px tokens.color("surface");
+  }
+
+  .bar-label {
+    font-size: tokens.font-size("xs");
+    font-weight: 600;
+    color: tokens.color("text-on-primary");
+  }
+}
+
+// Package distribution
+.package-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: tokens.spacing("md");
+  margin-top: tokens.spacing("lg");
+}
+
+.package-item {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: tokens.spacing("md");
+  align-items: center;
+
+  @include mixins.breakpoint(sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.package-name {
+  font-size: tokens.font-size("sm");
+  font-weight: 500;
+  text-align: right;
+  @include mixins.text-truncate;
+
+  @include mixins.breakpoint(sm) {
+    text-align: left;
+  }
+}
+
+.package-bar-container {
+  height: 24px;
+  background-color: tokens.color("surface");
+  border-radius: tokens.border-radius("sm");
+  overflow: hidden;
+  position: relative;
+
+  .dark-theme & {
+    background-color: tokens.color("surface-dark");
+  }
+}
+
+.package-bar {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 tokens.spacing("sm");
+  font-size: tokens.font-size("xs");
+  font-weight: 500;
+  color: tokens.color("text-on-primary");
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &.excellent {
+    background-color: tokens.color("success");
+  }
+
+  &.good {
+    background-color: tokens.color("accent");
+  }
+
+  &.average {
+    background-color: tokens.color("warning");
+  }
+
+  &.poor {
+    background-color: tokens.color("error");
+  }
+}
+
+.empty-packages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: tokens.spacing("lg");
+  text-align: center;
+  color: tokens.color("text-muted");
+
+  i {
+    font-size: 2rem;
+    margin-bottom: tokens.spacing("sm");
+  }
+
+  p {
+    font-size: tokens.font-size("sm");
+    max-width: 350px;
+  }
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}

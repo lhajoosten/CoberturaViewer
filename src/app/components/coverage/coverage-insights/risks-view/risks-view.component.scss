@@ -1,0 +1,392 @@
+@use "../../../../../styles/_tokens" as tokens;
+@use "../../../../../styles/_mixins" as mixins;
+
+// Core layout
+.risks-view {
+  padding: tokens.spacing("md");
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// Header styles
+.risks-header {
+  margin-bottom: tokens.spacing("lg");
+
+  h3 {
+    margin: 0 0 tokens.spacing("xs");
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .risks-desc {
+    color: tokens.color("text-muted");
+    margin: 0;
+
+    .dark-theme & {
+      color: tokens.color("text-muted-dark");
+    }
+  }
+}
+
+// Search and filtering
+.search-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: tokens.spacing("md");
+
+  .search-container {
+    position: relative;
+    max-width: 300px;
+    width: 100%;
+
+    i {
+      position: absolute;
+      left: tokens.spacing("sm");
+      top: 50%;
+      transform: translateY(-50%);
+      color: tokens.color("text-muted");
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: tokens.spacing("sm") tokens.spacing("sm") tokens.spacing("sm")
+        tokens.spacing("lg");
+      border: 1px solid tokens.color("border");
+      border-radius: tokens.border-radius("md");
+      font-size: tokens.font-size("sm");
+
+      &:focus {
+        outline: none;
+        border-color: tokens.color("primary");
+        box-shadow: 0 0 0 2px rgba(tokens.color("primary"), 0.2);
+      }
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: tokens.spacing("xs");
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: tokens.color("text-muted");
+      cursor: pointer;
+      padding: 2px;
+      font-size: 0.85rem;
+
+      &:hover {
+        color: tokens.color("error");
+      }
+    }
+  }
+
+  .result-count {
+    font-size: tokens.font-size("sm");
+    color: tokens.color("text-muted");
+  }
+
+  // Dark theme adjustments
+  .dark-theme & {
+    .search-container {
+      i,
+      .clear-btn {
+        color: tokens.color("text-muted-dark");
+      }
+
+      .clear-btn:hover {
+        color: tokens.color("error");
+      }
+
+      .search-input {
+        background-color: tokens.color("background-dark");
+        border-color: tokens.color("border-dark");
+        color: tokens.color("text-dark");
+
+        &:focus {
+          border-color: tokens.color("primary-light");
+          box-shadow: 0 0 0 2px rgba(tokens.color("primary-light"), 0.2);
+        }
+
+        &::placeholder {
+          color: tokens.color("text-muted-dark");
+        }
+      }
+    }
+
+    .result-count {
+      color: tokens.color("text-muted-dark");
+    }
+  }
+}
+
+// Empty state
+.risks-empty {
+  text-align: center;
+  padding: tokens.spacing("xl") 0;
+  color: tokens.color("text");
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: tokens.spacing("md");
+    color: tokens.color("success");
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 tokens.spacing("md");
+  }
+
+  p {
+    font-size: tokens.font-size("md");
+    margin: 0;
+    color: tokens.color("text-muted");
+  }
+
+  // Dark theme adjustments
+  .dark-theme & {
+    color: tokens.color("text-dark");
+
+    .empty-icon {
+      color: tokens.color("success");
+    }
+
+    p {
+      color: tokens.color("text-muted-dark");
+    }
+  }
+}
+
+// Risk content layout
+.risk-content {
+  display: flex;
+  gap: tokens.spacing("md");
+  height: 100%;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.risk-table-wrapper {
+  flex-grow: 1;
+  overflow-x: auto;
+
+  &.with-details {
+    flex: 0 0 60%;
+
+    @include mixins.breakpoint(lg) {
+      flex: 0 0 50%;
+    }
+
+    @include mixins.breakpoint(md) {
+      flex: 1;
+    }
+  }
+}
+
+// Table styles
+.risk-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  // Header styles
+  th {
+    position: sticky;
+    top: 0;
+    background-color: tokens.color("card-bg");
+    z-index: 1;
+    padding: tokens.spacing("sm") tokens.spacing("md");
+    font-weight: 500;
+    color: tokens.color("text-muted");
+    border-bottom: 2px solid tokens.color("border");
+    text-align: left;
+
+    &.sortable {
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        background-color: rgba(tokens.color("primary"), 0.05);
+        color: tokens.color("primary");
+      }
+
+      i {
+        margin-left: tokens.spacing("xs");
+        font-size: 0.8rem;
+        opacity: 0.6;
+      }
+    }
+  }
+
+  // Cell styles
+  td {
+    padding: tokens.spacing("sm") tokens.spacing("md");
+    border-bottom: 1px solid tokens.color("border");
+  }
+
+  // Row styles
+  tr {
+    transition: all 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      background-color: tokens.color("primary-bg");
+    }
+
+    &.selected {
+      background-color: tokens.color("primary-bg");
+      border-left: 3px solid tokens.color("primary");
+
+      td:first-child {
+        position: relative;
+
+        &::before {
+          content: "";
+          position: absolute;
+          left: -3px;
+          top: 0;
+          height: 100%;
+          width: 3px;
+          background-color: tokens.color("primary");
+        }
+      }
+    }
+  }
+
+  // Dark theme table adjustments
+  .dark-theme & {
+    th {
+      background-color: tokens.color("card-bg-dark");
+      border-bottom-color: tokens.color("border-dark");
+      color: tokens.color("text-muted-dark");
+
+      &.sortable:hover {
+        background-color: rgba(tokens.color("primary-light"), 0.1);
+        color: tokens.color("primary-light");
+      }
+    }
+
+    td {
+      border-bottom-color: tokens.color("border-dark");
+    }
+
+    tr {
+      &:hover {
+        background-color: rgba(tokens.color("primary-light"), 0.05);
+      }
+
+      &.selected {
+        background-color: rgba(tokens.color("primary-light"), 0.1);
+        td:first-child::before {
+          background-color: tokens.color("primary-light");
+        }
+      }
+    }
+  }
+}
+
+// Class name display
+.class-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("xs");
+  max-width: 250px;
+  @include mixins.text-truncate;
+
+  i {
+    color: tokens.color("primary");
+    font-size: 0.9rem;
+  }
+
+  span {
+    @include mixins.text-truncate;
+  }
+
+  .dark-theme & i {
+    color: tokens.color("primary-light");
+  }
+}
+
+// Risk indicators
+.coverage-badge {
+  display: inline-block;
+  padding: tokens.spacing("xxs") tokens.spacing("xs");
+  border-radius: tokens.border-radius("pill");
+  font-weight: 500;
+  font-size: tokens.font-size("xs");
+  min-width: 50px;
+  text-align: center;
+
+  &.excellent {
+    @include mixins.status-badge("success");
+  }
+  &.good {
+    @include mixins.status-badge("info");
+  }
+  &.average {
+    @include mixins.status-badge("warning");
+  }
+  &.poor {
+    @include mixins.status-badge("error");
+  }
+}
+
+.risk-indicator {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("xs");
+  width: 100px;
+
+  .risk-bar {
+    height: 8px;
+    background-color: tokens.color("error");
+    border-radius: tokens.border-radius("pill");
+  }
+
+  .risk-value {
+    font-size: tokens.font-size("xs");
+    width: 24px;
+  }
+}
+
+// Detail panel
+.class-details {
+  flex: 1;
+  background-color: tokens.color("card-bg");
+  border-radius: tokens.border-radius("md");
+  box-shadow: tokens.shadow("md");
+  overflow-y: auto;
+  padding: tokens.spacing("md");
+  animation: slideInRight 0.3s ease;
+
+  .dark-theme & {
+    background-color: tokens.color("card-bg-dark");
+    box-shadow: tokens.shadow("md", true);
+  }
+
+  @include mixins.breakpoint(md) {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 80%;
+    max-width: 700px;
+    max-height: 70%;
+  }
+}
+
+// Animations
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

@@ -1,257 +1,374 @@
+@use "../styles/mixins" as mixins; // Adjust paths as needed
+@use "../styles/tokens" as tokens; // Adjust paths as needed
+
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  width: 100%;
-  box-sizing: border-box;
-  position: relative;
-  padding: 0;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  transition: var(--transition-base);
+
+  &.dark-theme {
+    @include mixins.dark-mode; // Apply dark mode mixin if available
+  }
 }
 
+// Common content wrapper styles (if not moved entirely to header/footer)
 .app-content-wrapper {
-  max-width: 1600px;
   width: 100%;
+  max-width: 1400px; // Or your desired max width
   margin: 0 auto;
-  padding: 0 max(1rem, min(25rem, 5%));
-  box-sizing: border-box;
-}
+  padding: 0 tokens.spacing("lg"); // Default padding
 
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  width: 100%;
-  background-color: var(--background-color);
-  padding: 1rem 0;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 4rem;
-  background-color: var(--surface-color);
-  border-radius: var(--border-radius-lg);
-  padding: 0 var(--space-lg);
-  box-shadow: var(--shadow);
-  max-width: 1600px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
+  @include mixins.breakpoint(md) {
+    padding: 0 tokens.spacing("md");
+  }
+  @include mixins.breakpoint(sm) {
+    padding: 0 tokens.spacing("sm");
+  }
 }
 
 .main-content {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
+  flex: 1; // Ensures footer stays at the bottom
+  padding: tokens.spacing("lg") 0; // Vertical padding for main content area
+  background-color: tokens.color("background");
 
-.app-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 100;
-  width: 100%;
-  background-color: var(--background-color);
-  padding: 1rem 0;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: var(--surface-color);
-  border-radius: var(--border-radius-lg);
-  padding: var(--space-lg);
-  box-shadow: var(--shadow);
-  max-width: 1600px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-
-  .copyright {
-    color: var(--text-muted);
-    font-size: var(--font-size-base);
+  .dark-theme & {
+    background-color: tokens.color("background-dark");
   }
 
-  .footer-links {
-    a {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      color: var(--text-muted);
-      text-decoration: none;
+  // Container within main needs padding
+  .app-content-wrapper {
+    padding-top: tokens.spacing("lg");
+    padding-bottom: tokens.spacing("lg");
+  }
+}
 
+// --- Modal Styles (moved from dashboard.component.scss) ---
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); // Standard overlay
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: tokens.z-index("modal");
+  padding: tokens.spacing("md");
+
+  body.dark-theme & {
+    // Apply dark overlay if needed
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+}
+
+.modal-container {
+  background-color: tokens.color("card-bg");
+  border-radius: tokens.border-radius("lg");
+  box-shadow: tokens.shadow("xl");
+  width: 100%;
+  max-width: 600px; // Keep modal size consistent
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex; // Use flex for header/body structure
+  flex-direction: column;
+  @include mixins.custom-scrollbar;
+
+  .dark-theme & {
+    background-color: tokens.color("card-bg-dark");
+    box-shadow: tokens.shadow("xl", true);
+  }
+}
+
+.modal-header {
+  @include mixins.flex-between;
+  padding: tokens.spacing("md") tokens.spacing("lg");
+  border-bottom: 1px solid tokens.color("border");
+  flex-shrink: 0; // Prevent header from shrinking
+
+  h3 {
+    margin: 0;
+    font-size: 1.25rem; // Consistent modal header size
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1; // Prevent extra spacing
+    cursor: pointer;
+    color: tokens.color("text-muted");
+
+    &:hover {
+      color: tokens.color("text");
+    }
+  }
+
+  .dark-theme & {
+    border-bottom-color: tokens.color("border-dark");
+
+    .modal-close {
+      color: tokens.color("text-muted-dark");
       &:hover {
-        color: var(--primary-color);
-      }
-
-      i {
-        font-size: var(--font-size-md);
+        color: tokens.color("text-dark");
       }
     }
   }
 }
 
-router-outlet + * {
-  flex: 1;
-  width: 100%;
-  box-sizing: border-box;
+.modal-body {
+  padding: tokens.spacing("lg");
+  flex-grow: 1; // Allow body to take remaining space
+  overflow-y: auto; // Ensure body scrolls if content overflows
+  @include mixins.custom-scrollbar; // Apply custom scrollbar to body if needed
 }
 
-app-theme-toggle {
-  position: fixed;
-  right: 20px;
-  bottom: 80px;
-  z-index: 200;
+// About modal
+.about-content {
+  text-align: center;
 }
 
-.compare-btn {
+.about-logo {
+  width: 80px;
+  height: 80px;
+  background-color: tokens.color("primary-bg");
+  border-radius: 50%;
+  margin: 0 auto tokens.spacing("md");
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background-color: var(--primary-color);
-  color: var(--text-on-primary);
-  border: none;
-  border-radius: var(--border-radius-md);
-  font-weight: 500;
-  font-size: var(--font-size-base);
-  transition: var(--transition-fast);
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-
-  &:hover {
-    background-color: var(--primary-dark);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: var(--shadow-sm);
-  }
+  justify-content: center;
 
   i {
-    font-size: var(--font-size-base);
+    font-size: 2.5rem;
+    color: tokens.color("primary");
   }
-}
 
-.compare-btn:hover i {
-  animation: spin-half 0.5s ease;
-}
-
-@keyframes spin-half {
-  0% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(180deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 768px) {
-  .compare-btn {
-    padding: 6px 12px;
-    font-size: var(--font-size-sm);
-  }
-}
-
-@media (max-width: 480px) {
-  .compare-btn {
-    padding: var(--space-sm);
-    border-radius: 50%;
-    aspect-ratio: 1/1;
-    justify-content: center;
-
-    span {
-      display: none;
-    }
+  .dark-theme & {
+    background-color: rgba(tokens.color("primary"), 0.15);
 
     i {
-      margin-right: 0;
-      font-size: var(--font-size-lg);
+      color: tokens.color("primary-light");
     }
   }
 }
 
-@media (max-width: 1440px) {
-  .app-content-wrapper {
-    padding: 0 max(1rem, min(15rem, 10%));
+.about-version {
+  color: tokens.color("text-muted");
+  margin-bottom: tokens.spacing("md");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
   }
 }
 
-@media (max-width: 1200px) {
-  .app-content-wrapper {
-    padding: 0 max(1rem, min(10rem, 8%));
+.about-footer {
+  margin-top: tokens.spacing("lg");
+  font-style: italic;
+  color: tokens.color("text-muted");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
   }
 }
 
-@media (max-width: 1024px) {
-  .app-content-wrapper {
-    padding: 0 max(1rem, 5%);
-  }
+// Help modal
+.help-content {
+  h4 {
+    margin-top: tokens.spacing("lg");
+    margin-bottom: tokens.spacing("sm");
 
-  .header-content,
-  .footer-content {
-    padding: 0 var(--space-md);
-  }
-}
-
-@media (max-width: 768px) {
-  .app-content-wrapper {
-    padding: 0 1rem;
-  }
-
-  .header-content {
-    flex-direction: row;
-    flex-wrap: wrap;
-    height: auto;
-    padding: var(--space-md);
-    gap: var(--space-md);
-    justify-content: space-between;
-  }
-
-  .logo {
-    order: 1;
-    width: auto;
-    flex: 1;
-
-    h1 {
-      font-size: var(--font-size-lg) !important;
+    &:first-child {
+      margin-top: 0;
     }
   }
 
-  .header-actions {
-    order: 2;
-    margin-left: auto;
+  ul,
+  ol {
+    margin-bottom: tokens.spacing("md");
+  }
+}
 
-    .compare-btn {
-      padding: var(--space-sm) var(--space-sm);
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: tokens.spacing("sm");
+  margin-top: tokens.spacing("sm");
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("sm");
+
+  kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 24px;
+    padding: 0 tokens.spacing("xs");
+    border-radius: tokens.border-radius("sm");
+    background-color: tokens.color("card-header-bg");
+    border: 1px solid tokens.color("border");
+    box-shadow: 0 2px 0 tokens.color("border");
+    font-family: monospace;
+    font-size: tokens.font-size("sm");
+
+    .dark-theme & {
+      background-color: tokens.color("card-header-bg-dark");
+      border-color: tokens.color("border-dark");
+      box-shadow: 0 2px 0 tokens.color("border-dark");
     }
   }
 }
 
-@media (max-width: 480px) {
-  .header-content {
-    padding: var(--space-xs) var(--space-sm);
+// Upload modal
+.modal-message {
+  margin-bottom: tokens.spacing("md");
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: tokens.spacing("sm");
+  margin-top: tokens.spacing("md");
+}
+
+.about-logo {
+  width: 80px;
+  height: 80px;
+  background-color: tokens.color("primary-bg");
+  border-radius: 50%;
+  margin: 0 auto tokens.spacing("md");
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: 2.5rem;
+    color: tokens.color("primary");
   }
 
-  .logo h1 {
-    font-size: var(--font-size-md) !important;
-  }
+  .dark-theme & {
+    background-color: rgba(tokens.color("primary"), 0.15);
 
-  .compare-btn i {
-    margin-right: 0;
+    i {
+      color: tokens.color("primary-light");
+    }
   }
+}
 
-  .compare-btn span {
-    display: none;
+.about-version {
+  color: tokens.color("text-muted");
+  margin-bottom: tokens.spacing("md");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+h5 {
+  // Style for the Features heading in About modal
+  margin-top: tokens.spacing("md");
+  margin-bottom: tokens.spacing("xs");
+}
+
+ul,
+ol {
+  // Basic list styling for modals
+  text-align: left;
+  margin-left: tokens.spacing("lg");
+  margin-bottom: tokens.spacing("md");
+  li {
+    margin-bottom: tokens.spacing("xs");
+  }
+}
+
+.about-footer {
+  margin-top: tokens.spacing("lg");
+  font-style: italic;
+  color: tokens.color("text-muted");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+
+// Help modal
+.help-content {
+  h4 {
+    margin-top: tokens.spacing("lg");
+    margin-bottom: tokens.spacing("sm");
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+  ul,
+  ol {
+    margin-bottom: tokens.spacing("md");
+  }
+  strong {
+    // Style for bold text in help
+    font-weight: 600;
+  }
+}
+
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: tokens.spacing("sm");
+  margin-top: tokens.spacing("sm");
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("sm");
+
+  kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px; // Ensure minimum width for single chars
+    height: 24px;
+    padding: 0 tokens.spacing("xs");
+    border-radius: tokens.border-radius("sm");
+    background-color: tokens.color("surface"); // Use surface color
+    border: 1px solid tokens.color("border");
+    box-shadow: 0 2px 0 rgba(tokens.color("border"), 0.5); // Softer shadow
+    font-family: monospace;
+    font-size: tokens.font-size("sm");
+    font-weight: 600; // Make kbd stand out
+    color: tokens.color("text");
+
+    .dark-theme & {
+      background-color: tokens.color("surface-dark");
+      border-color: tokens.color("border-dark");
+      box-shadow: 0 2px 0 rgba(tokens.color("border-dark"), 0.5);
+      color: tokens.color("text-dark");
+    }
+  }
+  span {
+    // Style for the shortcut description
+    font-size: tokens.font-size("sm");
+  }
+}
+
+// Upload modal
+.modal-message {
+  margin-bottom: tokens.spacing("md");
+  font-size: tokens.font-size("base");
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: tokens.spacing("sm");
+  margin-top: tokens.spacing("lg"); // More space before actions
+  padding-top: tokens.spacing("md"); // Space above actions
+  border-top: 1px solid tokens.color("border"); // Separator line
+
+  .dark-theme & {
+    border-top-color: tokens.color("border-dark");
   }
 }

@@ -1,0 +1,346 @@
+@use "sass:color";
+@use "sass:map";
+
+// ========================================================
+// COLOR PALETTE
+// ========================================================
+
+// Primary Colors
+$primary-color: #5b2ac3;
+$primary-light: #7c49e3;
+$primary-dark: #4a1eb0;
+$primary-bg: rgba(91, 42, 195, 0.08);
+
+// Accent Colors
+$accent-color: #00ff95;
+$accent-light: #66ffbc;
+$accent-dark: #00cc78;
+$accent-bg: rgba(0, 255, 149, 0.08);
+
+// ========================================================
+// THEME COLORS
+// ========================================================
+
+// Light Theme
+$background-color: #f8f9fa;
+$surface-color: #ffffff;
+$card-bg: #ffffff;
+$card-header-bg: #f8fafc;
+$border-color: #e2e8f0;
+
+// Dark Theme
+$background-color-dark: #121829;
+$surface-color-dark: #1e2133;
+$card-bg-dark: #1e2133;
+$card-header-bg-dark: #262b40;
+$border-color-dark: #2e355a;
+
+// ========================================================
+// TYPOGRAPHY COLORS
+// ========================================================
+$text-color: #1a202c;
+$text-muted: #718096;
+$text-on-primary: #ffffff;
+$text-on-primary-dark: #1a202c;
+$text-on-accent: #1a202c;
+
+$text-dark: #e2e8f0;
+$text-muted-dark: #a0aec0;
+
+// ========================================================
+// FEEDBACK COLORS
+// ========================================================
+$success-color: #00cc78;
+$success-bg: rgba(0, 204, 120, 0.1);
+$info-color: #7c49e3;
+$info-bg: rgba(124, 73, 227, 0.1);
+$warning-color: #ffb400;
+$warning-bg: rgba(255, 180, 0, 0.1);
+$error-color: #e53e3e;
+$error-bg: rgba(229, 62, 62, 0.1);
+
+// ========================================================
+// BREAKPOINTS
+// ========================================================
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// ========================================================
+// SPACING SCALE
+// ========================================================
+$spacing-scale: (
+  "xxs": 0.125rem,
+  // 2px
+  "xs": 0.25rem,
+  // 4px
+  "sm": 0.5rem,
+  // 8px
+  "md": 1rem,
+  // 16px
+  "lg": 1.5rem,
+  // 24px
+  "xl": 2rem,
+  // 32px
+  "xxl": 3rem,
+  // 48px
+  "xxxl": 4rem // 64px,,,,,,,,,,,,,,,,,,
+);
+
+// ========================================================
+// FONT SIZES
+// ========================================================
+$font-sizes: (
+  "xs": 0.7rem,
+  // 11.2px
+  "sm": 0.8rem,
+  // 12.8px
+  "base": 0.9rem,
+  // 14.4px
+  "md": 1rem,
+  // 16px
+  "lg": 1.1rem,
+  // 17.6px
+  "xl": 1.25rem,
+  // 20px
+  "xxl": 1.5rem,
+  // 24px
+  "huge": 2rem,
+  // 32px
+);
+
+// ========================================================
+// BORDER RADIUS
+// ========================================================
+$border-radius: (
+  "sm": 3px,
+  "md": 4px,
+  "lg": 6px,
+  "xl": 8px,
+  "round": 50%,
+  "pill": 9999px,
+  "circle": 50%,
+);
+
+// ========================================================
+// SHADOWS
+// ========================================================
+$shadows: (
+  "xs": 0 0.5px 1px rgba(91, 42, 195, 0.05),
+  "sm": 0 1px 2px rgba(91, 42, 195, 0.05),
+  "base": 0 1px 3px rgba(91, 42, 195, 0.1),
+  "md": 0 2px 4px rgba(91, 42, 195, 0.1),
+  "lg": 0 2px 8px rgba(91, 42, 195, 0.15),
+  "xl": 0 4px 16px rgba(91, 42, 195, 0.15),
+  "elevated": 0 4px 8px rgba(91, 42, 195, 0.2),
+  "hover": 0 1px 3px rgba(91, 42, 195, 0.2),
+  "inner": inset 0 1px 3px rgba(91, 42, 195, 0.2),
+);
+
+// Shadow for dark mode
+$shadows-dark: (
+  "xs": 0 0.5px 1px rgba(0, 0, 0, 0.2),
+  "sm": 0 1px 2px rgba(0, 0, 0, 0.2),
+  "base": 0 1px 3px rgba(0, 0, 0, 0.3),
+  "md": 0 2px 4px rgba(0, 0, 0, 0.3),
+  "lg": 0 2px 8px rgba(0, 0, 0, 0.4),
+  "xl": 0 4px 16px rgba(0, 0, 0, 0.4),
+  "elevated": 0 4px 8px rgba(0, 0, 0, 0.5),
+  "hover": 0 1px 3px rgba(0, 0, 0, 0.3),
+  "inner": inset 0 1px 3px rgba(0, 0, 0, 0.3),
+);
+
+// ========================================================
+// Z-INDEX SCALE
+// ========================================================
+$z-index: (
+  "base": 1,
+  "dropdown": 10,
+  "sticky": 20,
+  "fixed": 30,
+  "modal": 40,
+  "popover": 50,
+  "tooltip": 60,
+);
+
+// ========================================================
+// TRANSITIONS
+// ========================================================
+$transition-speed: (
+  "fast": 0.15s,
+  "base": 0.3s,
+  "slow": 0.5s,
+);
+
+$transition-easing: (
+  "in": cubic-bezier(0.4, 0, 1, 1),
+  "out": cubic-bezier(0, 0, 0.2, 1),
+  "in-out": cubic-bezier(0.4, 0, 0.2, 1),
+);
+
+// ========================================================
+// COLOR MAP FOR EASIER COLOR RETRIEVAL
+// ========================================================
+$color-map: (
+  // Primary and accent
+  "primary": $primary-color,
+  "primary-light": $primary-light,
+  "primary-dark": $primary-dark,
+  "primary-bg": $primary-bg,
+  "accent": $accent-color,
+  "accent-light": $accent-light,
+  "accent-dark": $accent-dark,
+  "accent-bg": $accent-bg,
+
+  // Theme colors - light
+  "background": $background-color,
+  "surface": $surface-color,
+  "card-bg": $card-bg,
+  "card-header-bg": $card-header-bg,
+  "border": $border-color,
+
+  // Theme colors - dark
+  "background-dark": $background-color-dark,
+  "surface-dark": $surface-color-dark,
+  "card-bg-dark": $card-bg-dark,
+  "card-header-bg-dark": $card-header-bg-dark,
+  "border-dark": $border-color-dark,
+
+  // Typography
+  "text": $text-color,
+  "text-muted": $text-muted,
+  "text-on-primary": $text-on-primary-dark,
+  "text-on-primary-dark": $text-on-primary,
+  "text-on-accent": $text-on-accent,
+  "text-dark": $text-dark,
+  "text-muted-dark": $text-muted-dark,
+
+  // Feedback
+  "success": $success-color,
+  "success-bg": $success-bg,
+  "info": $info-color,
+  "info-light": $info-color,
+  "info-bg": $info-bg,
+  "warning": $warning-color,
+  "warning-bg": $warning-bg,
+  "error": $error-color,
+  "error-bg": $error-bg,
+  "hover": $primary-light,
+  "hover-background": $primary-bg,
+  "hover-background-dark": $primary-bg,
+  "hover-bg": $primary-bg,
+  "hover-bg-dark": $primary-bg
+);
+
+// ========================================================
+// UTILITY FUNCTIONS
+// ========================================================
+
+// Color Function - Get color with optional opacity
+@function color($key, $opacity: 1) {
+  @if map.has-key($color-map, $key) {
+    $color: map.get($color-map, $key);
+    @return rgba($color, $opacity);
+  }
+  @warn "Unknown color `#{$key}` in color map.";
+  @return null;
+}
+
+// Spacing Function - Get spacing value by key
+@function spacing($key) {
+  @if map.has-key($spacing-scale, $key) {
+    @return map.get($spacing-scale, $key);
+  }
+  @warn "Unknown spacing key `#{$key}` in spacing scale.";
+  @return null;
+}
+
+// Font Size Function - Get font size by key
+@function font-size($key) {
+  @if map.has-key($font-sizes, $key) {
+    @return map.get($font-sizes, $key);
+  }
+  @warn "Unknown font size key `#{$key}` in font sizes.";
+  @return null;
+}
+
+// Border Radius Function - Get border radius by key
+@function border-radius($key) {
+  @if map.has-key($border-radius, $key) {
+    @return map.get($border-radius, $key);
+  }
+  @warn "Unknown border radius key `#{$key}` in border radius.";
+  @return null;
+}
+
+// Z-Index Function - Get z-index by key
+@function z-index($key) {
+  @if map.has-key($z-index, $key) {
+    @return map.get($z-index, $key);
+  }
+  @warn "Unknown z-index key `#{$key}` in z-index scale.";
+  @return null;
+}
+
+// Shadow Function - Get shadow by key
+@function shadow($key, $dark: false) {
+  $shadow-map: if($dark, $shadows-dark, $shadows);
+  @if map.has-key($shadow-map, $key) {
+    @return map.get($shadow-map, $key);
+  }
+  @warn "Unknown shadow key `#{$key}` in shadow map.";
+  @return null;
+}
+
+// Transition Function - Get transition
+@function transition($speed: "base", $property: all, $easing: "in-out") {
+  $duration: map.get($transition-speed, $speed);
+  $ease: map.get($transition-easing, $easing);
+  @return $property $duration $ease;
+}
+
+// CSS Variables Export - Creates CSS variables for tokens
+@mixin export-css-variables() {
+  :root {
+    // Colors
+    @each $name, $value in $color-map {
+      --color-#{$name}: #{$value};
+    }
+
+    // Spacing
+    @each $name, $value in $spacing-scale {
+      --space-#{$name}: #{$value};
+    }
+
+    // Font sizes
+    @each $name, $value in $font-sizes {
+      --font-size-#{$name}: #{$value};
+    }
+
+    // Border radius
+    @each $name, $value in $border-radius {
+      --border-radius-#{$name}: #{$value};
+    }
+
+    // Shadows
+    @each $name, $value in $shadows {
+      --shadow-#{$name}: #{$value};
+    }
+
+    // Transitions
+    @each $name, $value in $transition-speed {
+      --transition-#{$name}: #{$value};
+    }
+
+    // Z-indices
+    @each $name, $value in $z-index {
+      --z-#{$name}: #{$value};
+    }
+
+    // Base transitions
+    --transition-base: #{transition()};
+    --transition-fast: #{transition("fast")};
+    --transition-slow: #{transition("slow")};
+  }
+}

@@ -1,0 +1,305 @@
+@use "../../../../../styles/_tokens" as tokens;
+@use "../../../../../styles/_mixins" as mixins;
+
+:host-context(.dark-theme) {
+  .metric-card {
+    // background-color: tokens.color("card-bg-dark");
+    box-shadow: tokens.shadow("lg", true);
+
+    &:hover {
+      box-shadow: tokens.shadow("md", true);
+    }
+  }
+
+  .metric-wrapper {
+    background-color: tokens.color("surface-dark");
+  }
+
+  .metric-circle {
+    svg {
+      .metric-circle-bg {
+        stroke: tokens.color("border-dark");
+      }
+
+      .metric-circle-fill {
+        stroke: tokens.color("primary-light");
+      }
+
+      .metric-text {
+        fill: tokens.color("text-dark");
+      }
+    }
+  }
+}
+
+.metrics-view {
+  display: flex;
+  flex-direction: column;
+  background: none;
+}
+
+.metrics-grid {
+  display: grid;
+  gap: tokens.spacing("xl");
+  padding-bottom: 1rem;
+
+  @include mixins.breakpoint(sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.secondary-grid {
+  margin-top: tokens.spacing("lg");
+}
+
+.metric-card {
+  border-radius: tokens.border-radius("lg");
+  padding: tokens.spacing("lg");
+  box-shadow: tokens.shadow("lg");
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  //background: repeating-linear-gradient(45deg, #66ffbd91, transparent 10px);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: tokens.shadow("md");
+  }
+
+  &.distribution,
+  &.stats,
+  &.thresholds {
+    grid-column: span 2;
+
+    @include mixins.breakpoint(md) {
+      grid-column: span 1;
+    }
+  }
+}
+
+.metric-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: tokens.spacing("lg");
+  background-color: tokens.color("background");
+  border-radius: tokens.border-radius("lg");
+  box-shadow: tokens.shadow("sm");
+}
+
+.metric-visual {
+  margin-bottom: tokens.spacing("md");
+  display: flex;
+  justify-content: center;
+}
+
+.metric-circle {
+  width: 100px;
+  height: 100px;
+  position: relative;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+
+    .metric-circle-bg {
+      fill: none;
+      stroke: tokens.color("border");
+      stroke-width: 2.8;
+
+      .dark-theme & {
+        stroke: tokens.color("border-dark");
+      }
+    }
+
+    .metric-circle-fill {
+      fill: none;
+      stroke-width: 2.8;
+      stroke: tokens.color("primary");
+      stroke-linecap: round;
+
+      .dark-theme & {
+        stroke: tokens.color("primary-light");
+      }
+    }
+
+    .metric-text {
+      fill: tokens.color("text");
+      font-size: 0.55rem;
+      font-weight: 600;
+      text-anchor: middle;
+      transform: rotate(90deg);
+      transform-origin: center;
+
+      .dark-theme & {
+        fill: tokens.color("text-dark");
+      }
+    }
+  }
+}
+
+.metric-info {
+  text-align: center;
+}
+
+.metric-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: tokens.spacing("xs");
+}
+
+.metric-subtitle {
+  color: tokens.color("text-muted");
+  font-size: tokens.font-size("sm");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+
+// Distribution styles
+.distribution-bars {
+  margin-top: tokens.spacing("md");
+}
+
+.distribution-item {
+  margin-bottom: tokens.spacing("sm");
+}
+
+.distribution-bar {
+  height: 24px;
+  border-radius: tokens.border-radius("sm");
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: tokens.font-size("xs");
+  font-weight: 600;
+  color: tokens.color("text-on-primary");
+  min-width: 30px;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &.excellent {
+    background-color: tokens.color("success");
+  }
+
+  &.good {
+    background-color: tokens.color("accent");
+  }
+
+  &.average {
+    background-color: tokens.color("warning");
+  }
+
+  &.poor {
+    background-color: tokens.color("error");
+  }
+}
+
+.distribution-label {
+  font-size: tokens.font-size("xs");
+  margin-top: 4px;
+  color: tokens.color("text-muted");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+
+// Stats grid
+.stats-grid {
+  display: flex;
+  justify-content: space-around;
+  margin-top: tokens.spacing("md");
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: tokens.spacing("xs");
+  color: tokens.color("primary");
+
+  .dark-theme & {
+    color: tokens.color("primary-light");
+  }
+}
+
+.stat-label {
+  font-size: tokens.font-size("xs");
+  color: tokens.color("text-muted");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+
+// Thresholds grid
+.thresholds-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: tokens.spacing("sm");
+  margin-top: tokens.spacing("md");
+
+  @include mixins.breakpoint(sm) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.threshold-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: tokens.spacing("sm");
+  border-radius: tokens.border-radius("sm");
+
+  &.excellent {
+    background-color: tokens.color("success-bg");
+  }
+
+  &.good {
+    background-color: rgba(tokens.color("accent"), 0.1);
+  }
+
+  &.average {
+    background-color: tokens.color("warning-bg");
+  }
+
+  &.poor {
+    background-color: tokens.color("error-bg");
+  }
+
+  .dark-theme & {
+    &.excellent {
+      background-color: rgba(tokens.color("success"), 0.2);
+    }
+
+    &.good {
+      background-color: rgba(tokens.color("accent"), 0.2);
+    }
+
+    &.average {
+      background-color: rgba(tokens.color("warning"), 0.2);
+    }
+
+    &.poor {
+      background-color: rgba(tokens.color("error"), 0.2);
+    }
+  }
+}
+
+.threshold-label {
+  font-size: tokens.font-size("xs");
+  font-weight: 500;
+}
+
+.threshold-value {
+  font-size: tokens.font-size("sm");
+  font-weight: 600;
+  margin-top: tokens.spacing("xs");
+}

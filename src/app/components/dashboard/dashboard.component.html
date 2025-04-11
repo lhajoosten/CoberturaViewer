@@ -1,23 +1,116 @@
 <div class="dashboard-container" [class.dark-theme]="isDarkTheme">
-    <div class="dashboard-content" *ngIf="!hasCoverageData">
-        <app-file-uploader></app-file-uploader>
+    <!-- Welcome screen when no data is loaded -->
+    <div class="dashboard-content welcome-screen" *ngIf="!hasCoverageData">
+        <div class="welcome-container">
+            <div class="welcome-header">
+                <h2>Coverage Explorer Dashboard</h2>
+                <p class="welcome-subtitle">Visualize and analyze your code coverage reports with interactive charts</p>
+            </div>
+
+            <div class="welcome-features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3>Intuitive Visualizations</h3>
+                    <p>See your test coverage displayed as interactive treemaps and sunburst charts</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Smart Insights</h3>
+                    <p>Get actionable recommendations to improve your test coverage strategically</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Track Progress</h3>
+                    <p>Monitor coverage trends over time with historical data tracking</p>
+                </div>
+            </div>
+
+            <app-file-uploader (uploadComplete)="onUploadComplete()"></app-file-uploader>
+
+            <div class="welcome-recent" *ngIf="hasHistory">
+                <div class="recent-header">
+                    <h3>Recent Reports</h3>
+                    <button class="btn-outline btn-sm" (click)="clearHistory()" *ngIf="snapshots.length > 0">
+                        <i class="fas fa-trash"></i> Clear History
+                    </button>
+                </div>
+
+                <div class="recent-list">
+                    <div class="recent-item" *ngFor="let snapshot of snapshots.slice().reverse().slice(0, 5)"
+                        (click)="loadSnapshot(snapshot)">
+                        <div class="recent-date">{{ formatDate(snapshot.date) }}</div>
+                        <div class="recent-coverage" [ngClass]="getCoverageClass(snapshot.lineCoverage)">
+                            {{ snapshot.lineCoverage.toFixed(1) }}%
+                        </div>
+                        <div class="recent-meta">
+                            {{ snapshot.linesCovered }} / {{ snapshot.linesValid }} lines covered
+                        </div>
+                        <button class="btn-icon">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Dashboard with tabs after data is loaded -->
     <div class="dashboard-content" *ngIf="hasCoverageData">
         <div class="tabs-container">
             <div class="tabs-header">
                 <button *ngFor="let tab of tabs" class="tab-button" [class.active]="activeTab === tab.id"
-                    (click)="setActiveTab(tab.id)">
+                    (click)="setActiveTab(tab.id)"
+                    [attr.title]="tab.label + ' (Press ' + getShortcutForTab(tab.id) + ')'">
                     <i [class]="tab.icon"></i>
                     <span>{{ tab.label }}</span>
                 </button>
+
+                <div class="tabs-actions">
+                    <button class="action-btn" (click)="reloadData()" title="Reload Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="action-btn" (click)="exportCurrentViewAsSVG()" title="Export Current View">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="action-btn" (click)="openUploadModal()" title="Upload New Data (Press U)">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="tab-content" [@fadeInOut]>
-                <app-coverage-treemap *ngIf="activeTab === 'treemap'"></app-coverage-treemap>
-                <app-coverage-sunburst *ngIf="activeTab === 'sunburst'"></app-coverage-sunburst>
-                <app-coverage-trends *ngIf="activeTab === 'history'"></app-coverage-trends>
-                <app-coverage-insights *ngIf="activeTab === 'insights'"></app-coverage-insights>
+                <!-- Loading indicator -->
+                <div class="loading-container" *ngIf="isLoading">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Treemap Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'treemap' && !isLoading">
+                    <app-ngx-coverage-treemap></app-ngx-coverage-treemap>
+                </div>
+
+                <!-- Sunburst Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'sunburst' && !isLoading">
+                    <app-ngx-coverage-sunburst></app-ngx-coverage-sunburst>
+                </div>
+
+                <!-- History Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'history' && !isLoading">
+                    <app-ngx-coverage-trends [snapshots]="snapshots"></app-ngx-coverage-trends>
+                </div>
+
+                <!-- Insights Tab -->
+                <div class="tab-pane" *ngIf="activeTab === 'insights' && !isLoading">
+                    <app-coverage-insights></app-coverage-insights>
+                </div>
             </div>
         </div>
     </div>

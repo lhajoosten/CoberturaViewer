@@ -1,0 +1,205 @@
+@use "../../../styles/tokens" as tokens;
+@use "../../../styles/mixins" as mixins;
+@use "sass:color";
+
+.app-footer {
+  // background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
+  color: tokens.color("text");
+  padding: tokens.spacing("lg") 0;
+  border-top: 1px solid tokens.color("border");
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+
+  &.dark-theme {
+    // background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
+    color: tokens.color("text-dark");
+    border-top-color: tokens.color("border-dark");
+  }
+}
+
+.app-content-wrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 tokens.spacing("lg");
+
+  @include mixins.breakpoint(md) {
+    padding: 0 tokens.spacing("md");
+  }
+
+  @include mixins.breakpoint(sm) {
+    padding: 0 tokens.spacing("sm");
+  }
+}
+
+.footer-content {
+  @include mixins.flex-between;
+  color: tokens.color("text-muted");
+
+  @include mixins.breakpoint(sm) {
+    @include mixins.flex-column;
+    align-items: center;
+    gap: tokens.spacing("md");
+  }
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+
+.footer-info {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("md");
+
+  @include mixins.breakpoint(sm) {
+    @include mixins.flex-column;
+    align-items: center;
+    gap: tokens.spacing("xs");
+  }
+}
+
+.copyright {
+  font-weight: 400;
+}
+
+.version {
+  font-size: tokens.font-size("xs");
+  color: tokens.color("text-muted");
+  opacity: 0.8;
+
+  &::before {
+    content: "•";
+    margin-right: tokens.spacing("xs");
+
+    @include mixins.breakpoint(sm) {
+      display: none;
+    }
+  }
+
+  @include mixins.breakpoint(sm) {
+    margin-top: -2px;
+  }
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+
+.footer-links {
+  display: flex;
+  gap: tokens.spacing("md");
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  @include mixins.breakpoint(xs) {
+    gap: tokens.spacing("sm");
+  }
+
+  a,
+  .btn-text {
+    @include mixins.button-base;
+    color: tokens.color("text-muted");
+    background: none;
+    padding: tokens.spacing("xs") tokens.spacing("sm");
+    border-radius: tokens.border-radius("sm");
+    font-size: inherit;
+    display: flex;
+    align-items: center;
+    gap: tokens.spacing("xs");
+
+    i {
+      font-size: 1.1em;
+    }
+
+    &:hover {
+      color: tokens.color("primary");
+      background-color: rgba(tokens.color("primary"), 0.05);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:focus {
+      @include mixins.focus-ring;
+    }
+
+    .dark-theme & {
+      color: tokens.color("text-muted-dark");
+
+      &:hover {
+        color: tokens.color("primary-light");
+        background-color: rgba(tokens.color("primary-light"), 0.1);
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(tokens.color("primary-light"), 0.3);
+      }
+    }
+  }
+}
+
+.footer-extra {
+  margin-top: tokens.spacing("md");
+  @include mixins.flex-between;
+  font-size: tokens.font-size("xs");
+  color: tokens.color("text-on-primary-dark");
+  border-top: 1px solid rgba(tokens.color("border"), 0.5);
+  padding-top: tokens.spacing("sm");
+
+  @include mixins.breakpoint(sm) {
+    @include mixins.flex-column;
+    align-items: center;
+    gap: tokens.spacing("xs");
+    text-align: center;
+  }
+
+  .dark-theme & {
+    color: tokens.color("text-on-primary-dark");
+    border-top-color: rgba(tokens.color("border-dark"), 0.5);
+  }
+}
+
+.app-status {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("xs");
+
+  i {
+    font-size: 0.8rem;
+  }
+
+  &.status-success i {
+    color: tokens.color("success");
+  }
+
+  &.status-warning i {
+    color: tokens.color("warning");
+  }
+
+  &.status-error i {
+    color: tokens.color("error");
+  }
+
+  .dark-theme & {
+    &.status-success i {
+      color: color.adjust(tokens.color("success"), $lightness: 10%);
+    }
+
+    &.status-warning i {
+      color: color.adjust(tokens.color("warning"), $lightness: 10%);
+    }
+
+    &.status-error i {
+      color: color.adjust(tokens.color("error"), $lightness: 10%);
+    }
+  }
+}
+
+.last-updated {
+  opacity: 0.8;
+  @include mixins.slide-in-up(0.5s);
+}

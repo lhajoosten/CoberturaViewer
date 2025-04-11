@@ -1,150 +1,76 @@
-<div class="insights-container card" [class.dark-theme]="isDarkTheme">
+<div class="insights-container card" [class.dark-theme]="isDarkTheme" [class.fullscreen]="isFullscreen">
+  <!-- Header Toolbar -->
   <div class="toolbar">
-    <h2>Coverage Insights & Recommendations</h2>
+    <h2><i class="fas fa-lightbulb"></i> Coverage Insights</h2>
     <div class="toolbar-actions">
-      <button (click)="exportInsights()" class="toolbar-btn" title="Export Insights">
+      <!-- Threshold Settings -->
+      <app-threshold-settings *ngIf="coverageData" [thresholds]="thresholds" [showSettings]="showThresholdSettings"
+        (thresholdsUpdated)="updateThresholds($event)" (toggleSettings)="toggleThresholdSettings()">
+      </app-threshold-settings>
+
+      <!-- Export Button -->
+      <button class="toolbar-btn" (click)="exportInsights()" [disabled]="!coverageData"
+        title="Export insights as markdown">
         <i class="fas fa-download"></i>
+      </button>
+
+      <!-- Fullscreen Button -->
+      <button class="toolbar-btn" (click)="toggleFullscreen()"
+        [title]="isFullscreen ? 'Exit fullscreen (ESC)' : 'Enter fullscreen'">
+        <i class="fas" [ngClass]="isFullscreen ? 'fa-compress-alt' : 'fa-expand-alt'"></i>
       </button>
     </div>
   </div>
 
-  <div class="insights-content" *ngIf="coverageData">
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-title">Total Coverage</div>
-        <div class="metric-value" [ngClass]="getCoverageClass(coverageData.summary.lineRate)">
-          {{ coverageData.summary.lineRate.toFixed(1) }}%
-        </div>
-        <div class="metric-subtitle">
-          {{ coverageData.summary.linesCovered }} / {{ coverageData.summary.linesValid }} lines covered
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-title">Branch Coverage</div>
-        <div class="metric-value" [ngClass]="getCoverageClass(coverageData.summary.branchRate)">
-          {{ coverageData.summary.branchRate.toFixed(1) }}%
-        </div>
-        <div class="metric-subtitle">
-          Conditional paths covered
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-title">Packages</div>
-        <div class="metric-value">{{ coverageData.packages.length }}</div>
-        <div class="metric-subtitle">
-          {{ getCountByThreshold(coverageData.packages, 75) }} above 75%
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-title">Classes</div>
-        <div class="metric-value">{{ getTotalClassCount() }}</div>
-        <div class="metric-subtitle">
-          {{ getClassCountByThreshold(75) }} above 75%
-        </div>
-      </div>
-    </div>
-
-    <div class="insights-list">
-      <h3>Key Insights</h3>
-      <div *ngFor="let insight of insights" class="insight-card" [ngClass]="insight.type">
-        <div class="insight-icon">
-          <i [class]="insight.icon"></i>
-        </div>
-        <div class="insight-content">
-          <h4>{{ insight.title }}</h4>
-          <p>{{ insight.description }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="high-risk-classes" *ngIf="highRiskClasses.length > 0">
-      <h3>High-Risk Classes</h3>
-      <p class="section-description">
-        These classes have high complexity or large codebase with low test coverage.
-        Prioritize testing these for maximum impact.
-      </p>
-
-      <div class="risk-table-wrapper">
-        <table class="risk-table">
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Risk Score</th>
-              <th>Coverage</th>
-              <th>Lines</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cls of highRiskClasses">
-              <td class="class-name">{{ cls.name }}</td>
-              <td>
-                <div class="risk-indicator" [style.width.%]="cls.riskScore">
-                  <div class="risk-bar"></div>
-                </div>
-              </td>
-              <td [ngClass]="getCoverageClass(cls.coverage)">{{ cls.coverage.toFixed(1) }}%</td>
-              <td>{{ cls.linesValid }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="coverage-distribution">
-      <h3>Coverage Distribution</h3>
-      <div class="distribution-chart">
-        <div class="chart-section excellent" [style.width.%]="distribution.excellent">
-          {{ distribution.excellent > 5 ? distribution.excellent.toFixed(1) + '%' : '' }}
-        </div>
-        <div class="chart-section good" [style.width.%]="distribution.good">
-          {{ distribution.good > 5 ? distribution.good.toFixed(1) + '%' : '' }}
-        </div>
-        <div class="chart-section average" [style.width.%]="distribution.average">
-          {{ distribution.average > 5 ? distribution.average.toFixed(1) + '%' : '' }}
-        </div>
-        <div class="chart-section poor" [style.width.%]="distribution.poor">
-          {{ distribution.poor > 5 ? distribution.poor.toFixed(1) + '%' : '' }}
-        </div>
-      </div>
-      <div class="distribution-legend">
-        <div class="legend-item">
-          <div class="color-box excellent"></div>
-          <span>90-100% ({{ classCountByLevel.excellent }} classes)</span>
-        </div>
-        <div class="legend-item">
-          <div class="color-box good"></div>
-          <span>75-90% ({{ classCountByLevel.good }} classes)</span>
-        </div>
-        <div class="legend-item">
-          <div class="color-box average"></div>
-          <span>50-75% ({{ classCountByLevel.average }} classes)</span>
-        </div>
-        <div class="legend-item">
-          <div class="color-box poor"></div>
-          <span>0-50% ({{ classCountByLevel.poor }} classes)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="recommendations">
-      <h3>Recommendations</h3>
-      <div class="recommendation-list">
-        <div class="recommendation-item" *ngFor="let rec of recommendations; let i = index">
-          <div class="recommendation-number">{{ i + 1 }}</div>
-          <div class="recommendation-text">{{ rec }}</div>
-        </div>
-      </div>
-    </div>
+  <!-- Fullscreen ESC Hint -->
+  <div class="fullscreen-indicator" *ngIf="isFullscreen">
+    <span>Press ESC to exit</span>
   </div>
 
+  <!-- Main Content -->
+  <div class="insights-content" *ngIf="coverageData">
+    <!-- View Tabs -->
+    <div class="view-tabs">
+      <button *ngFor="let tab of tabs" class="tab-button" [class.active]="activeView === tab.id"
+        [class.hidden]="tab.id === 'risks' && highRiskClasses.length === 0" (click)="setActiveView(tab.id)">
+        <i class="fas" [ngClass]="getTabIcon(tab.id)"></i>
+        <span>{{tab.label}}</span>
+      </button>
+    </div>
+
+    <!-- Views -->
+    <ng-container [ngSwitch]="activeView">
+      <app-metrics-view *ngSwitchCase="'metrics'" [coverageData]="coverageData" [thresholds]="thresholds"
+        [isDarkTheme]="isDarkTheme">
+      </app-metrics-view>
+
+      <app-insights-view *ngSwitchCase="'insights'" [insights]="insights" [thresholds]="thresholds"
+        [isDarkTheme]="isDarkTheme">
+      </app-insights-view>
+
+      <app-risks-view *ngSwitchCase="'risks'" [highRiskClasses]="highRiskClasses" [thresholds]="thresholds"
+        [isDarkTheme]="isDarkTheme">
+      </app-risks-view>
+
+      <app-distribution-view *ngSwitchCase="'distribution'" [coverageData]="coverageData" [thresholds]="thresholds"
+        [isDarkTheme]="isDarkTheme">
+      </app-distribution-view>
+
+      <app-recommendations-view *ngSwitchCase="'recommendations'" [recommendations]="recommendations"
+        [thresholds]="thresholds" [isDarkTheme]="isDarkTheme">
+      </app-recommendations-view>
+    </ng-container>
+  </div>
+
+  <!-- Empty State -->
   <div class="empty-state" *ngIf="!coverageData">
     <div class="empty-icon">
-      <i class="fas fa-lightbulb"></i>
+      <i class="fas fa-chart-pie"></i>
     </div>
-    <p>No coverage data available.</p>
+    <h2>No Coverage Data Available</h2>
     <p class="empty-hint">Upload a Cobertura XML file to see insights and recommendations.</p>
+    <button class="btn-primary empty-action" (click)="navigateToUpload()">
+      <i class="fas fa-upload"></i> Upload Coverage File
+    </button>
   </div>
 </div>

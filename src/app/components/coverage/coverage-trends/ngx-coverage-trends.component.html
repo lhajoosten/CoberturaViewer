@@ -1,0 +1,448 @@
+<div class="trends-container card" [class.dark-theme]="isDarkTheme">
+    <div class="toolbar">
+        <h2><i class="fas fa-chart-line"></i> Coverage History & Trends</h2>
+        <div class="toolbar-actions" *ngIf="hasHistory">
+            <button class="toolbar-btn" (click)="exportData()" title="Export Trends Data">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="toolbar-btn" (click)="toggleFullscreen()" title="Toggle Fullscreen">
+                <i class="fas" [ngClass]="isFullscreen ? 'fa-compress-alt' : 'fa-expand-alt'"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="history-empty" *ngIf="!hasHistory">
+        <div class="empty-state">
+            <i class="fas fa-history"></i>
+            <h3>No coverage history available</h3>
+            <p>Upload multiple coverage reports over time to track trends and measure progress.</p>
+            <p class="empty-hint">Data is stored locally in your browser.</p>
+        </div>
+
+        <div class="demo-data">
+            <button class="btn-primary" (click)="loadDemoData()">
+                <i class="fas fa-magic"></i> Load Demo Data
+            </button>
+            <button class="btn-outline" (click)="importData()">
+                <i class="fas fa-file-import"></i> Import History
+            </button>
+        </div>
+    </div>
+
+    <div class="history-dashboard" *ngIf="hasHistory">
+        <!-- Dashboard Header with Controls -->
+        <div class="dashboard-header">
+            <div class="filter-section">
+                <div class="time-range-control">
+                    <label>Time Period:</label>
+                    <div class="controls-row">
+                        <select [(ngModel)]="timeRange" (change)="updateTimeRange()">
+                            <option *ngFor="let range of timeRanges" [value]="range.value">{{ range.label }}</option>
+                        </select>
+                        <button class="date-range-button" title="Custom Date Range" (click)="toggleDateRangePicker()">
+                            <i class="fas fa-calendar-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="custom-date-range" *ngIf="showDateRangePicker">
+                    <div class="date-inputs">
+                        <div class="date-field">
+                            <label>From:</label>
+                            <input type="date" [(ngModel)]="customDateRange.from" (change)="applyCustomDateRange()">
+                        </div>
+                        <div class="date-field">
+                            <label>To:</label>
+                            <input type="date" [(ngModel)]="customDateRange.to" (change)="applyCustomDateRange()">
+                        </div>
+                    </div>
+                    <button class="btn-sm btn-outline" (click)="applyCustomDateRange()">
+                        <i class="fas fa-check"></i> Apply
+                    </button>
+                </div>
+            </div>
+
+            <div class="metrics-toggle">
+                <label>Metrics:</label>
+                <div class="metrics-buttons">
+                    <button *ngFor="let metric of metrics" class="metric-toggle" [class.active]="metric.enabled"
+                        [style.borderColor]="metric.color" (click)="toggleMetric(metric.id)">
+                        <i class="fas fa-circle" [style.color]="metric.color"></i>
+                        {{ metric.label }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="view-options">
+                <div class="options-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" [(ngModel)]="showTarget" (change)="updateChartOptions()">
+                        <span>Target Line</span>
+                    </label>
+
+                    <div class="target-input" *ngIf="showTarget">
+                        <input type="number" min="0" max="100" [(ngModel)]="targetCoverage"
+                            (change)="updateTargetCoverage()">
+                        <span>%</span>
+                    </div>
+                </div>
+
+                <div class="options-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" [(ngModel)]="showTrendLine" (change)="updateChartOptions()">
+                        <span>Trend Line</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div class="loading-overlay" *ngIf="isLoading">
+            <div class="spinner"></div>
+            <span>Processing data...</span>
+        </div>
+
+        <!-- Stats Cards Row -->
+        <div class="stats-cards" *ngIf="!isLoading">
+            <div class="stat-card">
+                <div class="stat-title">Current Line Coverage</div>
+                <div class="stat-value"
+                    [ngClass]="getCoverageClass(filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.lineCoverage : 0)">
+                    {{ filteredHistory.length ? (filteredHistory[filteredHistory.length-1].data.summary.lineCoverage ||
+                    0).toFixed(2) : '0.00' }}%
+                </div>
+                <div class="stat-change" [class.positive]="coverageVelocity > 0" [class.negative]="coverageVelocity < 0"
+                    [class.neutral]="coverageVelocity === 0">
+                    <i class="fas" [ngClass]="{
+                        'fa-arrow-up': coverageVelocity > 0,
+                        'fa-arrow-down': coverageVelocity < 0,
+                        'fa-equals': coverageVelocity === 0
+                    }"></i>
+                    {{ coverageVelocity > 0 ? '+' : '' }}{{ coverageVelocity.toFixed(2) }}% per week
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Current Branch Coverage</div>
+                <div class="stat-value"
+                    [ngClass]="getCoverageClass(filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.branchCoverage : 0)">
+                    {{ filteredHistory.length ? (filteredHistory[filteredHistory.length-1].data.summary.branchCoverage
+                    ||
+                    0).toFixed(2) : '0.00' }}%
+                </div>
+                <div class="stat-detail">
+                    {{ filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.linesCovered || 0
+                    : 0 }} /
+                    {{ filteredHistory.length ? filteredHistory[filteredHistory.length-1].data.summary.linesValid || 0 :
+                    0 }} lines covered
+                </div>
+            </div>
+
+            <div class="stat-card" *ngIf="showTarget && coverageVelocity">
+                <div class="stat-title">Target Projection ({{ targetCoverage }}%)</div>
+                <div class="stat-value">
+                    {{ projectionsData.weeksToTarget !== null ? projectionsData.weeksToTarget + ' weeks' : 'N/A' }}
+                </div>
+                <div class="stat-detail">
+                    Est. date: {{ projectionsData.estimatedDateString }}
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Coverage Quality</div>
+                <div class="stat-value quality-indicator">
+                    <i class="fas" [ngClass]="{
+                   'fa-smile': averageCoverage >= 80,
+                   'fa-meh': averageCoverage >= 50 && averageCoverage < 80,
+                   'fa-frown': averageCoverage < 50
+                 }" [ngStyle]="{'color': getCoverageColor(averageCoverage)}"></i>
+                </div>
+                <div class="stat-detail">
+                    {{ coverageVelocity > 0 ? 'Improving' : coverageVelocity < 0 ? 'Declining' : 'Stable' }} <span
+                        class="trend-period">({{ getDisplayPeriod() }})</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="chart-grid" *ngIf="!isLoading">
+            <!-- Main Trend Chart -->
+            <div class="chart-container main-chart">
+                <div class="chart-header">
+                    <h3>Coverage Trends</h3>
+                    <div class="chart-actions">
+                        <button class="chart-btn" (click)="toggleChartType()" title="Toggle Chart Type">
+                            <i class="fas" [ngClass]="chartType === 'line' ? 'fa-chart-area' : 'fa-chart-line'"></i>
+                        </button>
+                        <button class="chart-btn" (click)="exportChartImage('main')" title="Export Chart">
+                            <i class="fas fa-image"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-area" #mainChartArea>
+                    <ngx-charts-line-chart *ngIf="chartType === 'line'" [view]="[width, mainChartHeight]"
+                        [scheme]="colorScheme" [results]="lineChartData" [gradient]="true" [xAxis]="true" [yAxis]="true"
+                        [legend]="true" [showXAxisLabel]="true" [showYAxisLabel]="true" xAxisLabel="Date"
+                        yAxisLabel="Coverage (%)" [yAxisTickFormatting]="percentTickFormatting"
+                        [xAxisTickFormatting]="dateTickFormatting" [timeline]="false" [autoScale]="true"
+                        [referenceLines]="targetReference" [showRefLines]="showTarget" [showRefLabels]="showTarget"
+                        [tooltipDisabled]="false" [yScaleMin]="0" [yScaleMax]="100" [animations]="true"
+                        [curve]="curveCatmullRom" (select)="onChartPointSelect($event)">
+                        <ng-template #tooltipTemplate let-model="model">
+                            <div class="chart-tooltip">
+                                <div class="tooltip-date">{{ formatTooltipDate(model.name) }}</div>
+                                <div *ngFor="let series of model.series" class="tooltip-item">
+                                    <div class="tooltip-color-dot" [style.background-color]="series.color"></div>
+                                    <span class="tooltip-label">{{ series.name }}:</span>
+                                    <span class="tooltip-value">{{ series.value.toFixed(2) }}%</span>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ngx-charts-line-chart>
+
+                    <ngx-charts-area-chart *ngIf="chartType === 'area'" [view]="[width, mainChartHeight]"
+                        [scheme]="colorScheme" [results]="lineChartData" [gradient]="true" [xAxis]="true" [yAxis]="true"
+                        [legend]="true" [showXAxisLabel]="true" [showYAxisLabel]="true" xAxisLabel="Date"
+                        yAxisLabel="Coverage (%)" [yAxisTickFormatting]="percentTickFormatting"
+                        [xAxisTickFormatting]="dateTickFormatting" [timeline]="false" [autoScale]="true"
+                        [tooltipDisabled]="false" [yScaleMin]="0" [yScaleMax]="100" [animations]="true"
+                        [curve]="curveCatmullRom" (select)="onChartPointSelect($event)">
+                    </ngx-charts-area-chart>
+
+                    <!-- Trend line overlay if enabled -->
+                    <div class="trend-line-overlay" *ngIf="showTrendLine && trendLineData.length > 0">
+                        <svg [attr.width]="width" [attr.height]="mainChartHeight" class="trend-line-svg">
+                            <path [attr.d]="trendLinePath" class="trend-line-path"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Selected point indicator -->
+                    <div class="selected-point-indicator" *ngIf="selectedPoint" [style.left.px]="selectedPoint.x"
+                        [style.top.px]="selectedPoint.y">
+                        <div class="point-marker"></div>
+                        <div class="point-info">
+                            {{ formatTooltipDate(selectedPoint.date) }}: {{ selectedPoint.value.toFixed(2) }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Velocity Chart -->
+            <div class="chart-container velocity-chart">
+                <div class="chart-header">
+                    <h3>Weekly Velocity</h3>
+                    <div class="chart-actions">
+                        <button class="chart-btn" (click)="exportChartImage('velocity')" title="Export Chart">
+                            <i class="fas fa-image"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-area" #velocityChartArea>
+                    <ngx-charts-bar-vertical [view]="[width / 2 - 50, secondaryChartHeight]"
+                        [scheme]="velocityColorScheme" [results]="velocityChartData" [gradient]="true" [xAxis]="true"
+                        [yAxis]="true" [showXAxisLabel]="true" [showYAxisLabel]="true" [xAxisLabel]="'Week'"
+                        [yAxisLabel]="'Change (%)'" [tooltipDisabled]="false" [animations]="true" [showGridLines]="true"
+                        [barPadding]="8" [noBarWhenZero]="true">
+                        <ng-template #tooltipTemplate let-model="model">
+                            <div class="chart-tooltip">
+                                <div class="tooltip-title">{{ model.name }}</div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-change" [class.positive]="model.value > 0"
+                                        [class.negative]="model.value < 0">
+                                        {{ model.value > 0 ? '+' : '' }}{{ model.value.toFixed(2) }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ngx-charts-bar-vertical>
+                </div>
+            </div>
+
+            <!-- Distribution Chart -->
+            <div class="chart-container distribution-chart">
+                <div class="chart-header">
+                    <h3>Coverage Distribution</h3>
+                    <div class="chart-actions">
+                        <button class="chart-btn" (click)="exportChartImage('distribution')" title="Export Chart">
+                            <i class="fas fa-image"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-area" #distributionChartArea>
+                    <ngx-charts-bar-horizontal [view]="[width / 2 - 50, secondaryChartHeight]"
+                        [scheme]="distributionColorScheme" [results]="distributionChartData" [gradient]="true"
+                        [xAxis]="true" [yAxis]="true" [showXAxisLabel]="true" [showYAxisLabel]="false"
+                        [xAxisLabel]="'Classes'" [showDataLabel]="true" [tooltipDisabled]="false" [animations]="true"
+                        [barPadding]="8">
+                        <ng-template #tooltipTemplate let-model="model">
+                            <div class="chart-tooltip">
+                                <div class="tooltip-title">{{ model.name }}</div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-value">{{ model.value }} classes</span>
+                                </div>
+                                <div class="tooltip-item" *ngIf="getTotalClassCount() > 0">
+                                    <span class="tooltip-percent">{{ (model.value / getTotalClassCount() *
+                                        100).toFixed(1) }}% of total</span>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ngx-charts-bar-horizontal>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coverage History Table -->
+        <div class="history-table-container" *ngIf="!isLoading">
+            <div class="table-header">
+                <h3>Coverage History</h3>
+                <div class="table-actions">
+                    <div class="search-container">
+                        <input type="text" [(ngModel)]="searchFilter" placeholder="Search history..."
+                            (input)="applyHistoryFilter()">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <button class="btn-outline btn-sm" (click)="clearAllHistory()" *ngIf="filteredHistory.length > 0">
+                        <i class="fas fa-trash-alt"></i> Clear All
+                    </button>
+                </div>
+            </div>
+
+            <div class="no-results" *ngIf="filteredHistory.length === 0">
+                <i class="fas fa-search"></i>
+                <p>No history entries found matching your criteria.</p>
+                <button class="btn-outline btn-sm" (click)="resetHistoryFilter()">Reset Filter</button>
+            </div>
+
+            <div class="responsive-table" *ngIf="filteredHistory.length > 0">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th (click)="sortHistory('date')" class="sortable">
+                                Date
+                                <i class="fas" [ngClass]="getSortIconClass('date')"></i>
+                            </th>
+                            <th (click)="sortHistory('lineCoverage')" class="sortable">
+                                Line Coverage
+                                <i class="fas" [ngClass]="getSortIconClass('lineCoverage')"></i>
+                            </th>
+                            <th (click)="sortHistory('branchCoverage')" class="sortable">
+                                Branch Coverage
+                                <i class="fas" [ngClass]="getSortIconClass('branchCoverage')"></i>
+                            </th>
+                            <th>Lines Covered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let entry of filteredHistory" [class.selected-entry]="isSelectedEntry(entry)"
+                            (click)="selectHistoryEntry(entry)">
+                            <td>{{ formatDate(entry.date) }}</td>
+                            <td [ngClass]="getCoverageClass(entry.data.summary.lineCoverage)">
+                                {{ entry.data.summary.lineCoverage.toFixed(2) }}%
+                            </td>
+                            <td [ngClass]="getCoverageClass(entry.data.summary.branchCoverage)">
+                                {{ entry.data.summary.branchCoverage.toFixed(2) }}%
+                            </td>
+                            <td>
+                                {{ entry.data.summary.linesCovered }} / {{ entry.data.summary.linesValid }}
+                            </td>
+                            <td>
+                                <button class="btn-icon" (click)="loadHistoryEntry(entry); $event.stopPropagation();"
+                                    title="View this coverage report">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon" (click)="removeHistoryEntry(entry); $event.stopPropagation();"
+                                    title="Remove this entry">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination" *ngIf="totalPages > 1">
+                <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(1)">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+                <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import/Export Modal -->
+    <div class="modal-overlay" *ngIf="showImportExportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>{{ importExportMode === 'import' ? 'Import History Data' : 'Export History Data' }}</h3>
+                <button class="close-button" (click)="closeImportExportModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div *ngIf="importExportMode === 'import'">
+                    <p>Upload a previously exported history file to restore your coverage history.</p>
+                    <div class="file-upload">
+                        <input type="file" #fileInput accept=".json" (change)="handleFileInput($event)">
+                        <button class="btn-outline" (click)="fileInput.click()">
+                            <i class="fas fa-file-upload"></i> Select File
+                        </button>
+                        <span class="file-name" *ngIf="importFileName">{{ importFileName }}</span>
+                    </div>
+                    <div class="import-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" [(ngModel)]="importOptions.replace">
+                            <span>Replace existing history</span>
+                        </label>
+                        <p class="option-hint" *ngIf="importOptions.replace">Warning: This will remove all your current
+                            history data.</p>
+                    </div>
+                </div>
+                <div *ngIf="importExportMode === 'export'">
+                    <p>Export your coverage history data to a file that you can save and import later.</p>
+                    <div class="export-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" [(ngModel)]="exportOptions.includeAll">
+                            <span>Include all history data</span>
+                        </label>
+                        <p class="option-hint" *ngIf="!exportOptions.includeAll">Only current filtered data will be
+                            exported.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" (click)="closeImportExportModal()">Cancel</button>
+                <button class="btn-primary" (click)="importExportMode === 'import' ? confirmImport() : confirmExport()">
+                    {{ importExportMode === 'import' ? 'Import' : 'Export' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="showConfirmationModal">
+        <div class="modal-content confirmation-modal">
+            <div class="modal-header">
+                <h3>Confirm Action</h3>
+                <button class="close-button" (click)="closeConfirmationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirmation-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p>{{ confirmationMessage }}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" (click)="closeConfirmationModal()">Cancel</button>
+                <button class="btn-danger" (click)="confirmAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
