@@ -4,12 +4,12 @@ import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ViewChild, E
 import { FormsModule } from "@angular/forms";
 import { NgxChartsModule } from "@swimlane/ngx-charts";
 import { Subscription } from "rxjs";
-import { TreeNode, ClassInfo, CoverageData } from "../../../models/coverage.model";
-import { CoverageDataService } from "../../../services/coverage-data.service";
-import { CoverageStoreService } from "../../../services/coverage-store.service";
-import { NotificationService } from "../../../services/utils/notification.service";
-import { ThemeService } from "../../../services/utils/theme.service";
-import { ExclusionPattern, TreeMapFilters } from "../../../models/treemap.model";
+import { TreeNode, ClassInfo, CoverageData } from "../../../common/models/coverage.model";
+import { CoverageDataService } from "../../../common/services/coverage-data.service";
+import { CoverageStoreService } from "../../../common/services/coverage-store.service";
+import { NotificationService } from "../../../common/utils/notification.utility";
+import { ThemeService } from "../../../common/utils/theme.utility";
+import { ExclusionPattern, TreeMapFilters } from "../../../common/models/treemap.model";
 
 @Component({
     selector: 'app-ngx-coverage-treemap',

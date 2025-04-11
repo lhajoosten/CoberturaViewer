@@ -1,0 +1,193 @@
+@use "../../../../../styles/_tokens" as tokens;
+@use "../../../../../styles/_mixins" as mixins;
+@use "sass:color";
+
+.threshold-settings {
+  position: relative;
+}
+
+.toolbar-btn {
+  @include mixins.button-base;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: transparent;
+  color: tokens.color("text");
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(tokens.color("primary"), 0.1);
+    color: tokens.color("primary");
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(tokens.color("primary"), 0.3);
+  }
+
+  &[aria-expanded="true"] {
+    background-color: tokens.color("primary");
+    color: tokens.color("text-on-primary");
+
+    &:hover {
+      background-color: color.scale(tokens.color("primary"), $lightness: 10%);
+    }
+  }
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: calc(100% + tokens.spacing("xs"));
+  right: 0;
+  width: 280px;
+  background-color: tokens.color("card-bg");
+  border: 1px solid tokens.color("border");
+  border-radius: tokens.border-radius("md");
+  box-shadow: tokens.shadow("elevated");
+  z-index: tokens.z-index("dropdown");
+  animation: slideDownFade 0.25s ease;
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: tokens.spacing("md");
+  border-bottom: 1px solid tokens.color("border");
+
+  h3 {
+    font-size: tokens.font-size("md");
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: tokens.color("text-muted");
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: rgba(tokens.color("text-muted"), 0.1);
+    color: tokens.color("text");
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(tokens.color("primary"), 0.3);
+  }
+}
+
+.threshold-controls {
+  padding: tokens.spacing("md");
+}
+
+.threshold-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 30px;
+  align-items: center;
+  gap: tokens.spacing("md");
+  margin-bottom: tokens.spacing("md");
+
+  label {
+    font-weight: 500;
+    font-size: tokens.font-size("sm");
+  }
+}
+
+.threshold-input {
+  position: relative;
+
+  input {
+    width: 100%;
+    padding: tokens.spacing("xs") tokens.spacing("sm");
+    padding-right: 25px;
+    border: 1px solid tokens.color("border");
+    border-radius: tokens.border-radius("sm");
+    font-size: tokens.font-size("sm");
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: tokens.color("primary");
+      box-shadow: 0 0 0 2px rgba(tokens.color("primary"), 0.2);
+    }
+
+    &.invalid {
+      border-color: tokens.color("error");
+
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(tokens.color("error"), 0.2);
+      }
+    }
+  }
+
+  .unit {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: tokens.color("text-muted");
+    font-size: tokens.font-size("xs");
+  }
+}
+
+.threshold-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+
+  &.excellent {
+    background-color: tokens.color("success");
+  }
+
+  &.good {
+    background-color: tokens.color("accent");
+  }
+
+  &.average {
+    background-color: tokens.color("warning");
+  }
+}
+
+.threshold-footer {
+  padding: tokens.spacing("md");
+  border-top: 1px solid tokens.color("border");
+
+  .validation-message {
+    color: tokens.color("error");
+    font-size: tokens.font-size("xs");
+    margin: 0 0 tokens.spacing("md") 0;
+    display: flex;
+    align-items: center;
+    gap: tokens.spacing("xs");
+  }
+}
+
+.threshold-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: tokens.spacing("sm");
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

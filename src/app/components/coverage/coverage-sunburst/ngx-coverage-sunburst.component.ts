@@ -4,9 +4,9 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } fro
 import { FormsModule } from "@angular/forms";
 import { NgxChartsModule } from "@swimlane/ngx-charts";
 import { BehaviorSubject, Subscription } from "rxjs";
-import { CoverageData } from "../../../models/coverage.model";
-import { CoverageStoreService } from "../../../services/coverage-store.service";
-import { ThemeService } from "../../../services/utils/theme.service";
+import { CoverageData } from "../../../common/models/coverage.model";
+import { CoverageStoreService } from "../../../common/services/coverage-store.service";
+import { ThemeService } from "../../../common/utils/theme.utility";
 
 @Component({
     selector: 'app-ngx-coverage-sunburst',

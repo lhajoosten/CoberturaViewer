@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { NotificationService } from './utils/notification.service';
+import { NotificationService } from '../utils/notification.utility';
 import {
     CoverageData,
     CoverageSummary,

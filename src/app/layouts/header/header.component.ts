@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { ThemeService } from '../../services/utils/theme.service'; // Adjust path as needed
+import { ThemeService } from '../../common/utils/theme.utility'; // Adjust path as needed
 import { Subscription } from 'rxjs';
 
 @Component({

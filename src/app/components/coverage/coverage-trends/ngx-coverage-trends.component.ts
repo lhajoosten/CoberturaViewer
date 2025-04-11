@@ -3,10 +3,10 @@ import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef, HostListene
 import { FormsModule } from "@angular/forms";
 import { NgxChartsModule } from "@swimlane/ngx-charts";
 import { Subscription } from "rxjs";
-import { HistoryEntry, ChartMetric, TimeRange, CoverageData, CoverageSnapshot } from "../../../models/coverage.model";
-import { CoverageStoreService } from "../../../services/coverage-store.service";
-import { ThemeService } from "../../../services/utils/theme.service";
-import { NotificationService } from "../../../services/utils/notification.service";
+import { HistoryEntry, ChartMetric, TimeRange, CoverageData, CoverageSnapshot } from "../../../common/models/coverage.model";
+import { CoverageStoreService } from "../../../common/services/coverage-store.service";
+import { ThemeService } from "../../../common/utils/theme.utility";
+import { NotificationService } from "../../../common/utils/notification.utility";
 
 interface CustomDateRange {
     from: string;

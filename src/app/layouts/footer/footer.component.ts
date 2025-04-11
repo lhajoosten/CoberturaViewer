@@ -1,8 +1,8 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ModalService } from '../../services/utils/modal.service';
+import { ModalService } from '../../common/utils/modal.utility';
 import { Subscription } from 'rxjs';
-import { ThemeService } from '../../services/utils/theme.service';
+import { ThemeService } from '../../common/utils/theme.utility';
 
 @Component({
   selector: 'app-footer',

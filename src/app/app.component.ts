@@ -1,13 +1,13 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
-import { ThemeService } from './services/utils/theme.service';
+import { ThemeService } from './common/utils/theme.utility';
 import { Subscription } from 'rxjs';
-import { NotificationService } from './services/utils/notification.service';
+import { NotificationService } from './common/utils/notification.utility';
 import { FileUploaderComponent } from './components/file-uploader/file-uploader.component';
 import { HeaderComponent } from './layouts/header/header.component';
 import { FooterComponent } from './layouts/footer/footer.component';
-import { ModalService, ModalType } from './services/utils/modal.service';
+import { ModalService, ModalType } from './common/utils/modal.utility';
 
 @Component({
   selector: 'app-root',

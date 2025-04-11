@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {
     Notification,
     NotificationType,
-} from '../../models/notification.model';
+} from '../models/notification.model';
 
 /**
  * Service for displaying temporary notification messages to users

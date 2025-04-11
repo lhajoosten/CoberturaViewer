@@ -243,3 +243,23 @@ export interface CoverageSnapshot extends CoverageMetrics {
     /** Coverage data summary */
     date: Date;
 }
+
+export interface CoverageThresholds {
+    excellent: number;
+    good: number;
+    average: number;
+}
+
+export interface CoverageDistribution {
+    excellent: number;
+    good: number;
+    average: number;
+    poor: number;
+}
+
+export interface ClassCountByLevel {
+    excellent: number;
+    good: number;
+    average: number;
+    poor: number;
+}

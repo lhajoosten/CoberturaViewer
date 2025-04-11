@@ -2,18 +2,18 @@ import { Component, Input, OnDestroy, OnInit, HostListener } from '@angular/core
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CoverageStoreService } from '../../services/coverage-store.service';
+import { CoverageStoreService } from '../../common/services/coverage-store.service';
 import { FileUploaderComponent } from '../file-uploader/file-uploader.component';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { CoverageInsightsComponent } from '../coverage/coverage-insights/coverage-insights.component';
 import { Subscription } from 'rxjs';
-import { ThemeService } from '../../services/utils/theme.service';
+import { ThemeService } from '../../common/utils/theme.utility';
 import { NgxCoverageSunburstComponent } from '../coverage/coverage-sunburst/ngx-coverage-sunburst.component';
 import { NgxCoverageTreemapComponent } from '../coverage/coverage-treemap/ngx-coverage-treemap.component';
 import { NgxCoverageTrendsComponent } from '../coverage/coverage-trends/ngx-coverage-trends.component';
-import { NotificationService } from '../../services/utils/notification.service';
-import { CoverageSnapshot } from '../../models/coverage.model';
-import { ModalService } from '../../services/utils/modal.service';
+import { NotificationService } from '../../common/utils/notification.utility';
+import { CoverageSnapshot } from '../../common/models/coverage.model';
+import { ModalService } from '../../common/utils/modal.utility';
 
 @Component({
     selector: 'app-dashboard',

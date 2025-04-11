@@ -1,0 +1,61 @@
+<div class="threshold-settings">
+    <button class="toolbar-btn" (click)="toggleSettingss()" title="Coverage threshold settings"
+        [attr.aria-expanded]="showSettings">
+        <i class="fas fa-sliders-h"></i>
+    </button>
+
+    <div class="settings-dropdown" *ngIf="showSettings" cdkTrapFocus>
+        <div class="dropdown-header">
+            <h3>Coverage Thresholds</h3>
+            <button class="close-btn" (click)="onClose()" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="threshold-controls">
+            <div class="threshold-item">
+                <label for="excellent-threshold">Excellent</label>
+                <div class="threshold-input">
+                    <input id="excellent-threshold" type="number" min="1" max="100"
+                        [(ngModel)]="currentThresholds.excellent" (input)="validateThresholds()"
+                        [class.invalid]="errors.excellent">
+                    <span class="unit">%</span>
+                </div>
+                <div class="threshold-color excellent"></div>
+            </div>
+
+            <div class="threshold-item">
+                <label for="good-threshold">Good</label>
+                <div class="threshold-input">
+                    <input id="good-threshold" type="number" min="1" max="100" [(ngModel)]="currentThresholds.good"
+                        (input)="validateThresholds()" [class.invalid]="errors.good">
+                    <span class="unit">%</span>
+                </div>
+                <div class="threshold-color good"></div>
+            </div>
+
+            <div class="threshold-item">
+                <label for="average-threshold">Average</label>
+                <div class="threshold-input">
+                    <input id="average-threshold" type="number" min="1" max="100"
+                        [(ngModel)]="currentThresholds.average" (input)="validateThresholds()"
+                        [class.invalid]="errors.average">
+                    <span class="unit">%</span>
+                </div>
+                <div class="threshold-color average"></div>
+            </div>
+        </div>
+
+        <div class="threshold-footer">
+            <p class="validation-message" *ngIf="hasErrors">
+                <i class="fas fa-exclamation-triangle"></i>
+                Values must be in descending order (excellent > good > average)
+            </p>
+
+            <div class="threshold-actions">
+                <button class="btn-secondary" (click)="resetThresholds()">Reset</button>
+                <button class="btn-primary" [disabled]="hasErrors" (click)="applyThresholds()">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>

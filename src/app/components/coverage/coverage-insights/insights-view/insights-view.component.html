@@ -1,0 +1,30 @@
+<div class="insights-view">
+    <div class="insights-header">
+        <h3>Key Coverage Insights</h3>
+        <p class="insights-desc">Insights derived from analyzing your coverage data</p>
+    </div>
+
+    <div class="insights-list">
+        <div class="insights-empty" *ngIf="insights.length === 0">
+            <i class="fas fa-search"></i>
+            <p>No insights available. Upload a coverage report to generate insights.</p>
+        </div>
+
+        <div class="insight-card" *ngFor="let insight of insights" [class.expanded]="insight.expanded"
+            [ngClass]="insight.type">
+            <div class="insight-header" (click)="toggleInsight(insight)">
+                <div class="insight-icon">
+                    <i class="fas" [ngClass]="insight.icon"></i>
+                </div>
+                <div class="insight-title">{{ insight.title }}</div>
+                <div class="insight-expander">
+                    <i class="fas" [ngClass]="insight.expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+            </div>
+
+            <div class="insight-content" *ngIf="insight.expanded">
+                <p>{{ insight.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>

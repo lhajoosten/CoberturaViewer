@@ -1,0 +1,35 @@
+<div class="recommendations-view" [class.dark-theme]="isDarkTheme">
+    <div class="recommendations-header">
+        <h3><i class="fas fa-lightbulb"></i> Coverage Improvement Recommendations</h3>
+        <p class="recommendations-subtitle">Based on analysis of your coverage data</p>
+    </div>
+
+    <div class="recommendations-list">
+        <div class="recommendation-card" *ngFor="let recommendation of recommendations; let i = index">
+            <div class="recommendation-number">{{i+1}}</div>
+            <div class="recommendation-content">
+                <div class="recommendation-title">{{recommendation.title}}</div>
+                <div class="recommendation-body" [innerHTML]="recommendation.description"></div>
+
+                <div class="recommendation-details" *ngIf="recommendation.details?.length">
+                    <div class="recommendation-detail-item" *ngFor="let detail of recommendation.details">
+                        <div class="detail-icon">
+                            <i [class]="detail.icon || 'fas fa-check-circle'"></i>
+                        </div>
+                        <div class="detail-text">{{detail.text}}</div>
+                    </div>
+                </div>
+
+                <div class="recommendation-tags" *ngIf="recommendation.tags?.length">
+                    <div class="tag" *ngFor="let tag of recommendation.tags">{{tag}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recommendations-empty" *ngIf="!recommendations?.length">
+        <i class="fas fa-check-circle"></i>
+        <h3>No Recommendations Needed</h3>
+        <p>Great job! Your coverage meets or exceeds all quality thresholds.</p>
+    </div>
+</div>

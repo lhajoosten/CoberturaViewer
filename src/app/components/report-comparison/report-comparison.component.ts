@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReportComparisonResult, ReportSummary } from '../../models/report.model';
+import { ReportComparisonResult, ReportSummary } from '../../common/models/report.model';
 import { Router } from '@angular/router';
-import { CoberturaParserService } from '../../services/cobertura-parser.service';
+import { CoberturaParserService } from '../../common/services/cobertura-parser.service';
 import { Subscription } from 'rxjs';
-import { NotificationService } from '../../services/utils/notification.service';
-import { ThemeService } from '../../services/utils/theme.service';
-import { CoverageData } from '../../models/coverage.model';
+import { NotificationService } from '../../common/utils/notification.utility';
+import { ThemeService } from '../../common/utils/theme.utility';
+import { CoverageData } from '../../common/models/coverage.model';
 
 @Component({
     selector: 'app-report-comparison',

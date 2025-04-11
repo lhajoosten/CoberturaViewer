@@ -541,3 +541,14 @@
   background-color: tokens.color("background-dark");
   color: tokens.color("text-dark");
 }
+
+// ========================================================
+// OTHER MIXINS
+// ========================================================
+@mixin status-badge($status) {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: tokens.color($status);
+}
