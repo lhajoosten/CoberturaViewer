@@ -1,0 +1,726 @@
+// ==========================================================
+// MAIN STYLES
+// ==========================================================
+// This is the entry point for global styles in the application
+
+// Import design tokens and utilities
+// ----------------------------------------------------------
+@import "styles/tokens";
+@import "styles/mixins";
+@import "styles/themes";
+
+// Reset & Base Styles
+// ----------------------------------------------------------
+
+// Modern CSS Reset - adapted from Andy Bell & Josh Comeau
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+// Set core body defaults
+html {
+  font-size: 100%; // 16px by default, can be overridden by user preferences
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-md;
+  line-height: $line-height-base;
+  min-height: 100%;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  // Apply default theme (light)
+  @extend .theme-light;
+
+  // Default theme styles
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-default);
+}
+
+// Accessibility focus styles
+:focus-visible {
+  outline: $focus-width solid var(--color-focus-ring);
+  outline-offset: $focus-offset;
+}
+
+// Interactive elements should have a pointer cursor
+button,
+[role="button"],
+a {
+  cursor: pointer;
+}
+
+// Make images responsive
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+// Typography
+// ----------------------------------------------------------
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $font-family-heading;
+  margin-bottom: $spacing-4;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+}
+
+h1 {
+  font-size: $font-size-4xl;
+  margin-bottom: $spacing-6;
+}
+
+h2 {
+  font-size: $font-size-3xl;
+  margin-bottom: $spacing-5;
+}
+
+h3 {
+  font-size: $font-size-2xl;
+}
+
+h4 {
+  font-size: $font-size-xl;
+}
+
+h5 {
+  font-size: $font-size-lg;
+}
+
+h6 {
+  font-size: $font-size-md;
+}
+
+p {
+  margin-bottom: $spacing-4;
+}
+
+// Links
+a {
+  color: var(--color-text-brand);
+  text-decoration: none;
+  transition: color $transition-duration-fast $transition-timing-ease-in-out;
+
+  &:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  &:active {
+    color: var(--color-primary);
+  }
+
+  &:visited {
+    color: darken($color-primary, 15%);
+  }
+}
+
+// Lists
+ul,
+ol {
+  padding-left: $spacing-6;
+  margin-bottom: $spacing-4;
+}
+
+li {
+  margin-bottom: $spacing-2;
+}
+
+// Code blocks
+pre,
+code {
+  font-family: $font-family-mono;
+  background-color: var(--color-bg-tertiary);
+  border-radius: $border-radius-md;
+}
+
+code {
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+}
+
+pre {
+  padding: $spacing-4;
+  overflow-x: auto;
+  margin-bottom: $spacing-4;
+
+  code {
+    background-color: transparent;
+    padding: 0;
+  }
+}
+
+// Form Elements
+// ----------------------------------------------------------
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input,
+textarea,
+select {
+  display: block;
+  width: 100%;
+  padding: $spacing-2 $spacing-3;
+  border: $border-width-thin solid var(--color-border-default);
+  border-radius: $border-radius-md;
+  background-color: var(--color-surface-default);
+  color: var(--color-text-default);
+  transition: border-color $transition-duration-fast
+      $transition-timing-ease-in-out,
+    box-shadow $transition-duration-fast $transition-timing-ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 $focus-offset var(--color-focus-ring);
+  }
+
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  &:disabled {
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+}
+
+// Base button styles
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-2 $spacing-4;
+  border: none;
+  border-radius: $border-radius-md;
+  font-weight: $font-weight-medium;
+  text-align: center;
+  background-color: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+  transition: background-color $transition-duration-fast
+      $transition-timing-ease-in-out,
+    transform $transition-duration-fast $transition-timing-ease-in-out,
+    box-shadow $transition-duration-fast $transition-timing-ease-in-out;
+
+  &:hover {
+    background-color: var(--color-btn-primary-hover);
+  }
+
+  &:active {
+    background-color: var(--color-btn-primary-active);
+    transform: translateY(1px);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 $focus-offset var(--color-focus-ring);
+  }
+
+  &:disabled {
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// Layout Utilities
+// ----------------------------------------------------------
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-4;
+
+  @include responsive("mobile") {
+    padding: 0 $spacing-3;
+  }
+}
+
+.section {
+  padding: $spacing-10 0;
+
+  @include responsive("mobile") {
+    padding: $spacing-6 0;
+  }
+}
+
+// Spacing utilities
+.mt-0 {
+  margin-top: 0;
+}
+.mt-1 {
+  margin-top: $spacing-1;
+}
+.mt-2 {
+  margin-top: $spacing-2;
+}
+.mt-3 {
+  margin-top: $spacing-3;
+}
+.mt-4 {
+  margin-top: $spacing-4;
+}
+.mt-6 {
+  margin-top: $spacing-6;
+}
+.mt-8 {
+  margin-top: $spacing-8;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+.mb-1 {
+  margin-bottom: $spacing-1;
+}
+.mb-2 {
+  margin-bottom: $spacing-2;
+}
+.mb-3 {
+  margin-bottom: $spacing-3;
+}
+.mb-4 {
+  margin-bottom: $spacing-4;
+}
+.mb-6 {
+  margin-bottom: $spacing-6;
+}
+.mb-8 {
+  margin-bottom: $spacing-8;
+}
+
+.ml-0 {
+  margin-left: 0;
+}
+.ml-1 {
+  margin-left: $spacing-1;
+}
+.ml-2 {
+  margin-left: $spacing-2;
+}
+.ml-3 {
+  margin-left: $spacing-3;
+}
+.ml-4 {
+  margin-left: $spacing-4;
+}
+
+.mr-0 {
+  margin-right: 0;
+}
+.mr-1 {
+  margin-right: $spacing-1;
+}
+.mr-2 {
+  margin-right: $spacing-2;
+}
+.mr-3 {
+  margin-right: $spacing-3;
+}
+.mr-4 {
+  margin-right: $spacing-4;
+}
+
+.p-0 {
+  padding: 0;
+}
+.p-1 {
+  padding: $spacing-1;
+}
+.p-2 {
+  padding: $spacing-2;
+}
+.p-3 {
+  padding: $spacing-3;
+}
+.p-4 {
+  padding: $spacing-4;
+}
+.p-6 {
+  padding: $spacing-6;
+}
+
+// Flex utilities
+.d-flex {
+  display: flex;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
+.align-center {
+  align-items: center;
+}
+
+// Text utilities
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-primary {
+  color: var(--color-text-brand);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-accent {
+  color: var(--color-text-accent);
+}
+
+.text-success {
+  color: var(--color-text-success);
+}
+
+.text-warning {
+  color: var(--color-text-warning);
+}
+
+.text-error {
+  color: var(--color-text-error);
+}
+
+.text-sm {
+  font-size: $font-size-sm;
+}
+
+.text-md {
+  font-size: $font-size-md;
+}
+
+.text-lg {
+  font-size: $font-size-lg;
+}
+
+.text-xl {
+  font-size: $font-size-xl;
+}
+
+.font-light {
+  font-weight: $font-weight-light;
+}
+
+.font-regular {
+  font-weight: $font-weight-regular;
+}
+
+.font-medium {
+  font-weight: $font-weight-medium;
+}
+
+.font-bold {
+  font-weight: $font-weight-bold;
+}
+
+// Display utilities
+.d-none {
+  display: none;
+}
+
+.d-block {
+  display: block;
+}
+
+.d-inline {
+  display: inline;
+}
+
+.d-inline-block {
+  display: inline-block;
+}
+
+.d-grid {
+  display: grid;
+}
+
+// Background utilities
+.bg-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+  color: #ffffff;
+}
+
+.bg-accent {
+  background-color: var(--color-accent);
+  color: #ffffff;
+}
+
+.bg-surface {
+  background-color: var(--color-surface-default);
+}
+
+.bg-tertiary {
+  background-color: var(--color-bg-tertiary);
+}
+
+// Border utilities
+.border {
+  border: $border-width-thin solid var(--color-border-default);
+}
+
+.border-top {
+  border-top: $border-width-thin solid var(--color-border-default);
+}
+
+.border-bottom {
+  border-bottom: $border-width-thin solid var(--color-border-default);
+}
+
+.border-left {
+  border-left: $border-width-thin solid var(--color-border-default);
+}
+
+.border-right {
+  border-right: $border-width-thin solid var(--color-border-default);
+}
+
+.rounded {
+  border-radius: $border-radius-md;
+}
+
+.rounded-lg {
+  border-radius: $border-radius-lg;
+}
+
+.rounded-full {
+  border-radius: $border-radius-full;
+}
+
+// Shadow utilities
+.shadow-sm {
+  box-shadow: $shadow-sm;
+}
+
+.shadow {
+  box-shadow: $shadow-md;
+}
+
+.shadow-lg {
+  box-shadow: $shadow-lg;
+}
+
+// Width and height utilities
+.w-100 {
+  width: 100%;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-height);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: $border-radius-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+// Angular overrides
+// ----------------------------------------------------------
+// Angular CDK overlay (used by modals, tooltips, etc.)
+.cdk-overlay-container {
+  .cdk-overlay-backdrop.cdk-overlay-dark-backdrop {
+    background: var(--color-bg-overlay);
+  }
+
+  .cdk-overlay-pane {
+    background: var(--color-surface-overlay);
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-lg;
+  }
+}
+
+// Coverage visualization specific styles
+// ----------------------------------------------------------
+.coverage-high {
+  background-color: var(--color-coverage-high);
+}
+
+.coverage-medium {
+  background-color: var(--color-coverage-medium);
+}
+
+.coverage-low {
+  background-color: var(--color-coverage-low);
+}
+
+.coverage-none {
+  background-color: var(--color-coverage-none);
+}
+
+// Additional utilities for the Cobertura Viewer
+// ----------------------------------------------------------
+.card {
+  background-color: var(--color-card-bg);
+  border-radius: $border-radius-lg;
+  box-shadow: var(--color-card-shadow);
+  padding: $spacing-4;
+  margin-bottom: $spacing-4;
+}
+
+.tag {
+  display: inline-block;
+  padding: $spacing-1 $spacing-2;
+  border-radius: $border-radius-full;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  margin-right: $spacing-2;
+  margin-bottom: $spacing-2;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-border-default);
+  margin: $spacing-4 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: $border-radius-full;
+  padding: 0 $spacing-1;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  color: #ffffff;
+  background-color: var(--color-primary);
+}
+
+// Animation classes
+.fade-in {
+  animation: fadeIn $animation-duration-base $animation-timing-ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-in {
+  animation: slideIn $animation-duration-base $animation-timing-ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Helper for when elements need to be hidden but accessible to screen readers
+.sr-only {
+  @include visually-hidden;
+}
+
+// Print styles
+// ----------------------------------------------------------
+@media print {
+  body {
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  a {
+    color: #000000;
+    text-decoration: underline;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #cccccc;
+  }
+}
