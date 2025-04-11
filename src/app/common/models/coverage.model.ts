@@ -141,6 +141,8 @@ export interface TreeNode extends CoverageMetrics {
     isGroupedNode?: boolean;
     /** Cyclomatic complexity */
     complexity?: number;
+
+    parent?: TreeNode;
 }
 
 /**

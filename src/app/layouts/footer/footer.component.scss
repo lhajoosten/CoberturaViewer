@@ -3,7 +3,7 @@
 @use "sass:color";
 
 .app-footer {
-  background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
+  // background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
   color: tokens.color("text");
   padding: tokens.spacing("lg") 0;
   border-top: 1px solid tokens.color("border");
@@ -11,7 +11,7 @@
     border-color 0.3s ease;
 
   &.dark-theme {
-    background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
+    // background: linear-gradient(15deg, #5b2ac3 0, #00ff95 100%);
     color: tokens.color("text-dark");
     border-top-color: tokens.color("border-dark");
   }

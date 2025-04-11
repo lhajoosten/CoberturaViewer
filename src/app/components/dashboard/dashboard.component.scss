@@ -190,7 +190,7 @@
 // Main content
 .dashboard-content {
   flex: 1;
-  padding: 0px 8rem;
+  // padding: 0px 8rem;
   transition: padding 0.3s ease;
 
   @include mixins.breakpoint(md) {
