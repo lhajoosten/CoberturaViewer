@@ -1,11 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { ThemeStoreService } from '../../services/store/theme-store.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
-  imports: [],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrls: ['./header.component.scss'],
+  imports: [CommonModule],
+  standalone: true
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+  @Output() toggleSidebarEvent = new EventEmitter<void>();
+  isDarkTheme = false;
 
+  constructor(private themeStore: ThemeStoreService) { }
+
+  ngOnInit(): void {
+    this.themeStore.isDarkTheme$.subscribe(isDark => {
+      this.isDarkTheme = isDark;
+    });
+  }
+
+  toggleSidebar(): void {
+    this.toggleSidebarEvent.emit();
+  }
+
+  toggleTheme(): void {
+    this.themeStore.toggleTheme();
+  }
 }

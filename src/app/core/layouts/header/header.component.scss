@@ -1,0 +1,41 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+  height: 60px;
+  background-color: var(--color-header-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.header-start,
+.header-end {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-logo {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--color-text-brand);
+}
+
+.menu-toggle,
+.theme-toggle {
+  background: transparent;
+  border: none;
+  color: var(--color-text-default);
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1.125rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: var(--color-bg-tertiary);
+  }
+}

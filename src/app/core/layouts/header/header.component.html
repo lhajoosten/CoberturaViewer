@@ -1,1 +1,17 @@
-<p>header works!</p>
+<header class="app-header">
+    <div class="header-start">
+        <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="app-logo">
+            <span>Coverage Explorer</span>
+        </div>
+    </div>
+
+    <div class="header-end">
+        <button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+            <i *ngIf="isDarkTheme" class="fas fa-sun"></i>
+            <i *ngIf="!isDarkTheme" class="fas fa-moon"></i>
+        </button>
+    </div>
+</header>

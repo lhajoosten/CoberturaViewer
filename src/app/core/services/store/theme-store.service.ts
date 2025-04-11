@@ -26,10 +26,12 @@ export class ThemeStoreService {
 
     setTheme(isDark: boolean): void {
         if (isDark) {
-            document.documentElement.classList.add('dark-theme');
+            document.documentElement.classList.remove('theme-light');
+            document.documentElement.classList.add('theme-dark');
             localStorage.setItem('theme', 'dark');
         } else {
-            document.documentElement.classList.remove('dark-theme');
+            document.documentElement.classList.remove('theme-dark');
+            document.documentElement.classList.add('theme-light');
             localStorage.setItem('theme', 'light');
         }
         this.darkThemeSubject.next(isDark);

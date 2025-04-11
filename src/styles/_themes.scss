@@ -4,7 +4,8 @@
 // This file defines the theme variables for the application
 // Import this file after _tokens.scss
 
-@import "./tokens";
+@use "./tokens" as *;
+@use "sass:color";
 
 // Theme Interface
 // ----------------------------------------------------------
@@ -63,9 +64,9 @@
   --color-chart-1: #{$color-primary-400};
   --color-chart-2: #{$color-secondary-400};
   --color-chart-3: #{$color-accent-400};
-  --color-chart-4: #{darken($color-primary-300, 10%)};
-  --color-chart-5: #{darken($color-secondary-300, 10%)};
-  --color-chart-6: #{darken($color-accent-300, 10%)};
+  --color-chart-4: #{color.adjust($color-primary-300, $lightness: -10%)};
+  --color-chart-5: #{color.adjust($color-secondary-300, $lightness: -10%)};
+  --color-chart-6: #{color.adjust($color-accent-300, $lightness: -10%)};
 
   // Heatmap specific colors (for code coverage)
   --color-coverage-high: #4caf50;
@@ -123,10 +124,10 @@
   --color-accent: #{$color-accent-300};
 
   // Status colors - brightened for dark theme
-  --color-success: #{lighten($color-success, 10%)};
+  --color-success: #{color.adjust($color-success, $lightness: 10%)};
   --color-warning: #{$color-warning};
-  --color-error: #{lighten($color-error, 5%)};
-  --color-info: #{lighten($color-info, 15%)};
+  --color-error: #{color.adjust($color-error, $lightness: 5%)};
+  --color-info: #{color.adjust($color-info, $lightness: 15%)};
 
   // Background colors
   --color-bg-primary: #121212;
@@ -154,10 +155,10 @@
   --color-text-inverse: #121212;
   --color-text-brand: #{$color-primary-200};
   --color-text-accent: #{$color-accent-200};
-  --color-text-success: #{lighten($color-success, 10%)};
-  --color-text-error: #{lighten($color-error, 10%)};
+  --color-text-success: #{color.adjust($color-success, $lightness: 10%)};
+  --color-text-error: #{color.adjust($color-error, $lightness: 10%)};
   --color-text-warning: #{$color-warning};
-  --color-text-info: #{lighten($color-info, 20%)};
+  --color-text-info: #{color.adjust($color-info, $lightness: 20%)};
 
   // Shadow colors
   --color-shadow: rgba(0, 0, 0, 0.3);
@@ -170,14 +171,14 @@
   --color-chart-1: #{$color-primary-300};
   --color-chart-2: #{$color-secondary-300};
   --color-chart-3: #{$color-accent-300};
-  --color-chart-4: #{lighten($color-primary-400, 10%)};
-  --color-chart-5: #{lighten($color-secondary-400, 10%)};
-  --color-chart-6: #{lighten($color-accent-400, 10%)};
+  --color-chart-4: #{color.adjust($color-primary-400, $lightness: 10%)};
+  --color-chart-5: #{color.adjust($color-secondary-400, $lightness: 10%)};
+  --color-chart-6: #{color.adjust($color-accent-400, $lightness: 10%)};
 
   // Heatmap specific colors (for code coverage) - adjusted for dark theme
-  --color-coverage-high: #{lighten(#4caf50, 5%)};
-  --color-coverage-medium: #{darken(#ffeb3b, 15%)};
-  --color-coverage-low: #{lighten(#f44336, 5%)};
+  --color-coverage-high: #{color.adjust(#4caf50, $lightness: 5%)};
+  --color-coverage-medium: #{color.adjust(#ffeb3b, $lightness: -15%)};
+  --color-coverage-low: #{color.adjust(#f44336, $lightness: 5%)};
   --color-coverage-none: #444444;
 
   // Scrollbar colors
@@ -196,18 +197,24 @@
   // Button variants
   --color-btn-primary-bg: var(--color-primary);
   --color-btn-primary-text: #121212;
-  --color-btn-primary-hover: #{lighten($color-primary-300, 10%)};
-  --color-btn-primary-active: #{lighten($color-primary-300, 5%)};
+  --color-btn-primary-hover: #{color.adjust($color-primary-300, $lightness: 10%)};
+  --color-btn-primary-active: #{color.adjust($color-primary-300, $lightness: 5%)};
 
   --color-btn-secondary-bg: var(--color-secondary);
   --color-btn-secondary-text: #121212;
-  --color-btn-secondary-hover: #{lighten($color-secondary-300, 10%)};
-  --color-btn-secondary-active: #{lighten($color-secondary-300, 5%)};
+  --color-btn-secondary-hover: #{color.adjust(
+      $color-secondary-300,
+      $lightness: 10%
+    )};
+  --color-btn-secondary-active: #{color.adjust(
+      $color-secondary-300,
+      $lightness: 5%
+    )};
 
   --color-btn-accent-bg: var(--color-accent);
   --color-btn-accent-text: #121212;
-  --color-btn-accent-hover: #{lighten($color-accent-300, 10%)};
-  --color-btn-accent-active: #{lighten($color-accent-300, 5%)};
+  --color-btn-accent-hover: #{color.adjust($color-accent-300, $lightness: 10%)};
+  --color-btn-accent-active: #{color.adjust($color-accent-300, $lightness: 5%)};
 
   --color-btn-outline-border: #444444;
   --color-btn-outline-text: #e0e0e0;
@@ -325,10 +332,10 @@
   --color-accent: #{$color-accent-300};
 
   // Status colors - muted
-  --color-success: #{desaturate($color-success, 20%)};
-  --color-warning: #{desaturate($color-warning, 20%)};
-  --color-error: #{desaturate($color-error, 20%)};
-  --color-info: #{desaturate($color-info, 20%)};
+  --color-success: #{color.adjust($color-success, $saturation: -20%)};
+  --color-warning: #{color.adjust($color-warning, $saturation: -20%)};
+  --color-error: #{color.adjust($color-error, $saturation: -20%)};
+  --color-info: #{color.adjust($color-info, $saturation: -20%)};
 
   // Background colors - softer
   --color-bg-primary: #f2f2f2;
@@ -354,32 +361,53 @@
   --color-text-tertiary: #808080;
   --color-text-disabled: #a0a0a0;
   --color-text-inverse: #e8e8e8;
-  --color-text-brand: #{darken($color-primary-300, 10%)};
-  --color-text-accent: #{darken($color-accent-300, 10%)};
-  --color-text-success: #{darken(desaturate($color-success, 10%), 5%)};
-  --color-text-error: #{darken(desaturate($color-error, 10%), 5%)};
-  --color-text-warning: #{darken(desaturate($color-warning, 10%), 15%)};
-  --color-text-info: #{darken(desaturate($color-info, 10%), 5%)};
+  --color-text-brand: #{color.adjust($color-primary-300, $lightness: -10%)};
+  --color-text-accent: #{color.adjust($color-accent-300, $lightness: -10%)};
+  --color-text-success: #{color.adjust(
+      color.adjust($color-success, $saturation: -10%),
+      $lightness: -5%
+    )};
+  --color-text-error: #{color.adjust(
+      color.adjust($color-error, $saturation: -10%),
+      $lightness: -5%
+    )};
+  --color-text-warning: #{color.adjust(
+      color.adjust($color-warning, $saturation: -10%),
+      $lightness: -15%
+    )};
+  --color-text-info: #{color.adjust(
+      color.adjust($color-info, $saturation: -10%),
+      $lightness: -5%
+    )};
 
   // Shadow colors - softer
   --color-shadow: rgba(0, 0, 0, 0.06);
   --color-shadow-dark: rgba(0, 0, 0, 0.12);
 
   // Focus rings
-  --color-focus-ring: #{mix($color-primary-200, #e0e0e0, 70%)};
+  --color-focus-ring: #{color.mix($color-primary-200, #e0e0e0, 70%)};
 
   // Chart colors - muted
-  --color-chart-1: #{desaturate($color-primary-300, 20%)};
-  --color-chart-2: #{desaturate($color-secondary-300, 20%)};
-  --color-chart-3: #{desaturate($color-accent-300, 20%)};
-  --color-chart-4: #{desaturate(darken($color-primary-200, 10%), 20%)};
-  --color-chart-5: #{desaturate(darken($color-secondary-200, 10%), 20%)};
-  --color-chart-6: #{desaturate(darken($color-accent-200, 10%), 20%)};
+  --color-chart-1: #{color.adjust($color-primary-300, $saturation: -20%)};
+  --color-chart-2: #{color.adjust($color-secondary-300, $saturation: -20%)};
+  --color-chart-3: #{color.adjust($color-accent-300, $saturation: -20%)};
+  --color-chart-4: #{color.adjust(
+      color.adjust($color-primary-200, $lightness: -10%),
+      $saturation: -20%
+    )};
+  --color-chart-5: #{color.adjust(
+      color.adjust($color-secondary-200, $lightness: -10%),
+      $saturation: -20%
+    )};
+  --color-chart-6: #{color.adjust(
+      color.adjust($color-accent-200, $lightness: -10%),
+      $saturation: -20%
+    )};
 
   // Heatmap specific colors - softer
-  --color-coverage-high: #{desaturate(#4caf50, 20%)};
-  --color-coverage-medium: #{desaturate(#ffeb3b, 20%)};
-  --color-coverage-low: #{desaturate(#f44336, 20%)};
+  --color-coverage-high: #{color.adjust(#4caf50, $saturation: -20%)};
+  --color-coverage-medium: #{color.adjust(#ffeb3b, $saturation: -20%)};
+  --color-coverage-low: #{color.adjust(#f44336, $saturation: -20%)};
   --color-coverage-none: #d0d0d0;
 
   // Scrollbar colors
@@ -396,20 +424,38 @@
   --color-tooltip-text: #f0f0f0;
 
   // Button variants - softer
-  --color-btn-primary-bg: #{desaturate($color-primary-300, 15%)};
+  --color-btn-primary-bg: #{color.adjust($color-primary-300, $saturation: -15%)};
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-hover: #{desaturate($color-primary-400, 15%)};
-  --color-btn-primary-active: #{desaturate($color-primary-500, 15%)};
+  --color-btn-primary-hover: #{color.adjust(
+      $color-primary-400,
+      $saturation: -15%
+    )};
+  --color-btn-primary-active: #{color.adjust(
+      $color-primary-500,
+      $saturation: -15%
+    )};
 
-  --color-btn-secondary-bg: #{desaturate($color-secondary-300, 15%)};
+  --color-btn-secondary-bg: #{color.adjust(
+      $color-secondary-300,
+      $saturation: -15%
+    )};
   --color-btn-secondary-text: #ffffff;
-  --color-btn-secondary-hover: #{desaturate($color-secondary-400, 15%)};
-  --color-btn-secondary-active: #{desaturate($color-secondary-500, 15%)};
+  --color-btn-secondary-hover: #{color.adjust(
+      $color-secondary-400,
+      $saturation: -15%
+    )};
+  --color-btn-secondary-active: #{color.adjust(
+      $color-secondary-500,
+      $saturation: -15%
+    )};
 
-  --color-btn-accent-bg: #{desaturate($color-accent-300, 15%)};
+  --color-btn-accent-bg: #{color.adjust($color-accent-300, $saturation: -15%)};
   --color-btn-accent-text: #ffffff;
-  --color-btn-accent-hover: #{desaturate($color-accent-400, 15%)};
-  --color-btn-accent-active: #{desaturate($color-accent-500, 15%)};
+  --color-btn-accent-hover: #{color.adjust($color-accent-400, $saturation: -15%)};
+  --color-btn-accent-active: #{color.adjust(
+      $color-accent-500,
+      $saturation: -15%
+    )};
 
   --color-btn-outline-border: #c8c8c8;
   --color-btn-outline-text: #505050;

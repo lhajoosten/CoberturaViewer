@@ -1,0 +1,13 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+    <nav class="sidebar-nav">
+        <ul class="nav-list">
+            <li *ngFor="let item of navItems">
+                <a [routerLink]="item.route" routerLinkActive="active"
+                    [routerLinkActiveOptions]="{exact: item.route === '/'}" class="nav-item">
+                    <i [class]="item.icon"></i>
+                    <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</aside>

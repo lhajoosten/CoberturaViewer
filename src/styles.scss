@@ -5,9 +5,10 @@
 
 // Import design tokens and utilities
 // ----------------------------------------------------------
-@import "styles/tokens";
-@import "styles/mixins";
-@import "styles/themes";
+@use "sass:color";
+@use "styles/tokens" as *;
+@use "styles/mixins" as *;
+@use "styles/themes" as *;
 
 // Reset & Base Styles
 // ----------------------------------------------------------
@@ -127,7 +128,7 @@ a {
   }
 
   &:visited {
-    color: darken($color-primary, 15%);
+    color: color.adjust($color-primary, $lightness: 15%);
   }
 }
 
