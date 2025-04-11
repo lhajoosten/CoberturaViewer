@@ -85,7 +85,7 @@ $spacing-scale: (
   // 32px
   "xxl": 3rem,
   // 48px
-  "xxxl": 4rem // 64px,,,,,,,,
+  "xxxl": 4rem // 64px,,,,,,,,,
 );
 
 // ========================================================
@@ -210,6 +210,7 @@ $color-map: (
   "success": $success-color,
   "success-bg": $success-bg,
   "info": $info-color,
+  "info-light": $info-color,
   "info-bg": $info-bg,
   "warning": $warning-color,
   "warning-bg": $warning-bg,

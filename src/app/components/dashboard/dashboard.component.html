@@ -7,8 +7,6 @@
                 <p class="welcome-subtitle">Visualize and analyze your code coverage reports with interactive charts</p>
             </div>
 
-            <app-file-uploader (uploadComplete)="onUploadComplete()"></app-file-uploader>
-
             <div class="welcome-features">
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -34,6 +32,8 @@
                     <p>Monitor coverage trends over time with historical data tracking</p>
                 </div>
             </div>
+
+            <app-file-uploader (uploadComplete)="onUploadComplete()"></app-file-uploader>
 
             <div class="welcome-recent" *ngIf="hasHistory">
                 <div class="recent-header">
