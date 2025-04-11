@@ -44,7 +44,7 @@ $text-on-primary: #ffffff;
 $text-on-primary-dark: #1a202c;
 $text-on-accent: #1a202c;
 
-$text-color-dark: #e2e8f0;
+$text-dark: #e2e8f0;
 $text-muted-dark: #a0aec0;
 
 // ========================================================
@@ -85,7 +85,7 @@ $spacing-scale: (
   // 32px
   "xxl": 3rem,
   // 48px
-  "xxxl": 4rem // 64px,,,,,,,,,,,,,,,,
+  "xxxl": 4rem // 64px,,,,,,,,,,,,,,,,,,
 );
 
 // ========================================================
@@ -213,7 +213,7 @@ $color-map: (
   "text-on-primary": $text-on-primary-dark,
   "text-on-primary-dark": $text-on-primary,
   "text-on-accent": $text-on-accent,
-  "text-dark": $text-color-dark,
+  "text-dark": $text-dark,
   "text-muted-dark": $text-muted-dark,
 
   // Feedback

@@ -22,14 +22,14 @@
         </div>
 
         <div class="control-group">
-            <label>Color by:</label>
+            <label>Color:</label>
             <select [(ngModel)]="colorMode" (change)="updateChartOptions()">
                 <option value="coverage">Coverage</option>
                 <option value="type">Node type</option>
                 <option value="size">Node size</option>
             </select>
 
-            <label>Sort by:</label>
+            <label>Sort:</label>
             <select [(ngModel)]="sortBy" (change)="updateChartOptions()">
                 <option value="size">Size</option>
                 <option value="coverage">Coverage</option>

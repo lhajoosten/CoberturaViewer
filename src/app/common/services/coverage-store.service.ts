@@ -19,6 +19,7 @@ export class CoverageStoreService {
      * @param data The coverage data to store
      */
     setCoverageData(data: CoverageData | null): void {
+        console.log('Setting coverage data in store:', data);
         this.coverageData.next(data);
     }
 
