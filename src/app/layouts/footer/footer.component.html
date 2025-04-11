@@ -1,0 +1,36 @@
+<footer class="app-footer" [class.dark-theme]="isDarkTheme">
+    <div class="app-content-wrapper">
+        <div class="footer-content">
+            <div class="footer-info">
+                <div class="copyright">© 2025 Cobertura Coverage Explorer</div>
+                <div class="version">v1.2.0</div>
+            </div>
+
+            <div class="footer-links">
+                <button class="btn-text" (click)="showAboutModal()" title="About this application">
+                    <i class="fas fa-info-circle"></i> About
+                </button>
+                <button class="btn-text" (click)="showHelpModal()" title="Get help (Press ? key)">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+                <button class="btn-text" (click)="showKeyboardShortcuts()" title="View keyboard shortcuts">
+                    <i class="fas fa-keyboard"></i> Shortcuts
+                </button>
+                <a href="https://github.com/lhajoosten/CoberturaViewer" target="_blank" rel="noopener noreferrer"
+                    title="View source code on GitHub">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-extra">
+            <div class="app-status" *ngIf="statusMessage">
+                <i class="fas" [ngClass]="statusIcon"></i>
+                <span>{{statusMessage}}</span>
+            </div>
+            <div class="last-updated" *ngIf="lastUpdated">
+                Last updated: {{lastUpdated | date:'medium'}}
+            </div>
+        </div>
+    </div>
+</footer>

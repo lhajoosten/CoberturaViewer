@@ -24,3 +24,19 @@ export interface Notification {
     /** How long the notification should remain visible (in milliseconds) */
     duration: number;
 }
+
+/**
+ * Configuration options for notifications
+ */
+export interface NotificationOptions {
+    /** Duration in milliseconds */
+    duration?: number;
+    /** Whether notification can be dismissed */
+    dismissible?: boolean;
+    /** CSS class to apply to notification */
+    cssClass?: string;
+    /** Action label if applicable */
+    actionLabel?: string;
+    /** Action callback if applicable */
+    actionCallback?: () => void;
+}

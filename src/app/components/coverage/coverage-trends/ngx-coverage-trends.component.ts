@@ -3,7 +3,7 @@ import { Component, OnInit, OnDestroy, Input, ViewChild, ElementRef, HostListene
 import { FormsModule } from "@angular/forms";
 import { NgxChartsModule } from "@swimlane/ngx-charts";
 import { Subscription } from "rxjs";
-import { HistoryEntry, ChartMetric, TimeRange, CoverageData } from "../../../models/coverage.model";
+import { HistoryEntry, ChartMetric, TimeRange, CoverageData, CoverageSnapshot } from "../../../models/coverage.model";
 import { CoverageStoreService } from "../../../services/coverage-store.service";
 import { ThemeService } from "../../../services/utils/theme.service";
 import { NotificationService } from "../../../services/utils/notification.service";
@@ -45,6 +45,7 @@ interface SimpleLinearRegression {
 })
 export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewInit {
     @Input() isDarkTheme = false;
+    @Input() snapshots: CoverageSnapshot[] = [];
     @ViewChild('mainChartArea') mainChartArea!: ElementRef;
     @ViewChild('velocityChartArea') velocityChartArea!: ElementRef;
     @ViewChild('distributionChartArea') distributionChartArea!: ElementRef;
@@ -234,7 +235,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
                 this.history = parsed.map((entry: any) => ({
                     ...entry,
                     date: new Date(entry.date)
-                }));
+                })) as HistoryEntry[];
 
                 // Sort by date to ensure correct order
                 this.history.sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -1013,7 +1014,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
     /**
      * Calculate metrics like velocity and projections
      */
-    calculateDerivedMetrics(): void {
+    private calculateDerivedMetrics(): void {
         if (this.filteredHistory.length < 2) {
             this.coverageVelocity = 0;
             this.averageCoverage = this.filteredHistory.length ?
@@ -1022,8 +1023,8 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         }
 
         // Calculate coverage velocity (points per week)
-        const oldestEntry = this.filteredHistory[0];
-        const newestEntry = this.filteredHistory[this.filteredHistory.length - 1];
+        const oldestEntry: HistoryEntry = this.filteredHistory[0];
+        const newestEntry: HistoryEntry = this.filteredHistory[this.filteredHistory.length - 1];
 
         const coverageDiff = newestEntry.data.summary.lineCoverage - oldestEntry.data.summary.lineCoverage;
         const daysDiff = (newestEntry.date.getTime() - oldestEntry.date.getTime()) / (1000 * 60 * 60 * 24);
@@ -1209,7 +1210,7 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
         }
 
         // Get latest entry for distribution data
-        const latestEntry = this.filteredHistory[this.filteredHistory.length - 1];
+        const latestEntry: HistoryEntry = this.filteredHistory[this.filteredHistory.length - 1];
         if (!latestEntry || !latestEntry.data.packages) {
             this.distributionChartData = [];
             return;
@@ -1217,8 +1218,8 @@ export class NgxCoverageTrendsComponent implements OnInit, OnDestroy, AfterViewI
 
         // Extract classes for distribution
         const allClasses: { name: string, coverage: number }[] = [];
-        latestEntry.data.packages.forEach((pkg: { classes: any[]; }) => {
-            pkg.classes.forEach((cls: { name: any; lineCoverage: any; }) => {
+        latestEntry.data.packages.forEach(pkg => {
+            pkg.classes.forEach(cls => {
                 allClasses.push({
                     name: cls.name,
                     coverage: cls.lineCoverage

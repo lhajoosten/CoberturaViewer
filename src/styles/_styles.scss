@@ -1,11 +1,20 @@
 @use "./mixins" as mixins;
 @use "./tokens" as tokens;
+@use "sass:color";
 
-// Global Reset and Base Styles
-* {
+// ========================================================
+// GLOBAL RESET AND BASE STYLES
+// ========================================================
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -14,35 +23,122 @@ body {
   background-color: tokens.color("background");
   color: tokens.color("text");
   line-height: 1.6;
+  min-height: 100vh;
   transition: background-color 0.3s, color 0.3s;
+
+  &.dark-theme {
+    background-color: tokens.color("background-dark");
+    color: tokens.color("text-dark");
+  }
 }
 
-// Typography
-h1 {
-  @include mixins.font-size("xxl");
-  font-weight: 700;
+// Export CSS variables for use in components
+@include tokens.export-css-variables();
+
+// ========================================================
+// TYPOGRAPHY
+// ========================================================
+h1,
+.h1 {
+  @include mixins.heading-1;
 }
-h2 {
-  @include mixins.font-size("xl");
-  font-weight: 600;
+
+h2,
+.h2 {
+  @include mixins.heading-2;
 }
-h3 {
-  @include mixins.font-size("lg");
-  font-weight: 500;
+
+h3,
+.h3 {
+  @include mixins.heading-3;
 }
-h4 {
+
+h4,
+.h4 {
   @include mixins.font-size("md");
   font-weight: 500;
-}
-h5 {
-  @include mixins.font-size("sm");
-  font-weight: 500;
+  margin-bottom: tokens.spacing("xs");
 }
 
-// Buttons
+h5,
+.h5 {
+  @include mixins.font-size("sm");
+  font-weight: 500;
+  margin-bottom: tokens.spacing("xs");
+}
+
+p {
+  margin-bottom: tokens.spacing("md");
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+a {
+  color: tokens.color("primary");
+  text-decoration: none;
+  transition: tokens.transition("fast");
+
+  &:hover {
+    color: tokens.color("primary-light");
+  }
+
+  .dark-theme & {
+    color: color.adjust(tokens.color("primary"), $lightness: 15%);
+
+    &:hover {
+      color: color.adjust(tokens.color("primary"), $lightness: 25%);
+    }
+  }
+}
+
+code,
+pre {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  @include mixins.font-size("sm");
+  background-color: tokens.color("surface");
+  border-radius: tokens.border-radius("sm");
+
+  .dark-theme & {
+    background-color: color.adjust(
+      tokens.color("card-bg-dark"),
+      $lightness: 5%
+    );
+  }
+}
+
+code {
+  padding: tokens.spacing("xxs") tokens.spacing("xs");
+}
+
+pre {
+  padding: tokens.spacing("md");
+  margin-bottom: tokens.spacing("md");
+  overflow-x: auto;
+
+  code {
+    padding: 0;
+    background: none;
+  }
+}
+
+hr {
+  border: none;
+  border-top: 1px solid tokens.color("border");
+  margin: tokens.spacing("lg") 0;
+
+  .dark-theme & {
+    border-top-color: tokens.color("border-dark");
+  }
+}
+
+// ========================================================
+// BUTTONS
+// ========================================================
 .btn {
   @include mixins.button-base;
-  padding: spacing("sm") spacing("md");
+  padding: tokens.spacing("sm") tokens.spacing("md");
 }
 
 .btn-primary {
@@ -54,68 +150,206 @@ h5 {
 }
 
 .btn-outline {
+  @include mixins.outline-button;
+}
+
+.btn-icon {
+  @include mixins.icon-button;
+}
+
+.btn-sm {
+  @include mixins.button-sm;
+}
+
+.btn-lg {
+  @include mixins.button-lg;
+}
+
+.btn-text {
   @include mixins.button-base;
   background-color: transparent;
-  border: 1px solid tokens.color("primary");
-  color: tokens.color("primary");
+  color: tokens.color("text-muted");
+  padding: tokens.spacing("xs") tokens.spacing("sm");
 
   &:hover {
-    background-color: tokens.color("primary-bg");
+    color: tokens.color("primary");
   }
 }
 
-// Form Elements
-input,
+.btn-danger {
+  @include mixins.button-base;
+  background-color: tokens.color("error");
+  color: white;
+  padding: tokens.spacing("sm") tokens.spacing("md");
+
+  &:hover {
+    background-color: color.adjust(tokens.color("error"), $lightness: 10%);
+  }
+}
+
+// ========================================================
+// FORM ELEMENTS
+// ========================================================
+label {
+  display: block;
+  margin-bottom: tokens.spacing("xs");
+  @include mixins.font-size("sm");
+  font-weight: 500;
+  color: tokens.color("text-muted");
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
+}
+
+.form-group {
+  margin-bottom: tokens.spacing("md");
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="search"],
 textarea,
 select {
   @include mixins.input-base;
+
+  .dark-theme & {
+    background-color: tokens.color("surface-dark");
+    color: tokens.color("text-dark");
+    border-color: tokens.color("border-dark");
+
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(tokens.color("primary"), 0.3);
+    }
+  }
 }
 
-// Cards
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("xs");
+  cursor: pointer;
+  margin: 0;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.input-with-icon {
+  position: relative;
+
+  input {
+    padding-left: 2.5rem;
+  }
+
+  i {
+    position: absolute;
+    left: tokens.spacing("md");
+    top: 50%;
+    transform: translateY(-50%);
+    color: tokens.color("text-muted");
+    pointer-events: none;
+  }
+}
+
+// ========================================================
+// CARDS & CONTAINERS
+// ========================================================
 .card {
   @include mixins.card;
 }
 
-// Progress Bars
-.progress-bar {
-  @include mixins.progress-bar;
+.card-header {
+  @include mixins.card-header;
 }
 
-// Coverage Status Colors
-.coverage-status {
-  @include mixins.coverage-status;
+.card-footer {
+  @include mixins.card-footer;
 }
 
-// Loading Spinner
-.loading-spinner {
-  @include mixins.loading-spinner;
-}
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 tokens.spacing("lg");
 
-// Tooltip
-.tooltip {
-  @include mixins.tooltip;
-}
-
-// Responsive Typography
-@include mixins.breakpoint(md) {
-  body {
-    font-size: 14px;
+  @include mixins.breakpoint(md) {
+    padding: 0 tokens.spacing("md");
   }
 
-  h1 {
-    @include mixins.font-size("lg");
-  }
-  h2 {
-    @include mixins.font-size("md");
-  }
-  h3 {
-    @include mixins.font-size("base");
+  @include mixins.breakpoint(sm) {
+    padding: 0 tokens.spacing("sm");
   }
 }
 
-// Utility Classes
+// ========================================================
+// LAYOUT UTILITIES
+// ========================================================
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  @include mixins.flex-column;
+}
+
+.flex-center {
+  @include mixins.flex-center;
+}
+
+.flex-between {
+  @include mixins.flex-between;
+}
+
+.grid {
+  display: grid;
+}
+
+.gap-xs {
+  gap: tokens.spacing("xs");
+}
+.gap-sm {
+  gap: tokens.spacing("sm");
+}
+.gap-md {
+  gap: tokens.spacing("md");
+}
+.gap-lg {
+  gap: tokens.spacing("lg");
+}
+
+// ========================================================
+// UTILITIES
+// ========================================================
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-left {
+  text-align: left;
+}
+
 .text-muted {
   color: tokens.color("text-muted");
+}
+.text-primary {
+  color: tokens.color("primary");
+}
+.text-success {
+  color: tokens.color("success");
+}
+.text-warning {
+  color: tokens.color("warning");
+}
+.text-error {
+  color: tokens.color("error");
 }
 
 .bg-primary {
@@ -128,53 +362,172 @@ select {
   color: tokens.color("text-on-accent");
 }
 
-// Dark Theme Styles
-body.dark-theme {
-  background-color: tokens.color("background", 0.9);
-  color: tokens.color("text", 0.9);
+.bg-success {
+  background-color: tokens.color("success-bg");
+}
+.bg-warning {
+  background-color: tokens.color("warning-bg");
+}
+.bg-error {
+  background-color: tokens.color("error-bg");
+}
+.bg-info {
+  background-color: tokens.color("info-bg");
+}
+
+.m-0 {
+  margin: 0;
+}
+.mt-0 {
+  margin-top: 0;
+}
+.mb-0 {
+  margin-bottom: 0;
+}
+.my-0 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.mx-0 {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.mb-xs {
+  margin-bottom: tokens.spacing("xs");
+}
+.mb-sm {
+  margin-bottom: tokens.spacing("sm");
+}
+.mb-md {
+  margin-bottom: tokens.spacing("md");
+}
+.mb-lg {
+  margin-bottom: tokens.spacing("lg");
+}
+
+.mt-xs {
+  margin-top: tokens.spacing("xs");
+}
+.mt-sm {
+  margin-top: tokens.spacing("sm");
+}
+.mt-md {
+  margin-top: tokens.spacing("md");
+}
+.mt-lg {
+  margin-top: tokens.spacing("lg");
+}
+
+.p-0 {
+  padding: 0;
+}
+.p-xs {
+  padding: tokens.spacing("xs");
+}
+.p-sm {
+  padding: tokens.spacing("sm");
+}
+.p-md {
+  padding: tokens.spacing("md");
+}
+.p-lg {
+  padding: tokens.spacing("lg");
+}
+
+.w-100 {
+  width: 100%;
+}
+.h-100 {
+  height: 100%;
+}
+
+.truncate {
+  @include mixins.text-truncate;
+}
+
+.visually-hidden {
+  @include mixins.visually-hidden;
+}
+
+.scrollable {
+  overflow-y: auto;
+  @include mixins.custom-scrollbar;
+}
+
+// ========================================================
+// COVERAGE COMPONENTS
+// ========================================================
+.progress-bar {
+  @include mixins.progress-bar;
+}
+
+.coverage-status {
+  @include mixins.coverage-status;
+}
+
+.tooltip {
+  @include mixins.tooltip;
+}
+
+.loading-spinner {
+  @include mixins.loading-spinner;
+}
+
+// Coverage status classes
+.excellent {
+  color: tokens.color("success");
+}
+.good {
+  color: tokens.color("accent-dark");
+}
+.average {
+  color: tokens.color("warning");
+}
+.poor {
+  color: tokens.color("error");
+}
+
+// ========================================================
+// ANIMATIONS
+// ========================================================
+.fade-in {
+  @include mixins.fade-in;
+}
+
+.slide-in-right {
+  @include mixins.slide-in-right;
+}
+
+.slide-in-left {
+  @include mixins.slide-in-left;
+}
+
+.slide-in-up {
+  @include mixins.slide-in-up;
+}
+
+// ========================================================
+// DARK THEME
+// ========================================================
+.dark-theme {
+  @include mixins.dark-mode;
 
   .card {
-    background-color: tokens.color("card-bg", 0.9);
-    border-color: tokens.color("border", 0.9);
+    background-color: tokens.color("card-bg-dark");
+    box-shadow: tokens.shadow("base", true);
   }
 
-  .btn-primary {
-    background-color: tokens.color("primary-dark");
-    color: tokens.color("text-on-primary");
+  .card-header,
+  .card-footer {
+    border-color: tokens.color("border-dark");
   }
 
-  input,
-  textarea,
-  select {
-    background-color: tokens.color("surface", 0.9);
-    color: tokens.color("text", 0.9);
-    border-color: tokens.color("border", 0.9);
+  .text-muted {
+    color: tokens.color("text-muted-dark");
   }
-}
 
-// Animations
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+  .border {
+    border-color: tokens.color("border-dark");
   }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
-}
-
-.fade-out {
-  animation: fadeOut 0.3s ease-out;
 }

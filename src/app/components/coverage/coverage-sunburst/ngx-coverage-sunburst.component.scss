@@ -1,603 +1,357 @@
 @use "../../../../styles/_tokens" as tokens;
 @use "../../../../styles/_mixins" as mixins;
-@use "sass:map";
-
-// Use the spacing function directly for convenience
-@function spacing($key) {
-  @return tokens.spacing($key);
-}
 
 .sunburst-container {
   @include mixins.card;
+  position: relative;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  padding: 0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-// Toolbar Styling
 .toolbar {
   @include mixins.flex-between;
-  padding: spacing("md") spacing("lg");
-  background-color: tokens.color("card-header-bg");
-  border-bottom: 1px solid tokens.color("border");
-  flex-shrink: 0;
+  margin-bottom: tokens.spacing("md");
 
   h2 {
     margin: 0;
-    @include mixins.font-size("xl");
-    font-weight: 600;
-    color: tokens.color("text");
-    @include mixins.flex-center;
-    gap: spacing("md");
-
-    i {
-      color: tokens.color("primary");
-    }
-  }
-
-  .toolbar-actions {
-    @include mixins.flex-center;
-    gap: spacing("sm");
-  }
-
-  .toolbar-btn {
-    @include mixins.button-base;
-    width: 36px;
-    height: 36px;
-    border-radius: 4px;
-    background-color: tokens.color("primary-bg");
-    color: tokens.color("primary");
-    transition: all 0.2s ease-in-out;
-
-    &:hover {
-      background-color: tokens.color("primary-light");
-      color: tokens.color("text-on-primary");
-      transform: translateY(-2px);
-    }
-  }
-}
-
-// Breadcrumbs
-.breadcrumbs {
-  @include mixins.flex-center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  padding: spacing("sm") spacing("lg");
-  background-color: rgba(tokens.color("background"), 0.5);
-  border-bottom: 1px solid tokens.color("border");
-  @include mixins.font-size("sm");
-  color: tokens.color("text-muted");
-  gap: spacing("xs");
-  flex-shrink: 0;
-
-  .breadcrumb-item {
-    @include mixins.flex-center;
-    gap: spacing("xs");
-
-    &.clickable {
-      cursor: pointer;
-      color: tokens.color("primary");
-      transition: all 0.2s ease;
-
-      &:hover {
-        text-decoration: underline;
-        color: tokens.color("primary-dark");
-      }
-    }
-  }
-
-  .separator {
-    color: tokens.color("border");
-    margin: 0 spacing("xs");
-  }
-
-  .current {
-    font-weight: 500;
-    color: tokens.color("text");
-  }
-}
-
-// Chart Container
-.visualization-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-}
-
-.split-view {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-
-  .chart-container {
-    flex: 1;
-    min-width: 0;
-    position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: spacing("lg");
-    background-color: rgba(tokens.color("background"), 0.3);
-  }
-
-  .info-panel {
-    width: 320px;
-    flex-shrink: 0;
-    border-left: 1px solid tokens.color("border");
-    overflow-y: auto;
-    background-color: tokens.color("card-bg");
-    display: flex;
-    flex-direction: column;
-    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.05);
+    gap: tokens.spacing("xs");
   }
 }
 
-// Node Info Panel
-.info-header {
-  padding: spacing("md");
-  background-color: tokens.color("card-header-bg");
+.toolbar-actions {
+  display: flex;
+  gap: tokens.spacing("xs");
+}
+
+.toolbar-btn {
+  @include mixins.icon-button(32px);
+}
+
+.navigation-bar {
+  margin-bottom: tokens.spacing("md");
+  padding-bottom: tokens.spacing("sm");
   border-bottom: 1px solid tokens.color("border");
-}
 
-.node-type {
-  @include mixins.flex-center;
-  padding: 0.25rem 0.5rem;
-  border-radius: map.get(tokens.$border-radius, "sm");
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  font-weight: bold;
-  margin-bottom: spacing("sm");
-
-  &.package {
-    background-color: rgba(tokens.color("info"), 0.1);
-    color: tokens.color("info");
-  }
-
-  &.class {
-    background-color: rgba(tokens.color("accent-dark"), 0.1);
-    color: tokens.color("accent-dark");
+  .dark-theme & {
+    border-bottom-color: tokens.color("border-dark");
   }
 }
 
-.tooltip-title {
-  font-weight: 600;
-  word-break: break-word;
-  color: tokens.color("text");
-  margin-bottom: spacing("xs");
-  @include mixins.font-size("md");
-}
-
-.tooltip-metrics {
-  padding: spacing("sm") spacing("md");
-
-  .tooltip-row {
-    @include mixins.flex-between;
-    margin-bottom: spacing("xs");
-    padding: spacing("xs") 0;
-    border-bottom: 1px solid rgba(tokens.color("border"), 0.5);
-    @include mixins.font-size("sm");
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    span:first-child {
-      color: tokens.color("text-muted");
-    }
-
-    span:last-child {
-      font-weight: 500;
-
-      &.excellent {
-        color: tokens.color("success");
-      }
-      &.good {
-        color: tokens.color("accent-dark");
-      }
-      &.average {
-        color: tokens.color("warning");
-      }
-      &.poor {
-        color: tokens.color("error");
-      }
-    }
-  }
-
-  .progress-row {
-    margin-top: spacing("md");
-
-    .progress-label {
-      @include mixins.flex-between;
-      margin-bottom: spacing("xs");
-      @include mixins.font-size("sm");
-
-      .label {
-        color: tokens.color("text-muted");
-      }
-
-      .value {
-        font-weight: 500;
-
-        &.excellent {
-          color: tokens.color("success");
-        }
-        &.good {
-          color: tokens.color("accent-dark");
-        }
-        &.average {
-          color: tokens.color("warning");
-        }
-        &.poor {
-          color: tokens.color("error");
-        }
-      }
-    }
-
-    .progress-bar {
-      height: 6px;
-      background-color: tokens.color("border");
-      border-radius: 3px;
-      overflow: hidden;
-
-      .progress-fill {
-        height: 100%;
-        transition: width 0.3s ease;
-
-        &.excellent {
-          background-color: tokens.color("success");
-        }
-        &.good {
-          background-color: tokens.color("accent-dark");
-        }
-        &.average {
-          background-color: tokens.color("warning");
-        }
-        &.poor {
-          background-color: tokens.color("error");
-        }
-      }
-    }
-  }
-}
-
-// SVG Chart Styles
-.chart-svg {
-  width: 100%;
-  height: 100%;
-
-  .sunburst-path {
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.2s;
-
-    &:hover {
-      opacity: 0.9;
-      transform: scale(1.01);
-    }
-  }
-}
-
-// Center Label
-.center-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: none;
-  background-color: rgba(tokens.color("card-bg"), 0.9);
-  border-radius: 50%;
-  width: 150px;
-  height: 150px;
-  @include mixins.flex-column;
-  @include mixins.flex-center;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-
-  .metrics-title {
-    @include mixins.font-size("sm");
-    color: tokens.color("text-muted");
-    margin-bottom: spacing("xs");
-  }
-
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: spacing("md");
-
-    .metric {
-      text-align: center;
-    }
-
-    .metric-name {
-      @include mixins.font-size("xs");
-      color: tokens.color("text-muted");
-    }
-
-    .metric-value {
-      @include mixins.font-size("lg");
-      font-weight: 600;
-      color: tokens.color("text");
-
-      &.excellent {
-        color: tokens.color("success");
-      }
-      &.good {
-        color: tokens.color("accent-dark");
-      }
-      &.average {
-        color: tokens.color("warning");
-      }
-      &.poor {
-        color: tokens.color("error");
-      }
-    }
-  }
-}
-
-// Legend
-.legend {
-  @include mixins.flex-center;
+.breadcrumbs {
+  display: flex;
   flex-wrap: wrap;
-  gap: spacing("md");
-  padding: spacing("md");
-  background-color: tokens.color("card-header-bg");
-  border-top: 1px solid tokens.color("border");
-  flex-shrink: 0;
+  gap: tokens.spacing("xs");
+}
 
-  .legend-item {
-    @include mixins.flex-center;
-    gap: spacing("xs");
-    @include mixins.font-size("sm");
-    color: tokens.color("text-muted");
-    transition: all 0.2s ease;
-    padding: spacing("xs") spacing("sm");
-    border-radius: 4px;
+.breadcrumb-item {
+  font-size: tokens.font-size("sm");
+  color: tokens.color("text-muted");
+  cursor: pointer;
+  position: relative;
+  padding-right: tokens.spacing("sm");
 
-    &:hover {
-      background-color: tokens.color("hover");
-      color: tokens.color("text");
-    }
+  &:not(:last-child)::after {
+    content: "/";
+    position: absolute;
+    right: 0;
+    color: tokens.color("border");
   }
 
-  .color-box {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
+  &:hover {
+    color: tokens.color("primary");
+  }
 
-    &.excellent {
-      background-color: tokens.color("success");
+  &.active {
+    color: tokens.color("text");
+    font-weight: 500;
+    cursor: default;
+  }
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+
+    &:not(:last-child)::after {
+      color: tokens.color("border-dark");
     }
-    &.good {
-      background-color: tokens.color("accent");
+
+    &:hover {
+      color: tokens.color("primary-light");
     }
-    &.average {
-      background-color: tokens.color("warning");
-    }
-    &.poor {
-      background-color: tokens.color("error");
+
+    &.active {
+      color: tokens.color("text-dark");
     }
   }
 }
 
-// Loading and Empty States
-.loading-overlay,
+.chart-container {
+  position: relative;
+  flex: 1;
+  min-height: 300px;
+  margin-bottom: tokens.spacing("md");
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(tokens.color("card-bg"), 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+
+  .dark-theme & {
+    background-color: rgba(tokens.color("card-bg-dark"), 0.8);
+  }
+
+  .spinner {
+    @include mixins.loading-spinner;
+    margin-bottom: tokens.spacing("md");
+  }
+
+  span {
+    font-weight: 500;
+    color: tokens.color("text-muted");
+
+    .dark-theme & {
+      color: tokens.color("text-muted-dark");
+    }
+  }
+}
+
 .empty-state {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  @include mixins.flex-center;
+  right: 0;
+  bottom: 0;
+  display: flex;
   flex-direction: column;
-  background-color: rgba(255, 255, 255, 0.9);
-  z-index: 10;
-}
-
-.loading-spinner {
-  @include mixins.loading-spinner;
-  margin-bottom: spacing("md");
-}
-
-.empty-message {
-  @include mixins.font-size("md");
+  align-items: center;
+  justify-content: center;
   color: tokens.color("text-muted");
-  text-align: center;
-  max-width: 80%;
+
+  .dark-theme & {
+    color: tokens.color("text-muted-dark");
+  }
 
   i {
-    display: block;
-    @include mixins.font-size("xxl");
-    margin-bottom: spacing("sm");
-    opacity: 0.5;
+    font-size: 3rem;
+    margin-bottom: tokens.spacing("md");
+    opacity: 0.3;
   }
 
-  .btn-primary {
-    @include mixins.primary-button;
-    padding: spacing("sm") spacing("md");
-    margin-top: spacing("md");
+  p {
+    font-weight: 500;
   }
 }
 
-// Node Details Section
-.node-details {
-  padding: spacing("md");
+.tooltip {
+  position: absolute;
+  background-color: tokens.color("card-bg");
+  border: 1px solid tokens.color("border");
+  border-radius: tokens.border-radius("md");
+  box-shadow: tokens.shadow("lg");
+  padding: tokens.spacing("sm");
+  pointer-events: none;
+  z-index: 10;
+  min-width: 180px;
+  transition: opacity 0.2s;
 
-  .details-section {
-    margin-bottom: spacing("md");
-
-    h4 {
-      @include mixins.font-size("sm");
-      color: tokens.color("text-muted");
-      margin-bottom: spacing("xs");
-      font-weight: 500;
-    }
-
-    .detail-content {
-      padding: spacing("xs") 0;
-
-      .file-path {
-        @include mixins.font-size("sm");
-        color: tokens.color("text-muted");
-        background-color: rgba(tokens.color("text-muted"), 0.05);
-        padding: spacing("xs") spacing("sm");
-        border-radius: 4px;
-        font-family: monospace;
-        word-break: break-all;
-        margin-bottom: spacing("sm");
-      }
-
-      .coverage-stats {
-        @include mixins.flex-column;
-        gap: spacing("sm");
-
-        .stat-row {
-          @include mixins.flex-between;
-          @include mixins.font-size("sm");
-
-          .label {
-            color: tokens.color("text-muted");
-          }
-
-          .value {
-            font-weight: 500;
-
-            &.excellent {
-              color: tokens.color("success");
-            }
-            &.good {
-              color: tokens.color("accent-dark");
-            }
-            &.average {
-              color: tokens.color("warning");
-            }
-            &.poor {
-              color: tokens.color("error");
-            }
-          }
-        }
-      }
-    }
+  .dark-theme & {
+    background-color: tokens.color("card-bg-dark");
+    border-color: tokens.color("border-dark");
+    box-shadow: tokens.shadow("lg", true);
   }
+}
 
-  .actions-section {
-    margin-top: spacing("lg");
-    padding-top: spacing("md");
-    border-top: 1px solid tokens.color("border");
-    @include mixins.flex-center;
-    gap: spacing("md");
+.tooltip-content {
+  .tooltip-header {
+    margin-bottom: tokens.spacing("xs");
 
-    .btn {
-      flex: 1;
-      padding: spacing("xs") 0;
-      text-align: center;
-      border-radius: 4px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      @include mixins.font-size("sm");
+    .node-type {
+      display: inline-block;
+      font-size: tokens.font-size("xs");
+      padding: 2px tokens.spacing("xs");
+      border-radius: tokens.border-radius("sm");
+      margin-bottom: 2px;
 
-      &.btn-primary {
-        background-color: tokens.color("primary");
-        color: tokens.color("text-on-primary");
-
-        &:hover {
-          background-color: tokens.color("primary-dark");
-          transform: translateY(-2px);
-        }
-      }
-
-      &.btn-outline {
-        border: 1px solid tokens.color("primary");
+      &.package {
+        background-color: tokens.color("primary-bg");
         color: tokens.color("primary");
 
-        &:hover {
-          background-color: tokens.color("primary-bg");
-          transform: translateY(-2px);
+        .dark-theme & {
+          background-color: rgba(tokens.color("primary"), 0.15);
+          color: tokens.color("primary-light");
+        }
+      }
+
+      &.class {
+        background-color: tokens.color("accent-bg");
+        color: tokens.color("accent-dark");
+
+        .dark-theme & {
+          background-color: rgba(tokens.color("accent"), 0.15);
+          color: tokens.color("accent-light");
         }
       }
     }
+
+    .tooltip-title {
+      font-weight: 500;
+      @include mixins.text-truncate;
+      max-width: 200px;
+    }
   }
 }
 
-// Responsive Adjustments
-@include mixins.breakpoint(md) {
-  .toolbar h2 {
-    @include mixins.font-size("lg");
+.tooltip-metrics {
+  font-size: tokens.font-size("sm");
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: tokens.spacing("xxs");
+
+  &:last-child {
+    margin-bottom: 0;
   }
 
-  .breadcrumbs {
-    @include mixins.font-size("xs");
-    padding: spacing("xs") spacing("md");
-  }
+  span:first-child {
+    color: tokens.color("text-muted");
 
-  .chart-container {
-    padding: spacing("md");
-  }
-
-  .info-panel {
-    width: 280px;
-  }
-
-  .center-label {
-    width: 130px;
-    height: 130px;
-
-    .metrics-grid {
-      gap: spacing("sm");
+    .dark-theme & {
+      color: tokens.color("text-muted-dark");
     }
   }
 
-  .legend {
-    gap: spacing("sm");
-    padding: spacing("sm");
-    flex-wrap: wrap;
-    justify-content: flex-start;
+  span:last-child {
+    font-weight: 500;
+    @include mixins.coverage-status;
   }
 }
 
-@include mixins.breakpoint(sm) {
-  .toolbar {
-    padding: spacing("sm") spacing("md");
-    flex-direction: column;
-    align-items: flex-start;
+.info-panel {
+  background-color: tokens.color("surface");
+  border-radius: tokens.border-radius("md");
+  padding: tokens.spacing("md");
+  margin-bottom: tokens.spacing("md");
 
-    .toolbar-actions {
-      margin-top: spacing("sm");
-      width: 100%;
-      justify-content: flex-end;
-    }
+  .dark-theme & {
+    background-color: tokens.color("surface-dark");
   }
+}
 
-  .split-view {
-    flex-direction: column;
-
-    .chart-container {
-      height: 300px;
-      min-height: 300px;
-    }
-
-    .info-panel {
-      width: 100%;
-      border-left: none;
-      border-top: 1px solid tokens.color("border");
-    }
-  }
-
+.node-info {
   .info-header {
-    padding: spacing("sm");
+    @include mixins.flex-between;
+    margin-bottom: tokens.spacing("sm");
+
+    h3 {
+      margin: 0;
+      font-weight: 500;
+      @include mixins.text-truncate;
+      max-width: 70%;
+    }
+  }
+}
+
+.coverage-badge {
+  display: inline-block;
+  padding: tokens.spacing("xxs") tokens.spacing("xs");
+  border-radius: tokens.border-radius("sm");
+  font-weight: 600;
+  font-size: tokens.font-size("sm");
+  @include mixins.coverage-status;
+
+  &.excellent {
+    background-color: tokens.color("success-bg");
   }
 
-  .center-label {
-    width: 120px;
-    height: 120px;
+  &.good {
+    background-color: tokens.color("accent-bg");
+  }
 
-    .metrics-grid {
-      grid-template-columns: 1fr;
-      gap: spacing("xs");
+  &.moderate {
+    background-color: tokens.color("warning-bg");
+  }
+
+  &.poor {
+    background-color: tokens.color("error-bg");
+  }
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: tokens.spacing("sm");
+}
+
+.metric-card {
+  text-align: center;
+
+  .metric-title {
+    font-size: tokens.font-size("xs");
+    color: tokens.color("text-muted");
+    margin-bottom: tokens.spacing("xxs");
+
+    .dark-theme & {
+      color: tokens.color("text-muted-dark");
     }
+  }
+
+  .metric-value {
+    font-size: tokens.font-size("lg");
+    font-weight: 600;
+  }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: tokens.spacing("md");
+  padding-top: tokens.spacing("sm");
+  border-top: 1px solid tokens.color("border");
+
+  .dark-theme & {
+    border-top-color: tokens.color("border-dark");
+  }
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: tokens.spacing("xs");
+  font-size: tokens.font-size("sm");
+}
+
+.color-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+
+  &.excellent {
+    background-color: tokens.color("success");
+  }
+
+  &.good {
+    background-color: tokens.color("accent-dark");
+  }
+
+  &.moderate {
+    background-color: tokens.color("warning");
+  }
+
+  &.poor {
+    background-color: tokens.color("error");
   }
 }

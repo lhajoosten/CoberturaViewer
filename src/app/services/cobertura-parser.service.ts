@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
 import { NotificationService } from './utils/notification.service';
-import { CoverageData, CoverageSummary, PackageInfo, ClassInfo, MethodInfo, LineInfo, ConditionInfo } from '../models/coverage.model';
+import {
+    CoverageData,
+    CoverageSummary,
+    PackageInfo,
+    ClassInfo,
+    MethodInfo,
+    LineInfo,
+    ConditionInfo
+} from '../models/coverage.model';
 
 @Injectable({
     providedIn: 'root'
@@ -56,6 +64,7 @@ export class CoberturaParserService {
                 const packageName = pkgElement.getAttribute('name') || 'Default Package';
                 const classes: ClassInfo[] = [];
                 const classElements = pkgElement.getElementsByTagName('class');
+
                 // Reset package aggregates
                 let pkgLinesValid = 0, pkgLinesCovered = 0, pkgBranchesValid = 0, pkgBranchesCovered = 0;
                 let pkgMethodsValid = 0, pkgMethodsCovered = 0, pkgConditionsValid = 0, pkgConditionsCovered = 0;
@@ -68,7 +77,33 @@ export class CoberturaParserService {
 
                     // --- Methods ---
                     const methods: MethodInfo[] = [];
-                    // ... (method parsing logic remains the same) ...
+                    const methodElements = clsElement.getElementsByTagName('method');
+
+                    for (let k = 0; k < methodElements.length; k++) {
+                        const methodElement = methodElements[k];
+                        const methodName = methodElement.getAttribute('name') || 'unknown';
+                        const signature = methodElement.getAttribute('signature') || '';
+                        const methodComplexity = parseFloat(methodElement.getAttribute('complexity') || '0');
+
+                        // Get method coverage from attributes
+                        const methodLineCoverage = this.parseRate(methodElement.getAttribute('line-rate'));
+                        const methodBranchCoverage = this.parseRate(methodElement.getAttribute('branch-rate'));
+
+                        const linesValid = parseInt(methodElement.getAttribute('lines-valid') || '0', 10);
+                        const linesCovered = parseInt(methodElement.getAttribute('lines-covered') || '0', 10);
+
+                        let method = {
+                            name: methodName,
+                            signature: signature,
+                            lineCoverage: methodLineCoverage,
+                            branchCoverage: methodBranchCoverage,
+                            complexity: methodComplexity,
+                            linesValid: linesValid,
+                            linesCovered: linesCovered,
+                        };
+
+                        methods.push(method);
+                    }
 
                     // --- Lines ---
                     const lines: LineInfo[] = [];
@@ -78,7 +113,7 @@ export class CoberturaParserService {
                     let calculatedLinesCovered = 0;
                     let calculatedBranchesValid = 0;
                     let calculatedBranchesCovered = 0;
-                    // ... loop through lineElements ...
+
                     for (let k = 0; k < lineElements.length; k++) {
                         const lineElement = lineElements[k];
                         const hits = parseInt(lineElement.getAttribute('hits') || '0', 10);
@@ -92,7 +127,11 @@ export class CoberturaParserService {
                                 const covered = parseInt(match[2], 10);
                                 const total = parseInt(match[3], 10);
                                 if (!isNaN(covered) && !isNaN(total) && total > 0) {
-                                    conditions = { coverage: parseInt(match[1], 10), covered: covered, total: total };
+                                    conditions = {
+                                        coverage: parseInt(match[1], 10),
+                                        covered: covered,
+                                        total: total
+                                    };
                                     calculatedBranchesValid += total;
                                     calculatedBranchesCovered += covered;
                                     pkgConditionsValid += total;
@@ -100,15 +139,22 @@ export class CoberturaParserService {
                                 }
                             }
                         }
-                        lines.push({ number: parseInt(lineElement.getAttribute('number') || '0', 10), hits, branch: isBranch, conditions });
+
+                        lines.push({
+                            number: parseInt(lineElement.getAttribute('number') || '0', 10),
+                            hits,
+                            branch: isBranch,
+                            conditions
+                        });
+
                         calculatedLinesValid++;
                         if (hits > 0) calculatedLinesCovered++;
                     }
 
-                    // *** NEW: Prioritize class attributes for lines/branches ***
+                    // Prioritize class attributes for lines/branches
                     const attrLinesValid = parseInt(clsElement.getAttribute('lines-valid') || '-1', 10);
                     const attrLinesCovered = parseInt(clsElement.getAttribute('lines-covered') || '-1', 10);
-                    // Branch attributes might exist too, add if needed:
+                    // Branch attributes might exist too
                     const attrBranchesValid = parseInt(clsElement.getAttribute('branches-valid') || '-1', 10);
                     const attrBranchesCovered = parseInt(clsElement.getAttribute('branches-covered') || '-1', 10);
 
@@ -120,17 +166,18 @@ export class CoberturaParserService {
                     const classBranchesValidForRate = calculatedBranchesValid;
                     const classBranchesCoveredForRate = calculatedBranchesCovered;
 
-
-                    // Calculate rates
-                    const classlineCoverage = classLinesValid > 0 ? (classLinesCovered / classLinesValid) * 100 : 0;
-                    const classbranchCoverage = classBranchesValidForRate > 0 ? (classBranchesCoveredForRate / classBranchesValidForRate) * 100 : 0;
-                    const classComplexity = parseFloat(clsElement.getAttribute('complexity') || '0') || methods.reduce((sum, m) => sum + m.complexity, 0); // Sum method complexity if class attr missing
+                    // Calculate coverage rates
+                    const classLineCoverage = classLinesValid > 0 ? (classLinesCovered / classLinesValid) * 100 : 0;
+                    const classBranchCoverage = classBranchesValidForRate > 0 ?
+                        (classBranchesCoveredForRate / classBranchesValidForRate) * 100 : 0;
+                    const classComplexity = parseFloat(clsElement.getAttribute('complexity') || '0') ||
+                        methods.reduce((sum, m) => sum + m.complexity, 0);
 
                     classes.push({
                         name: className,
                         filename: clsElement.getAttribute('filename') || '',
-                        lineCoverage: this.clampRate(classlineCoverage), // Use calculated rate & clamp
-                        branchCoverage: this.clampRate(classbranchCoverage), // Use calculated rate & clamp
+                        lineCoverage: this.clampRate(classLineCoverage),
+                        branchCoverage: this.clampRate(classBranchCoverage),
                         complexity: classComplexity,
                         methods: methods,
                         lines: lines,
@@ -141,43 +188,55 @@ export class CoberturaParserService {
                     // Aggregate package counts using the determined class counts
                     pkgLinesValid += classLinesValid;
                     pkgLinesCovered += classLinesCovered;
-                    pkgBranchesValid += classBranchesValidForRate; // Use counts used for rate
+                    pkgBranchesValid += classBranchesValidForRate;
                     pkgBranchesCovered += classBranchesCoveredForRate;
                     pkgMethodsValid += methods.length;
                     pkgMethodsCovered += methods.filter(m => m.lineCoverage > 0).length;
                     pkgComplexity += classComplexity;
-                    pkgConditionsValid += classBranchesValid;
-                    pkgConditionsCovered += classBranchesCovered;
                 }
 
                 // Calculate package rates
-                const pkglineCoverage = pkgLinesValid > 0 ? (pkgLinesCovered / pkgLinesValid) * 100 : 0;
-                const pkgbranchCoverage = pkgBranchesValid > 0 ? (pkgBranchesCovered / pkgBranchesValid) * 100 : 0;
-                const pkgMethodRate = pkgMethodsValid > 0 ? (pkgMethodsCovered / pkgMethodsValid) * 100 : 0;
+                const pkgLineCoverage = pkgLinesValid > 0 ? (pkgLinesCovered / pkgLinesValid) * 100 : 0;
+                const pkgBranchCoverage = pkgBranchesValid > 0 ? (pkgBranchesCovered / pkgBranchesValid) * 100 : 0;
+                const pkgMethodCoverage = pkgMethodsValid > 0 ? (pkgMethodsCovered / pkgMethodsValid) * 100 : 0;
                 const finalPkgComplexity = parseFloat(pkgElement.getAttribute('complexity') || '0') || pkgComplexity;
 
-                packages.push({
+                let pkg = {
                     name: packageName,
-                    lineCoverage: this.clampRate(pkglineCoverage),
-                    branchCoverage: this.clampRate(pkgbranchCoverage),
-                    methodCoverage: this.clampRate(pkgMethodRate),
-                    // conditionRate: ..., // Calculate if needed
+                    lineCoverage: this.clampRate(pkgLineCoverage),
+                    branchCoverage: this.clampRate(pkgBranchCoverage),
+                    methodCoverage: this.clampRate(pkgMethodCoverage),
                     complexity: finalPkgComplexity,
-                    classes
-                });
+                    classes,
+                    linesValid: pkgLinesValid,
+                    linesCovered: pkgLinesCovered
+                }
+
+                packages.push(pkg);
 
                 // Aggregate summary counts
                 summary.linesValid += pkgLinesValid;
                 summary.linesCovered += pkgLinesCovered;
                 summary.methodsValid = (summary.methodsValid ?? 0) + pkgMethodsValid;
                 summary.methodsCovered = (summary.methodsCovered ?? 0) + pkgMethodsCovered;
-                summary.branchCoverage = this.clampRate((summary.branchCoverage + pkgbranchCoverage) / 2); // Average for summary
-                summary.lineCoverage = this.clampRate((summary.lineCoverage + pkglineCoverage) / 2); // Average for summary
-                summary.complexity += finalPkgComplexity;
-                summary.conditionsValid! += pkgConditionsValid;
-                summary.conditionsCovered! += pkgConditionsCovered;
+                summary.conditionsValid = (summary.conditionsValid ?? 0) + pkgConditionsValid;
+                summary.conditionsCovered = (summary.conditionsCovered ?? 0) + pkgConditionsCovered;
+            }
 
-                if (summary.complexity === 0) { summary.complexity += finalPkgComplexity; }
+            // Final summary calculations - average the percentages if needed
+            if (packages.length > 0) {
+                // Recalculate summary coverage rates from totals for more accuracy
+                if (summary.linesValid > 0) {
+                    summary.lineCoverage = this.clampRate((summary.linesCovered / summary.linesValid) * 100);
+                }
+
+                if (summary.methodsValid && summary.methodsValid > 0 && summary.methodsCovered) {
+                    summary.methodCoverage = this.clampRate((summary.methodsCovered / summary.methodsValid) * 100);
+                }
+
+                if (summary.conditionsValid && summary.conditionsValid > 0 && summary.conditionsCovered) {
+                    summary.branchCoverage = this.clampRate((summary.conditionsCovered / summary.conditionsValid) * 100);
+                }
             }
 
             // Final summary rate calculation (if needed)
@@ -196,6 +255,11 @@ export class CoberturaParserService {
         }
     }
 
+    /**
+  * Parses a coverage rate from XML attribute to percentage
+  * @param rateStr The rate string from XML
+  * @returns Normalized rate as percentage (0-100)
+  */
     private parseRate(rateStr: string | null): number {
         if (rateStr === null || rateStr === undefined) return 0;
         const rate = parseFloat(rateStr);
@@ -203,7 +267,11 @@ export class CoberturaParserService {
         return this.clampRate(rate * 100); // Clamp after converting to percentage
     }
 
-    // Helper to clamp rates between 0 and 100
+    /**
+     * Clamps a coverage rate to ensure it's between 0-100
+     * @param rate The rate to clamp
+     * @returns Clamped rate value
+     */
     private clampRate(rate: number): number {
         return Math.max(0, Math.min(100, Math.round(rate * 100) / 100));
     }

@@ -1,9 +1,12 @@
 @use "./tokens" as tokens;
-
 @use "sass:color";
 @use "sass:map";
+@use "sass:math";
 
-// Responsive Breakpoint Mixin
+// ========================================================
+// RESPONSIVE BREAKPOINTS
+// ========================================================
+
 @mixin breakpoint($point) {
   @if $point == sm {
     @media (max-width: tokens.$breakpoint-sm) {
@@ -24,7 +27,31 @@
   }
 }
 
-// Flexbox Mixins
+// Min-width breakpoints
+@mixin breakpoint-up($point) {
+  @if $point == sm {
+    @media (min-width: tokens.$breakpoint-sm) {
+      @content;
+    }
+  } @else if $point == md {
+    @media (min-width: tokens.$breakpoint-md) {
+      @content;
+    }
+  } @else if $point == lg {
+    @media (min-width: tokens.$breakpoint-lg) {
+      @content;
+    }
+  } @else if $point == xl {
+    @media (min-width: tokens.$breakpoint-xl) {
+      @content;
+    }
+  }
+}
+
+// ========================================================
+// LAYOUT & FLEX MIXINS
+// ========================================================
+
 @mixin flex-center {
   display: flex;
   justify-content: center;
@@ -37,15 +64,78 @@
   align-items: center;
 }
 
+@mixin flex-around {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+@mixin flex-end {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 @mixin flex-column {
   display: flex;
   flex-direction: column;
 }
 
-// Typography Mixins
-@mixin font-size($size) {
-  font-size: map.get(tokens.$font-sizes, $size);
+@mixin flex-column-center {
+  @include flex-column;
+  align-items: center;
 }
+
+@mixin grid($columns: 1fr, $gap: tokens.spacing("md")) {
+  display: grid;
+  grid-template-columns: $columns;
+  gap: $gap;
+}
+
+// ========================================================
+// TYPOGRAPHY MIXINS
+// ========================================================
+
+@mixin font-size($size) {
+  font-size: tokens.font-size($size);
+}
+
+@mixin heading-1 {
+  @include font-size("xxl");
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: tokens.spacing("md");
+}
+
+@mixin heading-2 {
+  @include font-size("xl");
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: tokens.spacing("sm");
+}
+
+@mixin heading-3 {
+  @include font-size("lg");
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: tokens.spacing("sm");
+}
+
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-wrap {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+// ========================================================
+// COMPONENT MIXINS
+// ========================================================
 
 // Button Mixins
 @mixin button-base {
@@ -53,21 +143,35 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: map.get(tokens.$border-radius, "md");
+  font-weight: 500;
+  border: none;
+  outline: none;
+  transition: tokens.transition();
+  border-radius: tokens.border-radius("md");
 }
 
 @mixin primary-button {
   @include button-base;
   background-color: tokens.color("primary");
   color: tokens.color("text-on-primary");
+  padding: tokens.spacing("sm") tokens.spacing("md");
 
-  &:hover {
+  &:hover,
+  &:focus {
     background-color: tokens.color("primary-light");
+    transform: translateY(-2px);
+    box-shadow: tokens.shadow("md");
   }
 
   &:active {
     background-color: tokens.color("primary-dark");
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
@@ -75,39 +179,145 @@
   @include button-base;
   background-color: tokens.color("accent");
   color: tokens.color("text-on-accent");
+  padding: tokens.spacing("sm") tokens.spacing("md");
 
-  &:hover {
+  &:hover,
+  &:focus {
     background-color: tokens.color("accent-light");
+    transform: translateY(-2px);
+    box-shadow: tokens.shadow("md");
   }
 
   &:active {
     background-color: tokens.color("accent-dark");
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
-// Input Mixins
+@mixin outline-button {
+  @include button-base;
+  background-color: transparent;
+  border: 1px solid tokens.color("primary");
+  color: tokens.color("primary");
+  padding: tokens.spacing("sm") tokens.spacing("md");
+
+  &:hover,
+  &:focus {
+    background-color: tokens.color("primary-bg");
+    transform: translateY(-2px);
+    box-shadow: tokens.shadow("sm");
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+@mixin icon-button($size: 36px) {
+  @include button-base;
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  font-size: calc($size * 0.4);
+  background-color: transparent;
+  color: tokens.color("text-muted");
+
+  &:hover,
+  &:focus {
+    background-color: tokens.color("primary-bg");
+    color: tokens.color("primary");
+  }
+}
+
+// Small button variant
+@mixin button-sm {
+  padding: tokens.spacing("xs") tokens.spacing("sm");
+  @include font-size("sm");
+}
+
+// Large button variant
+@mixin button-lg {
+  padding: tokens.spacing("md") tokens.spacing("lg");
+  @include font-size("md");
+}
+
+// Form Input Mixins
 @mixin input-base {
-  padding: spacing("sm") spacing("md");
+  display: block;
+  width: 100%;
+  padding: tokens.spacing("sm") tokens.spacing("md");
   border: 1px solid tokens.color("border");
-  border-radius: map.get(tokens.$border-radius, "md");
-  transition: all 0.2s ease;
+  border-radius: tokens.border-radius("md");
+  background-color: tokens.color("surface");
+  color: tokens.color("text");
+  font-size: tokens.font-size("base");
+  transition: tokens.transition("fast");
 
   &:focus {
     outline: none;
     border-color: tokens.color("primary");
     box-shadow: 0 0 0 2px tokens.color("primary-bg");
   }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background-color: tokens.color("background");
+  }
 }
 
-// Card Mixin
+// Card Mixins
 @mixin card {
   background-color: tokens.color("card-bg");
-  border-radius: map.get(tokens.$border-radius, "lg");
-  box-shadow: map.get(tokens.$shadows, "base");
-  transition: all 0.3s ease;
+  border-radius: tokens.border-radius("lg");
+  box-shadow: tokens.shadow("base");
+  padding: tokens.spacing("lg");
+  transition: tokens.transition();
 
   &:hover {
-    box-shadow: map.get(tokens.$shadows, "lg");
+    box-shadow: tokens.shadow("md");
+  }
+
+  .dark-theme & {
+    background-color: tokens.color("card-bg-dark");
+    box-shadow: tokens.shadow("base", true);
+
+    &:hover {
+      box-shadow: tokens.shadow("md", true);
+    }
+  }
+}
+
+@mixin card-header {
+  padding-bottom: tokens.spacing("md");
+  margin-bottom: tokens.spacing("md");
+  border-bottom: 1px solid tokens.color("border");
+
+  .dark-theme & {
+    border-bottom-color: tokens.color("border-dark");
+  }
+}
+
+@mixin card-footer {
+  padding-top: tokens.spacing("md");
+  margin-top: tokens.spacing("md");
+  border-top: 1px solid tokens.color("border");
+
+  .dark-theme & {
+    border-top-color: tokens.color("border-dark");
   }
 }
 
@@ -127,19 +337,34 @@
   }
 }
 
-// Progress Bar Mixin
+// Progress Bar Mixins
 @mixin progress-bar {
   width: 100%;
   height: 8px;
   background-color: tokens.color("border");
-  border-radius: map.get(tokens.$border-radius, "md");
+  border-radius: tokens.border-radius("md");
   overflow: hidden;
 
   .progress-fill {
     height: 100%;
     transition: width 0.3s ease;
 
-    @include coverage-status;
+    &.excellent {
+      background-color: tokens.color("success");
+    }
+    &.good {
+      background-color: tokens.color("accent-dark");
+    }
+    &.average {
+      background-color: tokens.color("warning");
+    }
+    &.poor {
+      background-color: tokens.color("error");
+    }
+  }
+
+  .dark-theme & {
+    background-color: tokens.color("border-dark");
   }
 }
 
@@ -148,20 +373,37 @@
   position: absolute;
   background-color: tokens.color("card-bg");
   border: 1px solid tokens.color("border");
-  border-radius: map.get(tokens.$border-radius, "md");
-  box-shadow: map.get(tokens.$shadows, "md");
-  padding: spacing("sm");
-  z-index: 100;
+  border-radius: tokens.border-radius("md");
+  box-shadow: tokens.shadow("md");
+  padding: tokens.spacing("sm");
+  z-index: tokens.z-index("tooltip");
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+
+  .dark-theme & {
+    background-color: tokens.color("card-bg-dark");
+    border-color: tokens.color("border-dark");
+    box-shadow: tokens.shadow("md", true);
+  }
 }
 
+// ========================================================
+// LOADING & ANIMATION MIXINS
+// ========================================================
+
 // Loading Spinner Mixin
-@mixin loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid tokens.color("border");
-  border-top: 4px solid tokens.color("primary");
+@mixin loading-spinner($size: 40px, $border: 4px) {
+  width: $size;
+  height: $size;
+  border: $border solid tokens.color("border");
+  border-top: $border solid tokens.color("primary");
   border-radius: 50%;
   animation: spin 1s linear infinite;
+
+  .dark-theme & {
+    border-color: tokens.color("border-dark");
+    border-top-color: tokens.color("primary");
+  }
 }
 
 @keyframes spin {
@@ -171,4 +413,131 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+// Fade in animation
+@mixin fade-in($duration: 0.3s) {
+  animation: fadeIn $duration ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Slide in animations
+@mixin slide-in-right($duration: 0.3s) {
+  animation: slideInRight $duration ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@mixin slide-in-left($duration: 0.3s) {
+  animation: slideInLeft $duration ease;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@mixin slide-in-up($duration: 0.3s) {
+  animation: slideInUp $duration ease;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ========================================================
+// UTILITY MIXINS
+// ========================================================
+
+// Focus styles
+@mixin focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 2px tokens.color("primary-bg"),
+    0 0 0 4px tokens.color("primary");
+}
+
+// Accessibly hide content (visible to screen readers)
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Scrollbar styling
+@mixin custom-scrollbar(
+  $width: 8px,
+  $track-color: transparent,
+  $thumb-color: tokens.color("border")
+) {
+  &::-webkit-scrollbar {
+    width: $width;
+    height: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track-color;
+    border-radius: math.div($width, 2);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-color;
+    border-radius: math.div($width, 2);
+
+    &:hover {
+      background: color.adjust($thumb-color, $lightness: -10%);
+    }
+  }
+
+  // Firefox scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: $thumb-color $track-color;
+}
+
+// Glass effect
+@mixin glass-effect($opacity: 0.8, $blur: 10px) {
+  background-color: rgba(tokens.color("surface"), $opacity);
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+}
+
+// Dark mode
+@mixin dark-mode {
+  background-color: tokens.color("background-dark");
+  color: tokens.color("text-dark");
 }

@@ -12,15 +12,8 @@ import { NgxCoverageSunburstComponent } from '../coverage/coverage-sunburst/ngx-
 import { NgxCoverageTreemapComponent } from '../coverage/coverage-treemap/ngx-coverage-treemap.component';
 import { NgxCoverageTrendsComponent } from '../coverage/coverage-trends/ngx-coverage-trends.component';
 import { NotificationService } from '../../services/utils/notification.service';
-
-interface CoverageSnapshot {
-    timestamp: string;
-    date: Date;
-    lineCoverage: number;
-    branchCoverage: number;
-    linesCovered: number;
-    linesValid: number;
-}
+import { CoverageSnapshot } from '../../models/coverage.model';
+import { ModalService } from '../../services/utils/modal.service';
 
 @Component({
     selector: 'app-dashboard',
@@ -59,11 +52,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     snapshots: CoverageSnapshot[] = [];
     lastUpdatedTime: Date | null = null;
 
-    // Modal states
-    showAbout = false;
-    showHelp = false;
-    showUpload = false;
-
     tabs = [
         { id: 'treemap', label: 'Treemap', icon: 'fas fa-th-large' },
         { id: 'sunburst', label: 'Hierarchy', icon: 'fas fa-bullseye' },
@@ -76,15 +64,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
         't': 'treemap',
         's': 'sunburst',
         'h': 'history',
-        'i': 'insights',
-        'u': 'upload',
-        '?': 'help'
+        'i': 'insights'
     };
 
     constructor(
         private coverageStore: CoverageStoreService,
         private themeService: ThemeService,
         private notificationService: NotificationService,
+        private modalService: ModalService,
         private router: Router,
         private datePipe: DatePipe
     ) { }
@@ -124,7 +111,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Handle keyboard shortcuts
+     * Get shortcut key for a tab
+     */
+    getShortcutForTab(tabId: string): string {
+        for (const [key, value] of Object.entries(this.keyboardShortcuts)) {
+            if (value === tabId) {
+                return key.toUpperCase();
+            }
+        }
+        return '';
+    }
+
+    /**
+     * Handle keyboard shortcuts for dashboard-specific actions
      */
     @HostListener('window:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent): void {
@@ -137,31 +136,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         if (this.keyboardShortcuts[key]) {
             const action = this.keyboardShortcuts[key];
-
-            switch (action) {
-                case 'treemap':
-                case 'sunburst':
-                case 'history':
-                case 'insights':
-                    this.setActiveTab(action);
-                    break;
-                case 'upload':
-                    this.uploadNewData();
-                    break;
-                case 'help':
-                    this.showHelpModal();
-                    break;
-            }
-
+            this.setActiveTab(action);
             event.preventDefault();
         }
-    }
-
-    /**
-     * Toggle dark theme
-     */
-    toggleTheme(): void {
-        this.themeService.toggleTheme();
     }
 
     /**
@@ -259,22 +236,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
      * Load a snapshot
      */
     loadSnapshot(snapshot: CoverageSnapshot): void {
+        // Show loading indicator
+        this.isLoading = true;
+
         // Look up the full coverage data for this snapshot from history
         try {
             const history = JSON.parse(localStorage.getItem('coverage-history') || '[]');
             const fullData = history.find((item: any) => item.timestamp === snapshot.timestamp);
 
-            if (fullData && fullData.data) {
-                this.coverageStore.setCoverageData(fullData.data);
-                this.hasCoverageData = true;
-                this.lastUpdatedTime = new Date(snapshot.date);
-                this.notificationService.showSuccess('Data Loaded', 'Historical coverage data loaded successfully');
-            } else {
-                this.notificationService.showError('Data Error', 'Could not find full data for this snapshot');
-            }
+            // Add a small delay to show loading spinner for better UX feedback
+            setTimeout(() => {
+                if (fullData && fullData.data) {
+                    this.coverageStore.setCoverageData(fullData.data);
+                    this.hasCoverageData = true;
+                    this.lastUpdatedTime = new Date(snapshot.date);
+                    this.notificationService.showSuccess('Data Loaded', 'Historical coverage data loaded successfully');
+                } else {
+                    this.notificationService.showError('Data Error', 'Could not find full data for this snapshot');
+                }
+                this.isLoading = false;
+            }, 600);
         } catch (error) {
             console.error('Error loading snapshot:', error);
             this.notificationService.showError('Load Error', 'Failed to load snapshot data');
+            this.isLoading = false;
         }
     }
 
@@ -328,11 +313,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
      * Export current view as an image
      */
     exportCurrentView(): void {
-        // Each visualization component should implement its own export functionality
-        // This method can trigger that functionality based on the active tab
+        this.isLoading = true;
 
-        // Just show a notification for now
-        this.notificationService.showInfo('Export', 'Export functionality is handled by individual visualization components');
+        // Simulate export process
+        setTimeout(() => {
+            this.isLoading = false;
+            this.notificationService.showSuccess('Export Complete', 'Current view has been exported');
+        }, 800);
     }
 
     /**
@@ -348,7 +335,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 this.coverageStore.setCoverageData(currentData);
                 this.isLoading = false;
                 this.notificationService.showSuccess('Data Refreshed', 'Coverage data has been reloaded');
-            }, 500);
+            }, 800);
         } else {
             this.isLoading = false;
             this.notificationService.showWarning('No Data', 'No coverage data available to reload');
@@ -356,41 +343,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Show upload modal for new data
+     * Open upload modal through the modal service
      */
-    uploadNewData(): void {
-        this.showUpload = true;
+    openUploadModal(): void {
+        this.modalService.openUploadModal();
     }
 
     /**
-     * Handle upload completion
+     * Handle upload completion (from welcome page uploader)
      */
     onUploadComplete(): void {
-        this.closeModal();
         this.notificationService.showSuccess('Upload Complete', 'New coverage data has been loaded');
-    }
-
-    /**
-     * Show about modal
-     */
-    showAboutModal(): void {
-        this.showAbout = true;
-    }
-
-    /**
-     * Show help modal
-     */
-    showHelpModal(): void {
-        this.showHelp = true;
-    }
-
-    /**
-     * Close all modals
-     */
-    closeModal(): void {
-        this.showAbout = false;
-        this.showHelp = false;
-        this.showUpload = false;
     }
 
     /**

@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
-import { CoverageData, TreeNode, PackageInfo, ClassInfo } from '../models/coverage.model';
+import { CoverageData, TreeNode, PackageInfo, BuildHierarchyOptions } from '../models/coverage.model';
 
-export interface BuildHierarchyOptions {
-    groupSmallNodes?: boolean;
-    smallNodeThreshold?: number; // e.g., linesValid threshold
-    simplifyNames?: boolean; // Whether to simplify class and package names
-}
+
 
 @Injectable({
     providedIn: 'root'
@@ -216,6 +212,8 @@ export class CoverageDataService {
                     lineCoverage: this.clampRate(domainCoverage),
                     linesValid: domainLinesValid,
                     linesCovered: domainLinesCovered,
+                    branchCoverage: 0,
+                    complexity: 0,
                     isNamespace: true,
                     isDomainGroup: true,
                     value: domainValue, // Value proportional to lines valid

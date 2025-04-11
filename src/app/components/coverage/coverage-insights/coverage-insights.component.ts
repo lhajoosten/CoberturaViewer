@@ -3,7 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CoverageStoreService } from '../../../services/coverage-store.service';
-import { CoverageData, CoverageInsight, ClassRisk } from '../../../models/coverage.model'; // Adjusted import
+import {
+    CoverageData,
+    CoverageInsight,
+    ClassRisk,
+    CoverageMetrics,
+    TreeNode
+} from '../../../models/coverage.model';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../services/utils/theme.service';
 import { NotificationService } from '../../../services/utils/notification.service';
@@ -792,7 +798,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
                 if (riskScore > 40) {
                     allClasses.push({
                         name: cls.name,
-                        path: `<span class="math-inline">\{pkg\.name\}\.</span>{cls.name}`,
+                        path: `${pkg.name}.${cls.name}`,
                         coverage: cls.lineCoverage,
                         linesValid: cls.lines.length,
                         branchCoverage: cls.branchCoverage,
@@ -802,7 +808,7 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
             }
         }
 
-        // Sort by risk score (highest first) and take top 5
+        // Sort by risk score (highest first) and take top 10
         this.highRiskClasses = allClasses
             .sort((a, b) => b.riskScore - a.riskScore)
             .slice(0, 10);
@@ -898,43 +904,43 @@ export class CoverageInsightsComponent implements OnInit, OnDestroy {
         // Create markdown content
         const content = `# Coverage Analysis Report
 
-        ## Summary
-        - **Overall Coverage**: ${this.coverageData.summary.lineCoverage.toFixed(1)}%
-        - **Branch Coverage**: ${this.coverageData.summary.lineCoverage.toFixed(1)}%
-        - **Lines Covered**: ${this.coverageData.summary.linesCovered} / ${this.coverageData.summary.linesValid}
-        - **Packages**: ${this.coverageData.packages.length} 
-        - **Classes**: ${this.getTotalClassCount()}
-        - **Generated**: ${new Date().toLocaleString()}
+    ## Summary
+    - **Overall Coverage**: ${this.coverageData.summary.lineCoverage.toFixed(1)}%
+    - **Branch Coverage**: ${this.coverageData.summary.branchCoverage.toFixed(1)}%
+    - **Lines Covered**: ${this.coverageData.summary.linesCovered} / ${this.coverageData.summary.linesValid}
+    - **Packages**: ${this.coverageData.packages.length} 
+    - **Classes**: ${this.getTotalClassCount()}
+    - **Generated**: ${new Date().toLocaleString()}
 
-        ## Coverage Thresholds
-        - **Excellent**: ${this.thresholds.excellent}%+
-        - **Good**: ${this.thresholds.good}%-${this.thresholds.excellent}%
-        - **Average**: ${this.thresholds.average}%-${this.thresholds.good}%
-        - **Poor**: 0%-${this.thresholds.average}%
+    ## Coverage Thresholds
+    - **Excellent**: ${this.thresholds.excellent}%+
+    - **Good**: ${this.thresholds.good}%-${this.thresholds.excellent}%
+    - **Average**: ${this.thresholds.average}%-${this.thresholds.good}%
+    - **Poor**: 0%-${this.thresholds.average}%
 
-        ## Key Insights
-        ${this.insights.map(insight => `- **${insight.title}**: ${insight.description}`).join('\n')}
+    ## Key Insights
+    ${this.insights.map(insight => `- **${insight.title}**: ${insight.description}`).join('\n')}
 
-        ## Distribution
-        - **${this.thresholds.excellent}-100%**: ${this.classCountByLevel.excellent} classes (${this.distribution.excellent.toFixed(1)}%)
-        - **${this.thresholds.good}-${this.thresholds.excellent}%**: ${this.classCountByLevel.good} classes (${this.distribution.good.toFixed(1)}%)
-        - **${this.thresholds.average}-${this.thresholds.good}%**: ${this.classCountByLevel.average} classes (${this.distribution.average.toFixed(1)}%)
-        - **0-${this.thresholds.average}%**: ${this.classCountByLevel.poor} classes (${this.distribution.poor.toFixed(1)}%)
+    ## Distribution
+    - **${this.thresholds.excellent}-100%**: ${this.classCountByLevel.excellent} classes (${this.distribution.excellent.toFixed(1)}%)
+    - **${this.thresholds.good}-${this.thresholds.excellent}%**: ${this.classCountByLevel.good} classes (${this.distribution.good.toFixed(1)}%)
+    - **${this.thresholds.average}-${this.thresholds.good}%**: ${this.classCountByLevel.average} classes (${this.distribution.average.toFixed(1)}%)
+    - **0-${this.thresholds.average}%**: ${this.classCountByLevel.poor} classes (${this.distribution.poor.toFixed(1)}%)
 
-        ## High-Risk Classes
-        ${this.highRiskClasses.map(cls => `- **${cls.name}**: ${cls.coverage.toFixed(1)}% coverage, ${cls.linesValid} lines, risk score: ${cls.riskScore.toFixed(1)}`).join('\n')}
+    ## High-Risk Classes
+    ${this.highRiskClasses.map(cls => `- **${cls.name}**: ${cls.coverage.toFixed(1)}% coverage, ${cls.linesValid} lines, risk score: ${cls.riskScore.toFixed(1)}`).join('\n')}
 
-        ## Recommendations
-        ${this.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
+    ## Recommendations
+    ${this.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
 
-        ## Next Steps
-        1. Review the high-risk classes identified in this report
-        2. Implement the recommendations based on their priority
-        3. Re-run coverage analysis after adding tests to measure improvement
-        4. Set up automated coverage reporting in your CI/CD pipeline
+    ## Next Steps
+    1. Review the high-risk classes identified in this report
+    2. Implement the recommendations based on their priority
+    3. Re-run coverage analysis after adding tests to measure improvement
+    4. Set up automated coverage reporting in your CI/CD pipeline
 
-        *Generated by Coverage Insights Tool*
-        `;
+    *Generated by Coverage Insights Tool*
+    `;
 
         // Create download link
         const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });

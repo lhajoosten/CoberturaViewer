@@ -5,11 +5,11 @@ import { FormsModule } from "@angular/forms";
 import { NgxChartsModule } from "@swimlane/ngx-charts";
 import { Subscription } from "rxjs";
 import { TreeNode, ClassInfo, CoverageData } from "../../../models/coverage.model";
-import { ExclusionPattern } from "../../../models/treemap-config.model";
 import { CoverageDataService } from "../../../services/coverage-data.service";
 import { CoverageStoreService } from "../../../services/coverage-store.service";
 import { NotificationService } from "../../../services/utils/notification.service";
 import { ThemeService } from "../../../services/utils/theme.service";
+import { ExclusionPattern, TreeMapFilters } from "../../../models/treemap.model";
 
 @Component({
     selector: 'app-ngx-coverage-treemap',
@@ -638,6 +638,7 @@ export class NgxCoverageTreemapComponent implements OnInit, OnDestroy {
         const node: TreeNode = {
             name: item.name,
             packageName: item.packageName,
+            branchCoverage: item.branchCoverage,
             lineCoverage: item.coverage,
             linesValid: item.linesValid,
             linesCovered: item.linesCovered,

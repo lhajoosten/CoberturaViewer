@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Notification, NotificationType } from '../../models/notification.model';
+import {
+    Notification,
+    NotificationType,
+} from '../../models/notification.model';
 
+/**
+ * Service for displaying temporary notification messages to users
+ */
 @Injectable({
     providedIn: 'root'
 })
@@ -13,6 +19,9 @@ export class NotificationService {
         this.createContainer();
     }
 
+    /**
+     * Create a container for notifications if it doesn't exist
+     */
     private createContainer(): void {
         if (typeof document === 'undefined') return; // Server-side rendering check
 
@@ -24,22 +33,53 @@ export class NotificationService {
         }
     }
 
+    /**
+     * Display a success notification
+     * @param title The notification title
+     * @param message The notification message
+     * @param duration How long to display (ms)
+     */
     showSuccess(title: string, message: string, duration: number = 3000): void {
         this.show('success', title, message, duration);
     }
 
+    /**
+     * Display an error notification
+     * @param title The notification title
+     * @param message The notification message
+     * @param duration How long to display (ms)
+     */
     showError(title: string, message: string, duration: number = 5000): void {
         this.show('error', title, message, duration);
     }
 
+    /**
+     * Display a warning notification
+     * @param title The notification title
+     * @param message The notification message
+     * @param duration How long to display (ms)
+     */
     showWarning(title: string, message: string, duration: number = 4000): void {
         this.show('warning', title, message, duration);
     }
 
+    /**
+     * Display an info notification
+     * @param title The notification title
+     * @param message The notification message
+     * @param duration How long to display (ms)
+     */
     showInfo(title: string, message: string, duration: number = 3000): void {
         this.show('info', title, message, duration);
     }
 
+    /**
+     * Core method to display a notification
+     * @param type The notification type
+     * @param title The notification title
+     * @param message The notification message
+     * @param duration How long to display (ms)
+     */
     private show(type: NotificationType, title: string, message: string, duration: number): void {
         if (typeof document === 'undefined') return; // Server-side rendering check
 
@@ -64,6 +104,10 @@ export class NotificationService {
         }
     }
 
+    /**
+     * Remove a notification by ID
+     * @param id The notification ID to remove
+     */
     remove(id: number): void {
         const index = this.notifications.findIndex(n => n.id === id);
         if (index !== -1) {
@@ -80,6 +124,10 @@ export class NotificationService {
         }
     }
 
+    /**
+     * Create and render a notification element
+     * @param notification The notification to render
+     */
     private renderNotification(notification: Notification): void {
         if (!this.container) return;
 
