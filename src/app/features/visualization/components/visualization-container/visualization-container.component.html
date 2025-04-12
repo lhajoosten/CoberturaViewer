@@ -1,0 +1,55 @@
+<!-- src/app/features/visualization/components/visualization-container/visualization-container.component.html -->
+<div class="visualization-container">
+    <div class="visualization-header">
+        <h1>Coverage Visualization</h1>
+        <div class="visualization-controls">
+            <div class="view-selector">
+                <button [class.active]="activeView === 'treemap'" (click)="switchView('treemap')">
+                    <i class="fas fa-th-large"></i> Treemap
+                </button>
+                <button [class.active]="activeView === 'sunburst'" (click)="switchView('sunburst')">
+                    <i class="fas fa-chart-pie"></i> Sunburst
+                </button>
+                <button [class.active]="activeView === 'advanced-pie'" (click)="switchView('advanced-pie')">
+                    <i class="fas fa-pie-chart"></i> Advanced Pie
+                </button>
+                <button [class.active]="activeView === 'heatmap'" (click)="switchView('heatmap')">
+                    <i class="fas fa-fire"></i> Heatmap
+                </button>
+                <button [class.active]="activeView === 'line-chart'" (click)="switchView('line-chart')">
+                    <i class="fas fa-chart-line"></i> Trends
+                </button>
+                <button [class.active]="activeView === 'table'" (click)="switchView('table')">
+                    <i class="fas fa-table"></i> Table
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <ng-container *ngIf="hasData; else noDataTemplate">
+        <!-- Summary Cards at the top -->
+        <app-coverage-summary [coverageData]="coverageData"></app-coverage-summary>
+
+        <div class="content-container">
+            <div [ngSwitch]="activeView" class="chart-container">
+                <app-treemap *ngSwitchCase="'treemap'" [coverageData]="coverageData"></app-treemap>
+                <app-sunburst *ngSwitchCase="'sunburst'" [coverageData]="coverageData"></app-sunburst>
+                <app-advanced-pie *ngSwitchCase="'advanced-pie'" [coverageData]="coverageData"></app-advanced-pie>
+                <app-heatmap *ngSwitchCase="'heatmap'" [coverageData]="coverageData"></app-heatmap>
+                <app-line-chart *ngSwitchCase="'line-chart'" [coverageData]="coverageData"></app-line-chart>
+                <app-coverage-table *ngSwitchCase="'table'" [coverageData]="coverageData"></app-coverage-table>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noDataTemplate>
+        <div class="no-data-message">
+            <div class="icon-container">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+            <h2>No Coverage Data Available</h2>
+            <p>Upload a Cobertura XML file to visualize your code coverage data.</p>
+            <button class="btn-primary" routerLink="/upload">Upload Coverage Report</button>
+        </div>
+    </ng-template>
+</div>

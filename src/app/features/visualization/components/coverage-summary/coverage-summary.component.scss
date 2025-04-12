@@ -1,0 +1,151 @@
+.summary-container {
+  margin-bottom: 2rem;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background-color: var(--color-bg-secondary);
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border-default);
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    .card-title {
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background-color: rgba(var(--color-primary-rgb), 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+
+      i {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .card-content {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+
+    .card-metric {
+      font-size: 2rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .card-grade {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+  }
+
+  .card-details {
+    font-size: 0.9rem;
+    color: var(--color-text-tertiary);
+  }
+}
+
+.impact-section {
+  background-color: var(--color-bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border-default);
+
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      color: var(--color-warning);
+    }
+  }
+
+  .impact-description {
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+  }
+}
+
+.impact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.impact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .impact-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    .impact-name {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .impact-metrics {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+
+      .coverage {
+        font-weight: 600;
+      }
+
+      .uncovered {
+        color: var(--color-text-tertiary);
+      }
+    }
+  }
+
+  .impact-bar {
+    height: 6px;
+    background-color: var(--color-bg-tertiary);
+    border-radius: 3px;
+    overflow: hidden;
+
+    .impact-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+  }
+}
+
+:host {
+  --color-primary-rgb: 51, 102, 255;
+}

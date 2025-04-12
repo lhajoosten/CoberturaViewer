@@ -1,0 +1,109 @@
+<div class="summary-container" *ngIf="coverageData">
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="card-header">
+                <div class="card-title">Line Coverage</div>
+                <div class="card-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="card-metric" [style.color]="getColorForCoverage(coverageData.summary.lineCoverage)">
+                    {{ coverageData.summary.lineCoverage.toFixed(1) }}%
+                </div>
+                <div class="card-grade"
+                    [style.background-color]="getColorForCoverage(coverageData.summary.lineCoverage)">
+                    {{ getCoverageGrade(coverageData.summary.lineCoverage) }}
+                </div>
+            </div>
+            <div class="card-details">
+                {{ coverageData.summary.linesCovered }} / {{ coverageData.summary.linesValid }} lines covered
+            </div>
+        </div>
+
+        <div class="summary-card" *ngIf="coverageData.summary.branchCoverage !== undefined">
+            <div class="card-header">
+                <div class="card-title">Branch Coverage</div>
+                <div class="card-icon">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="card-metric" [style.color]="getColorForCoverage(coverageData.summary.branchCoverage)">
+                    {{ coverageData.summary.branchCoverage.toFixed(1) }}%
+                </div>
+                <div class="card-grade"
+                    [style.background-color]="getColorForCoverage(coverageData.summary.branchCoverage)">
+                    {{ getCoverageGrade(coverageData.summary.branchCoverage) }}
+                </div>
+            </div>
+            <div class="card-details" *ngIf="coverageData.summary.conditionsValid">
+                {{ coverageData.summary.conditionsCovered }} / {{ coverageData.summary.conditionsValid }} branches
+                covered
+            </div>
+        </div>
+
+        <div class="summary-card" *ngIf="coverageData.summary.methodCoverage !== undefined">
+            <div class="card-header">
+                <div class="card-title">Method Coverage</div>
+                <div class="card-icon">
+                    <i class="fas fa-function"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="card-metric" [style.color]="getColorForCoverage(coverageData.summary.methodCoverage)">
+                    {{ coverageData.summary.methodCoverage.toFixed(1) }}%
+                </div>
+                <div class="card-grade"
+                    [style.background-color]="getColorForCoverage(coverageData.summary.methodCoverage)">
+                    {{ getCoverageGrade(coverageData.summary.methodCoverage) }}
+                </div>
+            </div>
+            <div class="card-details" *ngIf="coverageData.summary.methodsValid">
+                {{ coverageData.summary.methodsCovered }} / {{ coverageData.summary.methodsValid }} methods covered
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="card-header">
+                <div class="card-title">Complexity</div>
+                <div class="card-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="card-metric">
+                    {{ coverageData.summary.complexity.toFixed(0) }}
+                </div>
+            </div>
+            <div class="card-details">
+                {{ coverageData.packages.length }} packages, {{ getClassCount() }} classes
+            </div>
+        </div>
+    </div>
+
+    <div class="impact-section" *ngIf="highImpactClasses.length > 0">
+        <h3><i class="fas fa-exclamation-triangle"></i> High Impact Classes</h3>
+        <p class="impact-description">These classes have the most uncovered lines and would significantly improve your
+            overall coverage if tested.</p>
+
+        <div class="impact-list">
+            <div class="impact-item" *ngFor="let cls of highImpactClasses">
+                <div class="impact-info">
+                    <div class="impact-name">{{ cls.name }}</div>
+                    <div class="impact-metrics">
+                        <span class="coverage" [style.color]="getColorForCoverage(cls.lineCoverage)">
+                            {{ cls.lineCoverage.toFixed(1) }}%
+                        </span>
+                        <span class="uncovered">{{ cls.uncoveredLines }} uncovered lines</span>
+                    </div>
+                </div>
+                <div class="impact-bar">
+                    <div class="impact-fill" [style.width.%]="cls.lineCoverage"
+                        [style.background-color]="getColorForCoverage(cls.lineCoverage)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

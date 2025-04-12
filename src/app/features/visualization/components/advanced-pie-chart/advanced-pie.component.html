@@ -1,0 +1,50 @@
+<div class="advanced-pie-container">
+    <div class="chart-controls">
+        <div class="control-group">
+            <label>Chart Type:</label>
+            <div class="button-group">
+                <button [class.active]="!is3D && !isDonut"
+                    (click)="isDonut = false; is3D = false; updateChartOptions()">
+                    <i class="fas fa-chart-pie"></i> Standard
+                </button>
+                <button [class.active]="isDonut" [disabled]="is3D" (click)="toggleDonut()">
+                    <i class="fas fa-circle-notch"></i> Donut
+                </button>
+                <button [class.active]="is3D" (click)="toggle3D()">
+                    <i class="fas fa-cube"></i> 3D
+                </button>
+            </div>
+        </div>
+
+        <div class="control-group" *ngIf="isDonut">
+            <label>Donut Hole Size: {{ donutHoleSize.toFixed(1) }}</label>
+            <input type="range" min="0.1" max="0.9" step="0.1" [value]="donutHoleSize" (input)="updateHoleSize($event)">
+        </div>
+
+        <div class="control-group">
+            <label>Legend:</label>
+            <div class="button-group">
+                <button [class.active]="showLegend" (click)="toggleLegend()">
+                    <i class="fas" [ngClass]="showLegend ? 'fa-eye' : 'fa-eye-slash'"></i>
+                    {{ showLegend ? 'Show' : 'Hide' }}
+                </button>
+
+                <!-- <select *ngIf="showLegend" [value]="legendPosition"
+                    (change)="changeLegendPosition(($event.target as any )?.value)">
+                    <option value="right">Right</option>
+                    <option value="left">Left</option>
+                    <option value="top">Top</option>
+                    <option value="bottom">Bottom</option>
+                </select> -->
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!coverageData" class="no-data-message">
+        <p>No coverage data to display</p>
+    </div>
+
+    <google-chart *ngIf="coverageData && chartData.length > 0" [type]="chartType" [data]="chartData"
+        [options]="chartOptions" [width]="chartWidth" [height]="chartHeight">
+    </google-chart>
+</div>

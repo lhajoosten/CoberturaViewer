@@ -1,1 +1,9 @@
-<p>heatmap works!</p>
+<div class="heatmap-container">
+    <div *ngIf="!coverageData" class="no-data-message">
+        <p>No coverage data to display</p>
+    </div>
+
+    <google-chart *ngIf="coverageData && chartData.length > 0" [type]="chartType" [data]="chartData"
+        [options]="chartOptions" [width]="chartWidth" [height]="chartHeight">
+    </google-chart>
+</div>
