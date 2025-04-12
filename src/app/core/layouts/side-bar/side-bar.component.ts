@@ -16,7 +16,7 @@ export class SidebarComponent {
     {
       icon: 'fas fa-home',
       label: 'Dashboard',
-      route: '/'
+      route: '/dashboard'
     },
     {
       icon: 'fas fa-upload',

@@ -6,12 +6,12 @@
   transition: width 0.3s ease;
 
   &.collapsed {
-    width: 64px;
+    width: 80px;
   }
 }
 
 .sidebar-nav {
-  padding: 1rem 0;
+  padding: 1rem 0.5rem;
 }
 
 .nav-list {
