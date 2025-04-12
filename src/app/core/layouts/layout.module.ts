@@ -7,9 +7,6 @@ import { FooterComponent } from './footer/footer.component';
 import { MainLayoutComponent } from './main-layout/main-layout.component';
 
 @NgModule({
-    declarations: [
-
-    ],
     imports: [
         CommonModule,
         RouterModule,

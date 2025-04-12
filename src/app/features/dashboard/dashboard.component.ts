@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
+import { CoverageStoreService } from '../../core/services/store/coverage-store.service';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({

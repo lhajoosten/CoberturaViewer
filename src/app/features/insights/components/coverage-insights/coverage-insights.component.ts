@@ -31,14 +31,14 @@ export class CoverageInsightsComponent implements OnInit {
   gaugeChartType: ChartType = ChartType.Gauge;
   gaugeChartData: any[] = [];
   gaugeChartOptions: any = {};
-  gaugeChartWidth = 1000;
+  gaugeChartWidth = 320;
   gaugeChartHeight = 200;
 
   // Distribution pie chart
   pieChartType: ChartType = ChartType.PieChart;
   pieChartData: any[] = [];
   pieChartOptions: any = {};
-  pieChartWidth = 1000;
+  pieChartWidth = 320;
   pieChartHeight = 250;
 
   constructor(
