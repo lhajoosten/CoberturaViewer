@@ -317,6 +317,8 @@ export class FileUploaderComponent implements OnInit {
         complexity: 24,
         linesValid: 450,
         linesCovered: 381,
+        branchesValid: 200,
+        branchesCovered: 152,
         timestamp: new Date().toISOString()
       },
       packages: []
@@ -334,6 +336,8 @@ export class FileUploaderComponent implements OnInit {
         complexity: 34,
         linesValid: 1250,
         linesCovered: 981,
+        branchesValid: 500,
+        branchesCovered: 325,
         timestamp: new Date().toISOString()
       },
       packages: []

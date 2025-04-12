@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
 import { ThemeStoreService } from '../../../../core/services/store/theme-store.service';
 import { CoverageData, PackageInfo, ClassInfo } from '../../../../core/models/coverage.model';
+import { InsightsNavComponent } from '../insights-navigation.component';
 
 @Component({
   selector: 'app-package-insights',
   standalone: true,
-  imports: [CommonModule, GoogleChartsModule, FormsModule],
+  imports: [CommonModule, GoogleChartsModule, FormsModule, InsightsNavComponent],
   templateUrl: './package-insights.component.html',
   styleUrls: ['./package-insights.component.scss']
 })

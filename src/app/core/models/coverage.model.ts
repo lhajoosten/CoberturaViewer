@@ -11,6 +11,10 @@ export interface CoverageMetrics {
     linesValid: number;
     /** Number of covered code lines */
     linesCovered: number;
+    /** Number of valid branches */
+    branchesValid: number;
+    /** Number of covered branches */
+    branchesCovered: number;
 }
 
 /**

@@ -1,9 +1,11 @@
-<!-- src/app/features/insights/components/coverage-insights/coverage-insights.component.html -->
 <div class="insights-container">
     <div class="insights-header">
         <h1>Coverage Insights</h1>
         <p class="description">Get actionable insights and recommendations for improving your code coverage</p>
     </div>
+
+    <!-- Insight navigation component -->
+    <app-insights-nav></app-insights-nav>
 
     <ng-container *ngIf="hasData; else noDataTemplate">
         <div class="metrics-section">

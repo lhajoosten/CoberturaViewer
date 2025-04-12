@@ -9,11 +9,12 @@ import { RiskAnalysisService } from '../../services/risk-analysis.service';
 import { CoverageData, CoverageInsight } from '../../../../core/models/coverage.model';
 import { combineLatest } from 'rxjs';
 import { Nl2brPipe } from "../../pipes/nl2br.pipe";
+import { InsightsNavComponent } from '../insights-navigation.component';
 
 @Component({
   selector: 'app-coverage-insights',
   standalone: true,
-  imports: [CommonModule, GoogleChartsModule, Nl2brPipe],
+  imports: [CommonModule, GoogleChartsModule, Nl2brPipe, InsightsNavComponent],
   templateUrl: './coverage-insights.component.html',
   styleUrls: ['./coverage-insights.component.scss']
 })

@@ -35,7 +35,9 @@ export class TrendAnalysisService {
       lineCoverage: coverageData.summary.lineCoverage,
       branchCoverage: coverageData.summary.branchCoverage || 0,
       linesCovered: coverageData.summary.linesCovered,
-      linesValid: coverageData.summary.linesValid
+      linesValid: coverageData.summary.linesValid,
+      branchesCovered: coverageData.summary.branchesCovered || 0,
+      branchesValid: coverageData.summary.branchesValid || 0,
     };
 
     // Add to snapshots array
@@ -134,7 +136,9 @@ export class TrendAnalysisService {
         lineCoverage,
         branchCoverage,
         linesCovered: Math.floor(100 + (900 * progress)),
-        linesValid: 1000
+        linesValid: 1000,
+        branchesCovered: Math.floor(50 + (450 * progress)),
+        branchesValid: 500
       });
     }
 

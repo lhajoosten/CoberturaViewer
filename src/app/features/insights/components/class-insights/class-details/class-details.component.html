@@ -1,0 +1,203 @@
+<div class="class-details-container">
+    <div class="details-header">
+        <button routerLink="/insights/classes" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Class Insights
+        </button>
+        <h1>Class Details</h1>
+    </div>
+
+    <ng-container *ngIf="hasData && classInfo; else noDataTemplate">
+        <div class="class-overview">
+            <div class="overview-header">
+                <div class="class-info">
+                    <h2 class="class-name">{{ classInfo.class.name }}</h2>
+                    <div class="package-name">{{ classInfo.packageName }}</div>
+                </div>
+                <div class="class-status" [ngClass]="getCoverageStatusClass(classInfo.class.lineCoverage)">
+                    {{ getCoverageStatusText(classInfo.class.lineCoverage) }}
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-title">Line Coverage</div>
+                        <div class="metric-value" [ngClass]="getCoverageClass(classInfo.class.lineCoverage)">
+                            {{ classInfo.class.lineCoverage.toFixed(2) }}%
+                        </div>
+                        <div class="metric-description">
+                            {{ classInfo.class.linesCovered }} / {{ classInfo.class.linesValid }} lines
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="classInfo.class.branchCoverage !== undefined" class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-title">Branch Coverage</div>
+                        <div class="metric-value" [ngClass]="getCoverageClass(classInfo.class.branchCoverage)">
+                            {{ classInfo.class.branchCoverage.toFixed(2) }}%
+                        </div>
+                        <div class="metric-description">
+                            {{ classInfo.class.branchesCovered }} / {{ classInfo.class.branchesValid }} branches
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-file-code"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-title">Size</div>
+                        <div class="metric-value" [ngClass]="getSizeClass(classInfo.class.linesValid)">
+                            {{ classInfo.class.linesValid }} lines
+                        </div>
+                        <div class="metric-description">
+                            {{ getSizeDescription(classInfo.class.linesValid) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="classInfo.class.complexity !== undefined" class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-title">Complexity</div>
+                        <div class="metric-value" [ngClass]="getComplexityClass(classInfo.class.complexity)">
+                            {{ classInfo.class.complexity.toFixed(0) }}
+                        </div>
+                        <div class="metric-description">
+                            {{ getComplexityDescription(classInfo.class.complexity) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coverage Charts -->
+        <div class="charts-section">
+            <div class="section-header">
+                <h3>Coverage Analysis</h3>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Line Coverage</div>
+                    <div class="chart-container">
+                        <google-chart [type]="coverageChartType" [data]="coverageChartData"
+                            [options]="coverageChartOptions" [width]="300" [height]="300">
+                        </google-chart>
+                    </div>
+                </div>
+
+                <div class="chart-card" *ngIf="classInfo.class.branchCoverage !== undefined">
+                    <div class="chart-title">Branch Coverage</div>
+                    <div class="chart-container">
+                        <google-chart [type]="branchChartType" [data]="branchChartData" [options]="branchChartOptions"
+                            [width]="300" [height]="300">
+                        </google-chart>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Coverage Details -->
+        <div class="code-section">
+            <div class="section-header">
+                <h3>Line-by-Line Coverage</h3>
+                <div class="section-actions">
+                    <div class="filter-group">
+                        <label>Show</label>
+                        <select [(ngModel)]="lineFilter" (change)="applyLineFilter()">
+                            <option value="all">All Lines</option>
+                            <option value="covered">Covered Lines</option>
+                            <option value="uncovered">Uncovered Lines</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-container">
+                <table class="code-table">
+                    <thead>
+                        <tr>
+                            <th class="line-number">Line</th>
+                            <th class="line-hits">Hits</th>
+                            <th class="line-branch">Branch</th>
+                            <th class="line-status">Status</th>
+                            <th class="line-code">Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let line of filteredLines" [ngClass]="{'uncovered': line.hits === 0}">
+                            <td class="line-number">{{ line.number }}</td>
+                            <td class="line-hits">{{ line.hits }}</td>
+                            <td class="line-branch">
+                                <i *ngIf="line.branch" class="fas fa-code-branch" title="Branch point"></i>
+                            </td>
+                            <td class="line-status">
+                                <span class="status-badge" [ngClass]="line.hits > 0 ? 'covered' : 'uncovered'">
+                                    {{ line.hits > 0 ? 'Covered' : 'Uncovered' }}
+                                </span>
+                            </td>
+                            <td class="line-code">
+                                <pre>{{ getCodeLine(line.number) }}</pre>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recommendations Section -->
+        <div class="recommendations-section">
+            <div class="section-header">
+                <h3>Improvement Recommendations</h3>
+            </div>
+
+            <div class="recommendations-container">
+                <div *ngIf="recommendations.length > 0; else noRecommendations" class="recommendations-list">
+                    <div *ngFor="let rec of recommendations" class="recommendation-item">
+                        <div class="recommendation-icon" [ngClass]="rec.priority">
+                            <i [ngClass]="rec.icon"></i>
+                        </div>
+                        <div class="recommendation-content">
+                            <div class="recommendation-title">{{ rec.title }}</div>
+                            <div class="recommendation-description">{{ rec.description }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <ng-template #noRecommendations>
+                    <div class="no-recommendations">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No specific recommendations at this time.</p>
+                        <p *ngIf="classInfo.class.lineCoverage >= 80" class="good-job">
+                            Great job! This class has excellent coverage.
+                        </p>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noDataTemplate>
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <h2>Class Not Found</h2>
+            <p>The requested class could not be found or no coverage data is available.</p>
+            <button routerLink="/insights/classes" class="primary-btn">
+                <i class="fas fa-arrow-left"></i> Back to Class Insights
+            </button>
+        </div>
+    </ng-template>
+</div>

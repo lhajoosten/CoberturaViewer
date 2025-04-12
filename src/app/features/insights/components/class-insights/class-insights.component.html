@@ -1,1 +1,230 @@
-<p>class-insights works!</p>
+<div class="class-insights-container">
+    <div class="insights-header">
+        <h1>Class Insights</h1>
+        <p class="description">Explore detailed insights about classes in your codebase</p>
+    </div>
+
+    <!-- Insight navigation component -->
+    <app-insights-nav></app-insights-nav>
+
+    <ng-container *ngIf="hasData; else noDataTemplate">
+        <div class="filters-section">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()"
+                    placeholder="Search classes..." class="search-input" />
+                <button *ngIf="searchQuery" class="clear-search" (click)="clearSearch()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Coverage</label>
+                    <div class="filter-buttons">
+                        <button [class.active]="coverageFilter === 'all'" (click)="toggleCoverageFilter('all')">
+                            All
+                        </button>
+                        <button [class.active]="coverageFilter === 'high'" (click)="toggleCoverageFilter('high')">
+                            High (80%+)
+                        </button>
+                        <button [class.active]="coverageFilter === 'medium'" (click)="toggleCoverageFilter('medium')">
+                            Medium (60-80%)
+                        </button>
+                        <button [class.active]="coverageFilter === 'low'" (click)="toggleCoverageFilter('low')">
+                            Low (< 60%) </button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Complexity</label>
+                    <div class="filter-buttons">
+                        <button [class.active]="complexityFilter === 'all'" (click)="toggleComplexityFilter('all')">
+                            All
+                        </button>
+                        <button [class.active]="complexityFilter === 'high'" (click)="toggleComplexityFilter('high')">
+                            High (30+)
+                        </button>
+                        <button [class.active]="complexityFilter === 'medium'"
+                            (click)="toggleComplexityFilter('medium')">
+                            Medium (15-30)
+                        </button>
+                        <button [class.active]="complexityFilter === 'low'" (click)="toggleComplexityFilter('low')">
+                            Low (< 15) </button>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Sort By</label>
+                    <div class="sort-buttons">
+                        <button [class.active]="sortBy === 'name'" (click)="toggleSortField('name')">
+                            Name
+                            <i *ngIf="sortBy === 'name'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-alpha-down' : 'fa-sort-alpha-up'"></i>
+                        </button>
+
+                        <button [class.active]="sortBy === 'coverage'" (click)="toggleSortField('coverage')">
+                            Coverage
+                            <i *ngIf="sortBy === 'coverage'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-numeric-down' : 'fa-sort-numeric-up'"></i>
+                        </button>
+
+                        <button [class.active]="sortBy === 'size'" (click)="toggleSortField('size')">
+                            Size
+                            <i *ngIf="sortBy === 'size'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-numeric-down' : 'fa-sort-numeric-up'"></i>
+                        </button>
+
+                        <button [class.active]="sortBy === 'complexity'" (click)="toggleSortField('complexity')">
+                            Complexity
+                            <i *ngIf="sortBy === 'complexity'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-numeric-down' : 'fa-sort-numeric-up'"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-content">
+            <!-- Complexity vs Coverage Bubble Chart -->
+            <div class="chart-section">
+                <div class="chart-container">
+                    <google-chart [type]="complexityBubbleChartType" [data]="complexityBubbleChartData"
+                        [options]="complexityBubbleChartOptions" [width]="1000" [height]="400">
+                    </google-chart>
+                </div>
+            </div>
+
+            <!-- Coverage Distribution Chart -->
+            <div class="chart-section">
+                <div class="chart-container">
+                    <google-chart [type]="coverageDistributionChartType" [data]="coverageDistributionChartData"
+                        [options]="coverageDistributionChartOptions" [width]="500" [height]="350">
+                    </google-chart>
+                </div>
+            </div>
+
+            <!-- Classes List -->
+            <div class="classes-section">
+                <h2>Classes ({{ filteredClasses.length }})</h2>
+
+                <div class="no-results" *ngIf="filteredClasses.length === 0">
+                    <i class="fas fa-search"></i>
+                    <p>No classes match your search criteria</p>
+                    <button class="clear-filters-btn" (click)="clearFilters()">Clear Filters</button>
+                </div>
+
+                <div class="class-list" *ngIf="filteredClasses.length > 0">
+                    <div class="class-header">
+                        <div class="class-name-header">
+                            <span>Class Name</span>
+                            <i class="fas fa-sort" (click)="updateSorting('name')"></i>
+                        </div>
+                        <div class="class-package-header">
+                            <span>Package</span>
+                        </div>
+                        <div class="class-coverage-header">
+                            <span>Coverage</span>
+                            <i class="fas fa-sort" (click)="updateSorting('coverage')"></i>
+                        </div>
+                        <div class="class-size-header">
+                            <span>Size</span>
+                            <i class="fas fa-sort" (click)="updateSorting('size')"></i>
+                        </div>
+                        <div class="class-complexity-header">
+                            <span>Complexity</span>
+                            <i class="fas fa-sort" (click)="updateSorting('complexity')"></i>
+                        </div>
+                    </div>
+
+                    <div class="class-item" *ngFor="let classInfo of filteredClasses"
+                        [class.selected]="selectedClass && selectedClass.packageName === classInfo.packageName && selectedClass.class.name === classInfo.class.name"
+                        (click)="toggleClassSelection(classInfo)">
+
+                        <div class="class-name">{{ classInfo.class.name }}</div>
+                        <div class="class-package">{{ classInfo.packageName }}</div>
+                        <div class="class-coverage">
+                            <div class="coverage-badge"
+                                [style.background-color]="getCoverageColor(classInfo.class.lineCoverage)"
+                                [style.color]="getCoverageTextColor(classInfo.class.lineCoverage)">
+                                {{ classInfo.class.lineCoverage }}%
+                            </div>
+                        </div>
+                        <div class="class-size">
+                            {{ classInfo.class.linesValid }} lines
+                        </div>
+                        <div class="class-complexity">
+                            <div *ngIf="classInfo.class.complexity" class="complexity-badge"
+                                [style.background-color]="getComplexityColor(classInfo.class.complexity)"
+                                [style.color]="getComplexityTextColor(classInfo.class.complexity)">
+                                {{ classInfo.class.complexity }}
+                            </div>
+                            <div *ngIf="!classInfo.class.complexity" class="na-badge">
+                                N/A
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Class Details -->
+            <div class="selected-class-section" *ngIf="selectedClass">
+                <div class="section-header">
+                    <h2>{{ selectedClass.class.name }}</h2>
+                    <div class="class-status" [style.background-color]="getClassStatusColor(selectedClass)"
+                        [style.color]="getClassStatusTextColor(selectedClass)"
+                        [title]="getClassStatusTooltip(selectedClass)">
+                        {{ getClassStatus(selectedClass) }}
+                    </div>
+                </div>
+
+                <div class="class-metadata">
+                    <div class="metadata-item">
+                        <div class="metadata-label">Full Name</div>
+                        <div class="metadata-value">{{ getClassName(selectedClass) }}</div>
+                    </div>
+                    <div class="metadata-item">
+                        <div class="metadata-label">Size</div>
+                        <div class="metadata-value">{{ getClassSize(selectedClass) }}</div>
+                    </div>
+                    <div class="metadata-item">
+                        <div class="metadata-label">Complexity</div>
+                        <div class="metadata-value">{{ getClassComplexity(selectedClass) }}</div>
+                    </div>
+                    <div class="metadata-item">
+                        <div class="metadata-label">Coverage</div>
+                        <div class="metadata-value">{{ getClassCoverage(selectedClass) }}</div>
+                    </div>
+                </div>
+
+                <!-- Class Coverage Chart -->
+                <div class="class-chart">
+                    <google-chart [type]="classCoverageChartType" [data]="classCoverageChartData"
+                        [options]="classCoverageChartOptions" [width]="300" [height]="300">
+                    </google-chart>
+                </div>
+
+                <!-- View Details Button -->
+                <div class="details-link">
+                    <a [routerLink]="['/insights/details', selectedClass.class.name]" class="details-button">
+                        View Full Details
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noDataTemplate>
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-code"></i>
+            </div>
+            <h2>No Coverage Data Available</h2>
+            <p>Upload a coverage report to explore class insights.</p>
+            <button routerLink="/upload" class="primary-btn">
+                <i class="fas fa-upload"></i> Upload Coverage Report
+            </button>
+        </div>
+    </ng-template>
+</div>

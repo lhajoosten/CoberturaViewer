@@ -8,8 +8,8 @@ export const routes: Routes = [
     },
     {
         path: 'upload',
-        loadComponent: () => import('./features/file-upload/components/file-uploader/file-uploader.component')
-            .then(m => m.FileUploaderComponent)
+        loadChildren: () => import('./features/file-upload/file-upload.routes')
+            .then(m => m.fileRoutes)
     },
     {
         path: 'visualization',

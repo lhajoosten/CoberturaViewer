@@ -46,6 +46,8 @@ export class CoberturaParserService {
                 complexity: parseFloat(coverageElement.getAttribute('complexity') || '0'),
                 linesValid: 0, // Will be aggregated
                 linesCovered: 0, // Will be aggregated
+                branchesValid: 0, // Will be aggregated
+                branchesCovered: 0, // Will be aggregated
                 timestamp: coverageElement.getAttribute('timestamp') || new Date().toISOString(),
                 methodsValid: 0,
                 methodsCovered: 0,
@@ -154,6 +156,8 @@ export class CoberturaParserService {
                         lines: lines,
                         linesValid: classLinesValid,
                         linesCovered: classLinesCovered,
+                        branchesValid: classBranchesValid,
+                        branchesCovered: classBranchesCovered,
                     });
 
                     // Aggregate package counts
@@ -180,7 +184,9 @@ export class CoberturaParserService {
                     complexity: finalPkgComplexity,
                     classes,
                     linesValid: pkgLinesValid,
-                    linesCovered: pkgLinesCovered
+                    linesCovered: pkgLinesCovered,
+                    branchesValid: pkgBranchesValid,
+                    branchesCovered: pkgBranchesCovered,
                 };
 
                 packages.push(pkg);
