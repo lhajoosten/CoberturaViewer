@@ -9,15 +9,6 @@ import { FileUploaderComponent } from '../../../features/file-upload/components/
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { DynamicSettingsComponent } from '../../../shared/ui/dynamic-settings.component';
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  time: Date;
-  read: boolean;
-  icon: string;
-}
-
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
@@ -39,7 +30,6 @@ export class HeaderComponent implements OnInit {
   isMobileView = false;
   isSearchActive = false;
   isUserMenuOpen = false;
-  showNotifications = false;
   hasActiveReport = false;
 
   searchControl = new FormControl('');
@@ -53,30 +43,6 @@ export class HeaderComponent implements OnInit {
     { value: 'pdf', label: 'PDF Document', icon: 'fa-file-pdf' },
     { value: 'csv', label: 'CSV Data', icon: 'fa-file-csv' }
   ];
-
-  // Sample notifications
-  notifications: Notification[] = [
-    {
-      id: '1',
-      title: 'Coverage report ready',
-      message: 'Your latest coverage report has been processed and is ready to view.',
-      time: new Date(),
-      read: false,
-      icon: 'fas fa-chart-pie'
-    },
-    {
-      id: '2',
-      title: 'New version available',
-      message: 'Coverage Explorer v2.0.0 has been released with new features.',
-      time: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      read: true,
-      icon: 'fas fa-sync'
-    }
-  ];
-
-  get notificationCount(): number {
-    return this.notifications.filter(n => !n.read).length;
-  }
 
   constructor(
     private themeStore: ThemeStoreService,
@@ -114,16 +80,9 @@ export class HeaderComponent implements OnInit {
   onClick(event: MouseEvent): void {
     // Close menus when clicking outside
     const userMenuElement = document.querySelector('.user-profile');
-    const notificationsElement = document.querySelector('.notification-container');
-    const notificationsPanelElement = document.querySelector('.notifications-panel');
 
     if (!userMenuElement?.contains(event.target as Node)) {
       this.isUserMenuOpen = false;
-    }
-
-    if (!notificationsElement?.contains(event.target as Node) &&
-      !notificationsPanelElement?.contains(event.target as Node)) {
-      this.showNotifications = false;
     }
   }
 
@@ -158,7 +117,6 @@ export class HeaderComponent implements OnInit {
 
   toggleUserMenu(): void {
     this.isUserMenuOpen = !this.isUserMenuOpen;
-    this.showNotifications = false;
   }
 
   /**

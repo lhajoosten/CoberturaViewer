@@ -6,7 +6,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { ThemeStoreService } from '../../../../core/services/store/theme-store.service';
 import { CoberturaParserService } from '../../../../core/services/parsers/cobertura-parser.service';
 import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
-import { NotificationService } from '../../../../core/services/utils/notification.service';
+import { ToastService } from '../../../../core/services/utils/toast.service';
 
 @Component({
   selector: 'app-file-uploader',
@@ -38,7 +38,7 @@ export class FileUploaderComponent implements OnInit {
   constructor(
     private parserService: CoberturaParserService,
     private coverageStore: CoverageStoreService,
-    private notificationService: NotificationService,
+    private ToastService: ToastService,
     private themeStore: ThemeStoreService,
     private router: Router
   ) {
@@ -88,7 +88,7 @@ export class FileUploaderComponent implements OnInit {
     // Check file type
     if (!file.name.endsWith('.xml')) {
       this.errorMessage = 'Please select an XML file with Cobertura coverage data';
-      this.notificationService.showError('Invalid file type', 'Please select a Cobertura XML file');
+      this.ToastService.showError('Invalid file type', 'Please select a Cobertura XML file');
       return;
     }
 
@@ -96,7 +96,7 @@ export class FileUploaderComponent implements OnInit {
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       this.errorMessage = 'File size exceeds 10MB limit';
-      this.notificationService.showError('File too large', 'The maximum file size is 10MB');
+      this.ToastService.showError('File too large', 'The maximum file size is 10MB');
       return;
     }
 
@@ -126,7 +126,7 @@ export class FileUploaderComponent implements OnInit {
           this.coverageStore.setCoverageData(coverageData);
 
           // Show success notification
-          this.notificationService.showSuccess(
+          this.ToastService.showSuccess(
             'File Loaded Successfully',
             `Loaded coverage data with ${coverageData.summary.lineCoverage.toFixed(1)}% line coverage`
           );
@@ -138,7 +138,7 @@ export class FileUploaderComponent implements OnInit {
         }
       } catch (error: any) {
         this.errorMessage = error.message || 'An error occurred while processing the file';
-        this.notificationService.showError('Error', this.errorMessage);
+        this.ToastService.showError('Error', this.errorMessage);
         console.error(error);
       } finally {
         this.isLoading = false;
@@ -147,7 +147,7 @@ export class FileUploaderComponent implements OnInit {
 
     reader.onerror = () => {
       this.errorMessage = 'Failed to read the file';
-      this.notificationService.showError('File Error', 'Could not read the file');
+      this.ToastService.showError('File Error', 'Could not read the file');
       this.isLoading = false;
     };
 
@@ -167,7 +167,7 @@ export class FileUploaderComponent implements OnInit {
 
         this.coverageStore.setCoverageData(sampleData);
 
-        this.notificationService.showSuccess(
+        this.ToastService.showSuccess(
           'Sample Data Loaded',
           `Loaded ${type} sample data with ${sampleData.summary.lineCoverage.toFixed(1)}% coverage`
         );
@@ -179,7 +179,7 @@ export class FileUploaderComponent implements OnInit {
         this.router.navigate(['/visualization']);
       } catch (error) {
         this.errorMessage = 'Failed to load sample data';
-        this.notificationService.showError('Error', 'Failed to load sample data');
+        this.ToastService.showError('Error', 'Failed to load sample data');
       } finally {
         this.isLoading = false;
       }
@@ -195,7 +195,7 @@ export class FileUploaderComponent implements OnInit {
       try {
         const fileContent = localStorage.getItem(`file-content:${fileName}`);
         if (!fileContent) {
-          this.notificationService.showError('File Not Found', 'Could not find the saved file content');
+          this.ToastService.showError('File Not Found', 'Could not find the saved file content');
           this.isLoading = false;
           return;
         }
@@ -214,7 +214,7 @@ export class FileUploaderComponent implements OnInit {
           this.coverageStore.setCoverageData(coverageData);
         }
 
-        this.notificationService.showSuccess(
+        this.ToastService.showSuccess(
           'Historical File Loaded',
           `Loaded ${fileName} successfully`
         );
@@ -226,7 +226,7 @@ export class FileUploaderComponent implements OnInit {
         this.router.navigate(['/visualization']);
       } catch (error) {
         console.error('Error loading from history:', error);
-        this.notificationService.showError('Error', 'Failed to load historical file');
+        this.ToastService.showError('Error', 'Failed to load historical file');
       } finally {
         this.isLoading = false;
       }
@@ -247,7 +247,7 @@ export class FileUploaderComponent implements OnInit {
       localStorage.removeItem('recent-files');
       this.previousFiles = [];
 
-      this.notificationService.showInfo('History Cleared', 'Your recent files history has been cleared');
+      this.ToastService.showInfo('History Cleared', 'Your recent files history has been cleared');
     }
   }
 

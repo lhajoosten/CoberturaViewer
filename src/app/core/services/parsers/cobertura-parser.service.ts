@@ -6,13 +6,13 @@ import {
     ClassInfo,
     LineInfo
 } from "../../models/coverage.model";
-import { NotificationService } from '../utils/notification.service';
+import { ToastService } from '../utils/toast.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CoberturaParserService {
-    constructor(private notificationService: NotificationService) { }
+    constructor(private ToastService: ToastService) { }
 
     /**
      * Parse Cobertura XML content into structured coverage data
@@ -220,7 +220,7 @@ export class CoberturaParserService {
 
         } catch (error: any) {
             console.error(`Failed to parse Cobertura XML: ${error.message}`);
-            this.notificationService.showError(errorTitle, error.message || 'Could not process the file.');
+            this.ToastService.showError(errorTitle, error.message || 'Could not process the file.');
             return null;
         }
     }

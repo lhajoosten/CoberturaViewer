@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { NotificationService } from '../../../../core/services/utils/notification.service';
+import { ToastService } from '../../../../core/services/utils/toast.service';
 import { CoberturaParserService } from '../../../../core/services/parsers/cobertura-parser.service';
 import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
 
@@ -30,7 +30,7 @@ export class RecentFilesComponent implements OnInit {
   sortOrder = 'desc'; // 'asc', 'desc'
 
   constructor(
-    private notificationService: NotificationService,
+    private ToastService: ToastService,
     private parserService: CoberturaParserService,
     private coverageStore: CoverageStoreService
   ) { }
@@ -120,7 +120,7 @@ export class RecentFilesComponent implements OnInit {
       try {
         const fileContent = localStorage.getItem(`file-content:${file.name}`);
         if (!fileContent) {
-          this.notificationService.showError('File Not Found', 'Could not find the saved file content');
+          this.ToastService.showError('File Not Found', 'Could not find the saved file content');
           this.isLoading = false;
           return;
         }
@@ -139,10 +139,10 @@ export class RecentFilesComponent implements OnInit {
           this.coverageStore.setCoverageData(data);
         }
 
-        this.notificationService.showSuccess('File Loaded', `Loaded ${file.name} successfully`);
+        this.ToastService.showSuccess('File Loaded', `Loaded ${file.name} successfully`);
       } catch (error) {
         console.error('Error loading file:', error);
-        this.notificationService.showError('Error', 'Failed to load the file');
+        this.ToastService.showError('Error', 'Failed to load the file');
       } finally {
         this.isLoading = false;
       }
@@ -166,10 +166,10 @@ export class RecentFilesComponent implements OnInit {
         // Update localStorage
         localStorage.setItem('recent-files', JSON.stringify(this.recentFiles.map(f => f.name)));
 
-        this.notificationService.showSuccess('File Deleted', `${file.name} has been deleted`);
+        this.ToastService.showSuccess('File Deleted', `${file.name} has been deleted`);
       } catch (error) {
         console.error('Error deleting file:', error);
-        this.notificationService.showError('Error', 'Failed to delete the file');
+        this.ToastService.showError('Error', 'Failed to delete the file');
       }
     }
   }
@@ -186,10 +186,10 @@ export class RecentFilesComponent implements OnInit {
         this.recentFiles = [];
         localStorage.removeItem('recent-files');
 
-        this.notificationService.showSuccess('Files Cleared', 'All recent files have been deleted');
+        this.ToastService.showSuccess('Files Cleared', 'All recent files have been deleted');
       } catch (error) {
         console.error('Error clearing files:', error);
-        this.notificationService.showError('Error', 'Failed to clear files');
+        this.ToastService.showError('Error', 'Failed to clear files');
       }
     }
   }

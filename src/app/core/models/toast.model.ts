@@ -1,16 +1,16 @@
 /**
  * Type for notification severity level
  */
-export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 /**
  * Interface for notification message
  */
-export interface NotificationInfo {
+export interface ToastInfo {
     /** Unique identifier for the notification */
     id: number;
     /** Severity level determining the visual style */
-    type: NotificationType;
+    type: ToastType;
     /** Short heading text summarizing the notification */
     title: string;
     /** Detailed explanation or content of the notification */

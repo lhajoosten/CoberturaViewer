@@ -6,7 +6,7 @@ import { CoverageStoreService } from '../../../../core/services/store/coverage-s
 import { ThemeStoreService } from '../../../../core/services/store/theme-store.service';
 import { ComparisonService, ComparisonResult } from '../../services/comparison.service';
 import { CoverageData } from '../../../../core/models/coverage.model';
-import { NotificationService } from '../../../../core/services/utils/notification.service';
+import { ToastService } from '../../../../core/services/utils/toast.service';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -41,7 +41,7 @@ export class ReportComparisonComponent implements OnInit {
     private coverageStore: CoverageStoreService,
     private themeStore: ThemeStoreService,
     private comparisonService: ComparisonService,
-    private notificationService: NotificationService
+    private ToastService: ToastService
   ) { }
 
   ngOnInit(): void {
@@ -87,7 +87,7 @@ export class ReportComparisonComponent implements OnInit {
 
   saveCurrentReport(): void {
     if (!this.currentReport) {
-      this.notificationService.showError('No Report', 'There is no current report to save');
+      this.ToastService.showError('No Report', 'There is no current report to save');
       return;
     }
 
@@ -116,10 +116,10 @@ export class ReportComparisonComponent implements OnInit {
       // Save to localStorage
       localStorage.setItem('saved-reports', JSON.stringify(this.storedReports));
 
-      this.notificationService.showSuccess('Report Saved', 'The report has been saved for future comparison');
+      this.ToastService.showSuccess('Report Saved', 'The report has been saved for future comparison');
     } catch (error) {
       console.error('Error saving report:', error);
-      this.notificationService.showError('Save Error', 'Failed to save the report');
+      this.ToastService.showError('Save Error', 'Failed to save the report');
     }
   }
 
@@ -142,13 +142,13 @@ export class ReportComparisonComponent implements OnInit {
 
   compareWithReport(id: string): void {
     if (!this.currentReport) {
-      this.notificationService.showError('No Current Report', 'Please upload a coverage report first');
+      this.ToastService.showError('No Current Report', 'Please upload a coverage report first');
       return;
     }
 
     const storedReport = this.storedReports.find(r => r.id === id);
     if (!storedReport) {
-      this.notificationService.showError('Report Not Found', 'The selected report could not be found');
+      this.ToastService.showError('Report Not Found', 'The selected report could not be found');
       return;
     }
 
@@ -163,10 +163,10 @@ export class ReportComparisonComponent implements OnInit {
       // Update charts
       this.updateCharts();
 
-      this.notificationService.showSuccess('Comparison Complete', 'Reports have been compared successfully');
+      this.ToastService.showSuccess('Comparison Complete', 'Reports have been compared successfully');
     } catch (error) {
       console.error('Error comparing reports:', error);
-      this.notificationService.showError('Comparison Error', 'Failed to compare the reports');
+      this.ToastService.showError('Comparison Error', 'Failed to compare the reports');
     }
   }
 

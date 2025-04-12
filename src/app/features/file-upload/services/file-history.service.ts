@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { NotificationService } from '../../../core/services/utils/notification.service';
+import { ToastService } from '../../../core/services/utils/toast.service';
 import { HistoricalFile } from '../models/historical-file.inteface';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { HistoricalFile } from '../models/historical-file.inteface';
 export class FileHistoryService {
   private files = new BehaviorSubject<HistoricalFile[]>([]);
 
-  constructor(private notificationService: NotificationService) {
+  constructor(private ToastService: ToastService) {
     this.loadRecentFiles();
   }
 
@@ -56,7 +56,7 @@ export class FileHistoryService {
       this.files.next(updatedFiles);
     } catch (error) {
       console.error('Error adding file to history:', error);
-      this.notificationService.showError('File History Error', 'Could not save file to history');
+      this.ToastService.showError('File History Error', 'Could not save file to history');
     }
   }
 
@@ -81,7 +81,7 @@ export class FileHistoryService {
       }
     } catch (error) {
       console.error('Error removing file from history:', error);
-      this.notificationService.showError('File History Error', 'Could not remove file from history');
+      this.ToastService.showError('File History Error', 'Could not remove file from history');
     }
   }
 
@@ -104,7 +104,7 @@ export class FileHistoryService {
       this.files.next([]);
     } catch (error) {
       console.error('Error clearing file history:', error);
-      this.notificationService.showError('File History Error', 'Could not clear file history');
+      this.ToastService.showError('File History Error', 'Could not clear file history');
     }
   }
 

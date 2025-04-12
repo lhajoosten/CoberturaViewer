@@ -1,20 +1,20 @@
 import { Injectable } from '@angular/core';
-import { NotificationService } from './notification.service';
 import html2canvas from 'html2canvas';
 import * as jspdf from 'jspdf';
+import { ToastService } from './toast.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ExportService {
-    constructor(private notificationService: NotificationService) { }
+    constructor(private toastService: ToastService) { }
 
     /**
      * Export chart as PNG image
      */
     exportChartAsPng(chartElement: HTMLElement, filename: string = 'chart'): void {
         if (!chartElement) {
-            this.notificationService.showError('Export Error', 'No chart element found to export');
+            this.toastService.showError('Export Error', 'No chart element found to export');
             return;
         }
 
@@ -33,7 +33,7 @@ export class ExportService {
             }
         } catch (error) {
             console.error('Error exporting chart:', error);
-            this.notificationService.showError('Export Failed', 'Could not export the chart as PNG');
+            this.toastService.showError('Export Failed', 'Could not export the chart as PNG');
         }
     }
 
@@ -42,7 +42,7 @@ export class ExportService {
      */
     exportChartAsSvg(chartElement: HTMLElement, filename: string = 'chart'): void {
         if (!chartElement) {
-            this.notificationService.showError('Export Error', 'No chart element found to export');
+            this.toastService.showError('Export Error', 'No chart element found to export');
             return;
         }
 
@@ -73,10 +73,10 @@ export class ExportService {
 
             // Clean up
             URL.revokeObjectURL(url);
-            this.notificationService.showSuccess('Export Complete', 'Chart exported as SVG');
+            this.toastService.showSuccess('Export Complete', 'Chart exported as SVG');
         } catch (error) {
             console.error('Error exporting SVG:', error);
-            this.notificationService.showError('Export Failed', 'Could not export the chart as SVG');
+            this.toastService.showError('Export Failed', 'Could not export the chart as SVG');
         }
     }
 
@@ -85,7 +85,7 @@ export class ExportService {
      */
     exportChartAsPdf(chartElement: HTMLElement, filename: string = 'chart'): void {
         if (!chartElement) {
-            this.notificationService.showError('Export Error', 'No chart element found to export');
+            this.toastService.showError('Export Error', 'No chart element found to export');
             return;
         }
 
@@ -114,11 +114,11 @@ export class ExportService {
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 pdf.save(`${filename}.pdf`);
 
-                this.notificationService.showSuccess('Export Complete', 'Chart exported as PDF');
+                this.toastService.showSuccess('Export Complete', 'Chart exported as PDF');
             });
         } catch (error) {
             console.error('Error exporting PDF:', error);
-            this.notificationService.showError('Export Failed', 'Could not export the chart as PDF');
+            this.toastService.showError('Export Failed', 'Could not export the chart as PDF');
         }
     }
 
@@ -163,10 +163,10 @@ export class ExportService {
 
             // Clean up
             URL.revokeObjectURL(url);
-            this.notificationService.showSuccess('Export Complete', 'Data exported as CSV');
+            this.toastService.showSuccess('Export Complete', 'Data exported as CSV');
         } catch (error) {
             console.error('Error exporting CSV:', error);
-            this.notificationService.showError('Export Failed', 'Could not export the data as CSV');
+            this.toastService.showError('Export Failed', 'Could not export the data as CSV');
         }
     }
 
@@ -178,7 +178,7 @@ export class ExportService {
             link.href = canvas.toDataURL('image/png');
             link.click();
 
-            this.notificationService.showSuccess('Export Complete', 'Chart exported as PNG');
+            this.toastService.showSuccess('Export Complete', 'Chart exported as PNG');
         });
     }
 
@@ -222,7 +222,7 @@ export class ExportService {
             link.href = canvas.toDataURL('image/png');
             link.click();
 
-            this.notificationService.showSuccess('Export Complete', 'Chart exported as PNG');
+            this.toastService.showSuccess('Export Complete', 'Chart exported as PNG');
         };
 
         img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
