@@ -1,6 +1,13 @@
 import { Injectable, TemplateRef, Type } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ModalConfig } from '../../models/modal.model';
+import {
+    AboutTemplateComponent,
+    HelpTemplateComponent,
+    KeyboardShortcutsTemplateComponent,
+    SettingsTemplateComponent,
+    ChangelogTemplateComponent
+} from '../../../shared/templates/index';
 
 export interface ModalRef {
     /** Close the modal */
@@ -76,7 +83,7 @@ export class ModalService {
     /**
      * Close a modal by id
      */
-    private close(id: string, result?: any): void {
+    close(id: string, result?: any): void {
         const currentModals = this.modals.getValue();
         const modalToClose = currentModals.find(m => m.id === id);
 
@@ -92,7 +99,7 @@ export class ModalService {
     /**
      * Update modal configuration
      */
-    private updateConfig(id: string, config: Partial<ModalConfig>): void {
+    updateConfig(id: string, config: Partial<ModalConfig>): void {
         const currentModals = this.modals.getValue();
         const modalToUpdate = currentModals.find(m => m.id === id);
 
@@ -107,6 +114,70 @@ export class ModalService {
      */
     getModals(): Observable<any[]> {
         return this.modals.asObservable();
+    }
+
+    //////////////////////////////////////////////
+    // Common predefined modal template methods //
+    //////////////////////////////////////////////
+
+    /**
+     * Opens the About modal
+     */
+    openAboutModal(data?: any, config?: ModalConfig): ModalRef {
+        const defaultConfig: ModalConfig = {
+            title: 'About Coverage Explorer',
+            width: '500px',
+            cssClass: 'about-modal'
+        };
+        return this.open(AboutTemplateComponent, data, { ...defaultConfig, ...config });
+    }
+
+    /**
+     * Opens the Help modal
+     */
+    openHelpModal(data?: any, config?: ModalConfig): ModalRef {
+        const defaultConfig: ModalConfig = {
+            title: 'Help & Getting Started',
+            width: '550px',
+            cssClass: 'help-modal'
+        };
+        return this.open(HelpTemplateComponent, data, { ...defaultConfig, ...config });
+    }
+
+    /**
+     * Opens the Keyboard Shortcuts modal
+     */
+    openKeyboardShortcutsModal(data?: any, config?: ModalConfig): ModalRef {
+        const defaultConfig: ModalConfig = {
+            title: 'Keyboard Shortcuts',
+            width: '600px',
+            cssClass: 'shortcuts-modal'
+        };
+        return this.open(KeyboardShortcutsTemplateComponent, data, { ...defaultConfig, ...config });
+    }
+
+    /**
+     * Opens the Settings modal
+     */
+    openSettingsModal(data?: any, config?: ModalConfig): ModalRef {
+        const defaultConfig: ModalConfig = {
+            title: 'Settings',
+            width: '600px',
+            cssClass: 'settings-modal'
+        };
+        return this.open(SettingsTemplateComponent, data, { ...defaultConfig, ...config });
+    }
+
+    /**
+     * Opens the Changelog modal
+     */
+    openChangelogModal(data?: any, config?: ModalConfig): ModalRef {
+        const defaultConfig: ModalConfig = {
+            title: 'What\'s New',
+            width: '600px',
+            cssClass: 'changelog-modal'
+        };
+        return this.open(ChangelogTemplateComponent, data, { ...defaultConfig, ...config });
     }
 
     /**

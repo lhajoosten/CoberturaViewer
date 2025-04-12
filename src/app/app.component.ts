@@ -2,13 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeStoreService } from './core/services/store/theme-store.service';
 import { LayoutModule } from './core/layouts/layout.module';
+import { ModalContainerComponent } from './shared/components/modal-container/modal-container.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, LayoutModule],
+  imports: [CommonModule, LayoutModule, ModalContainerComponent],
   template: `
-  <app-main-layout></app-main-layout>
+    <app-main-layout></app-main-layout>
+    <app-modal-container></app-modal-container>
   `,
 })
 export class AppComponent implements OnInit {

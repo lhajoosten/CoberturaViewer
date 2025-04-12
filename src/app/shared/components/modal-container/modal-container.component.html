@@ -1,0 +1,18 @@
+<div class="modal-overlay" *ngFor="let modal of modals$ | async" [class.visible]="true"
+    (click)="onOverlayClick($event, modal)">
+    <div class="modal-wrapper" [ngStyle]="getModalStyles(modal.config)" [ngClass]="modal.config.cssClass"
+        (click)="$event.stopPropagation()">
+        <div class="modal-header" *ngIf="modal.config.title">
+            <h2 class="modal-title">{{ modal.config.title }}</h2>
+            <button class="modal-close-btn" (click)="closeModal(modal.id)">&times;</button>
+        </div>
+        <div class="modal-content">
+            <ng-container *ngIf="modal.component" [ngComponentOutlet]="modal.component"
+                [ngComponentOutletInjector]="getInjector(modal)">
+            </ng-container>
+            <ng-container *ngIf="modal.template" [ngTemplateOutlet]="modal.template"
+                [ngTemplateOutletContext]="{ $implicit: modal.data }">
+            </ng-container>
+        </div>
+    </div>
+</div>

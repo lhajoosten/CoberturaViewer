@@ -1,5 +1,16 @@
 <footer class="app-footer">
     <div class="container">
-        <p>Coverage Explorer v2.0.0 &copy; {{ currentYear }}</p>
+        <div class="footer-content">
+            <div class="app-info">
+                <p>Coverage Explorer v2.0.0 &copy; {{ currentYear }}</p>
+                <span class="version-badge">Major Update</span>
+            </div>
+            <div class="footer-actions">
+                <button class="footer-btn" (click)="openAboutModal()">About</button>
+                <button class="footer-btn" (click)="openKeyboardShortcutsModal()">Keyboard Shortcuts</button>
+                <button class="footer-btn" (click)="openHelpModal()">Help</button>
+                <button class="footer-btn" (click)="openChangelogModal()">What's New</button>
+            </div>
+        </div>
     </div>
 </footer>

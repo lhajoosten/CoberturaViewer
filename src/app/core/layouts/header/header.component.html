@@ -4,14 +4,111 @@
             <i class="fas fa-bars"></i>
         </button>
         <div class="app-logo">
+            <i class="fas fa-shield-alt logo-icon"></i>
             <span>Coverage Explorer</span>
+            <span class="version-tag">v2.0</span>
+        </div>
+    </div>
+
+    <div class="header-center" *ngIf="!isMobileView">
+        <div class="search-container">
+            <input type="text" placeholder="Search in reports..." class="search-input" (focus)="onSearchFocus()"
+                (blur)="onSearchBlur()" [formControl]="searchControl">
+            <i class="fas fa-search search-icon"></i>
         </div>
     </div>
 
     <div class="header-end">
-        <button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme">
+        <button class="header-btn" aria-label="Import file" title="Import Coverage File" (click)="onImportFile()">
+            <i class="fas fa-file-import"></i>
+        </button>
+
+        <button class="header-btn" aria-label="Export report" title="Export Report" [disabled]="!hasActiveReport"
+            (click)="onExportReport()">
+            <i class="fas fa-file-export"></i>
+        </button>
+
+        <button class="theme-toggle" (click)="toggleTheme()" aria-label="Toggle theme" title="Toggle Dark Mode">
             <i *ngIf="isDarkTheme" class="fas fa-sun"></i>
             <i *ngIf="!isDarkTheme" class="fas fa-moon"></i>
         </button>
+
+        <div class="user-profile" (click)="toggleUserMenu()">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-menu" *ngIf="isUserMenuOpen">
+                <div class="user-menu-header">
+                    <span class="user-name">Guest User</span>
+                    <span class="user-role">Not Signed In</span>
+                </div>
+                <div class="user-menu-items">
+                    <button class="user-menu-item" (click)="login()">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                    <button class="user-menu-item" (click)="openSettings()">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                    <button class="user-menu-item" (click)="openKeyboardShortcuts()">
+                        <i class="fas fa-keyboard"></i> Keyboard Shortcuts
+                    </button>
+                    <button class="user-menu-item" (click)="openHelp()">
+                        <i class="fas fa-question-circle"></i> Help
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-mobile-search" *ngIf="isMobileView && isSearchActive">
+        <div class="search-container">
+            <input type="text" placeholder="Search in reports..." class="search-input" [formControl]="searchControl">
+            <button class="search-close" (click)="closeSearch()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     </div>
 </header>
+
+<!-- File Uploader Modal Template -->
+<ng-template #fileUploaderTemplate>
+    <div class="file-uploader-container">
+        <app-file-uploader></app-file-uploader>
+    </div>
+</ng-template>
+
+<!-- Export Options Modal Template -->
+<ng-template #exportOptionsTemplate>
+    <div class="export-options-container">
+        <div class="export-form">
+            <div class="form-group">
+                <label for="exportFileName">File name</label>
+                <input type="text" id="exportFileName" [(ngModel)]="exportFileName" placeholder="coverage-report">
+            </div>
+
+            <div class="form-group">
+                <label>Format</label>
+                <div class="format-options">
+                    <div *ngFor="let format of exportFormats" class="format-option"
+                        [class.selected]="selectedExportFormat === format.value"
+                        (click)="selectedExportFormat = format.value">
+                        <i class="fas" [ngClass]="format.icon"></i>
+                        <span>{{ format.label }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-text" *ngIf="selectedExportFormat === 'csv'">
+                <i class="fas fa-info-circle"></i>
+                CSV export contains raw coverage data without visualizations.
+            </div>
+
+            <div class="export-actions">
+                <button class="cancel-btn" (click)="modalService.close!">Cancel</button>
+                <button class="export-btn" (click)="exportReport()">
+                    <i class="fas fa-file-export"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+</ng-template>
