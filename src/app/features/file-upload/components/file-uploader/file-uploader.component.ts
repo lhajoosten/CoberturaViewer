@@ -6,7 +6,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { ThemeStoreService } from '../../../../core/services/store/theme-store.service';
 import { CoberturaParserService } from '../../../../core/services/parsers/cobertura-parser.service';
 import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
-import { NotificationService } from '../../../../core/services/utils/notification.utility';
+import { NotificationService } from '../../../../core/services/utils/notification.service';
 
 @Component({
   selector: 'app-file-uploader',

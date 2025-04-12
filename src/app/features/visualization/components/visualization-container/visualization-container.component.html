@@ -3,6 +3,10 @@
     <div class="visualization-header">
         <h1>Coverage Visualization</h1>
         <div class="visualization-controls">
+            <app-export-button [targetElement]="chartContainer?.nativeElement" [chartData]="activeChartData"
+                [filename]="'coverage-' + activeView">
+            </app-export-button>
+
             <div class="view-selector">
                 <button [class.active]="activeView === 'treemap'" (click)="switchView('treemap')">
                     <i class="fas fa-th-large"></i> Treemap

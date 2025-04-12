@@ -1,4 +1,6 @@
 <div class="app-container" [ngClass]="{'sidebar-collapsed': isSidebarCollapsed}">
+    <app-global-spinner></app-global-spinner>
+
     <app-header (toggleSidebarEvent)="toggleSidebar()"></app-header>
 
     <div class="content-container">

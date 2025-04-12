@@ -6,7 +6,7 @@ import { CoverageStoreService } from '../../../../core/services/store/coverage-s
 import { ThemeStoreService } from '../../../../core/services/store/theme-store.service';
 import { ComparisonService, ComparisonResult } from '../../services/comparison.service';
 import { CoverageData } from '../../../../core/models/coverage.model';
-import { NotificationService } from '../../../../core/services/utils/notification.utility';
+import { NotificationService } from '../../../../core/services/utils/notification.service';
 import { RouterModule } from '@angular/router';
 
 @Component({

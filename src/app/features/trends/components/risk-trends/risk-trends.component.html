@@ -1,1 +1,102 @@
-<p>risk-trends works!</p>
+<div class="risk-trends-container">
+    <div class="risk-trends-header">
+        <h1>Risk Trends</h1>
+        <p class="description">Track how code quality risk evolves over time</p>
+    </div>
+
+    <ng-container *ngIf="hasData && riskHistory.length > 0; else noDataTemplate">
+        <div class="controls-section">
+            <div class="time-filter">
+                <span class="filter-label">Time Range:</span>
+                <div class="filter-buttons">
+                    <button [class.active]="selectedTimeframe === 7" (click)="changeTimeframe(7)">7 Days</button>
+                    <button [class.active]="selectedTimeframe === 14" (click)="changeTimeframe(14)">14 Days</button>
+                    <button [class.active]="selectedTimeframe === 30" (click)="changeTimeframe(30)">30 Days</button>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="action-button" (click)="clearRiskHistory()">
+                    <i class="fas fa-trash-alt"></i> Clear History
+                </button>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <!-- Risk Score Trend -->
+            <div class="chart-card">
+                <google-chart *ngIf="riskChartData.length > 1" [type]="riskChartType" [data]="riskChartData"
+                    [options]="riskChartOptions" [width]="1000" [height]="400">
+                </google-chart>
+            </div>
+
+            <!-- High Risk Classes -->
+            <div class="chart-card">
+                <google-chart *ngIf="classRiskChartData.length > 1" [type]="classRiskChartType"
+                    [data]="classRiskChartData" [options]="classRiskChartOptions" [width]="1000" [height]="350">
+                </google-chart>
+            </div>
+        </div>
+
+        <!-- Risk Analysis -->
+        <div class="risk-analysis-section" *ngIf="riskHistory.length > 0">
+            <h2>Risk Analysis</h2>
+
+            <div class="risk-metrics">
+                <div class="metric-card">
+                    <div class="metric-title">Current Risk Score</div>
+                    <div class="metric-value" [class]="riskHistory[riskHistory.length-1].riskLevel + '-risk'">
+                        {{ riskHistory[riskHistory.length-1].riskScore.toFixed(1) }}
+                    </div>
+                    <div class="metric-label">
+                        {{ riskHistory[riskHistory.length-1].riskLevel | titlecase }} Risk
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">High Risk Classes</div>
+                    <div class="metric-value high-risk">
+                        {{ riskHistory[riskHistory.length-1].highRiskCount }}
+                    </div>
+                    <div class="metric-label">Require Immediate Attention</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">Risk Trend</div>
+                    <div class="metric-value" [ngClass]="getRiskTrendClass()">
+                        <i class="fas" [ngClass]="getRiskTrendIcon()"></i>
+                        {{ getRiskTrendValue() }}
+                    </div>
+                    <div class="metric-label">{{ getRiskTrendLabel() }}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">Coverage Gap</div>
+                    <div class="metric-value">
+                        {{ riskHistory[riskHistory.length-1].coverageGap.toFixed(1) }}%
+                    </div>
+                    <div class="metric-label">To reach 90% coverage</div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noDataTemplate>
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h2>No Risk Trend Data Available</h2>
+            <p>Upload multiple coverage reports over time to track risk trends.</p>
+
+            <div class="action-buttons">
+                <button routerLink="/upload" class="primary-btn">
+                    <i class="fas fa-upload"></i> Upload Report
+                </button>
+                <button (click)="generateMockData()" class="secondary-btn">
+                    <i class="fas fa-magic"></i> Generate Sample Data
+                </button>
+            </div>
+        </div>
+    </ng-template>
+</div>

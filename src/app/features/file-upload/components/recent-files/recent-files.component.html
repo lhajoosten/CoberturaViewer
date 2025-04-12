@@ -1,1 +1,85 @@
-<p>recent-files works!</p>
+<div class="recent-files-container">
+    <div class="recent-files-header">
+        <h1>Recent Files</h1>
+        <p class="description">View and manage your recently uploaded coverage reports</p>
+    </div>
+
+    <div class="actions-bar">
+        <button class="upload-button" routerLink="/upload">
+            <i class="fas fa-upload"></i> Upload New Report
+        </button>
+
+        <button class="clear-button" *ngIf="recentFiles.length > 0" (click)="clearAllFiles()">
+            <i class="fas fa-trash-alt"></i> Clear All
+        </button>
+    </div>
+
+    <ng-container *ngIf="recentFiles.length > 0; else noFilesTemplate">
+        <div class="files-table-container">
+            <table class="files-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" (click)="updateSorting('name')">
+                            File Name
+                            <i *ngIf="sortBy === 'name'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-alpha-down' : 'fa-sort-alpha-up'"></i>
+                        </th>
+                        <th class="sortable" (click)="updateSorting('date')">
+                            Date
+                            <i *ngIf="sortBy === 'date'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-numeric-down' : 'fa-sort-numeric-up'"></i>
+                        </th>
+                        <th>Size</th>
+                        <th class="sortable" (click)="updateSorting('coverage')">
+                            Coverage
+                            <i *ngIf="sortBy === 'coverage'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-numeric-down' : 'fa-sort-numeric-up'"></i>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let file of recentFiles" (click)="loadFile(file)" class="file-row">
+                        <td class="file-name">
+                            <i class="fas fa-file-code file-icon"></i>
+                            {{ file.name }}
+                        </td>
+                        <td class="file-date">{{ file.date | date:'medium' }}</td>
+                        <td class="file-size">{{ formatFileSize(file.size) }}</td>
+                        <td class="file-coverage" [ngClass]="getCoverageClass(file.summary?.lineCoverage)">
+                            {{ file.summary?.lineCoverage !== undefined ? (file.summary?.lineCoverage | number:'1.1-1')
+                            +
+                            '%' : 'N/A' }}
+                        </td>
+                        <td class="file-actions">
+                            <button class="load-btn" (click)="loadFile(file); $event.stopPropagation()">
+                                <i class="fas fa-folder-open"></i>
+                            </button>
+                            <button class="delete-btn" (click)="deleteFile(file, $event)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </ng-container>
+
+    <ng-template #noFilesTemplate>
+        <div class="no-files-container">
+            <div class="no-files-icon">
+                <i class="fas fa-folder-open"></i>
+            </div>
+            <h2>No Recent Files</h2>
+            <p>You haven't uploaded any coverage reports yet.</p>
+            <button class="upload-button-large" routerLink="/upload">
+                <i class="fas fa-upload"></i> Upload Coverage Report
+            </button>
+        </div>
+    </ng-template>
+
+    <div class="loading-overlay" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading file...</p>
+    </div>
+</div>

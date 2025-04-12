@@ -8,7 +8,9 @@ import { GoogleChartsModule } from 'angular-google-charts';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, LayoutModule, GoogleChartsModule],
-  template: `<app-main-layout></app-main-layout>`,
+  template: `
+  <app-main-layout></app-main-layout>
+  `,
 })
 export class AppComponent implements OnInit {
   isDarkTheme = false;

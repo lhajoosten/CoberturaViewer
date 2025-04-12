@@ -6,7 +6,7 @@ import {
     ClassInfo,
     LineInfo
 } from "../../models/coverage.model";
-import { NotificationService } from '../utils/notification.utility';
+import { NotificationService } from '../utils/notification.service';
 
 @Injectable({
     providedIn: 'root'

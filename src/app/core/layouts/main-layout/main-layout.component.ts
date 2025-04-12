@@ -5,12 +5,20 @@ import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../side-bar/side-bar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { GlobalSpinnerComponent } from '../../../shared/ui/global-spinner.component';
 
 @Component({
   selector: 'app-main-layout',
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss'],
-  imports: [CommonModule, RouterModule, HeaderComponent, SidebarComponent, FooterComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    HeaderComponent,
+    SidebarComponent,
+    FooterComponent,
+    GlobalSpinnerComponent
+  ],
   standalone: true
 })
 export class MainLayoutComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
@@ -11,6 +11,7 @@ import { CoverageTableComponent } from '../coverage-table/coverage-table.compone
 import { GoogleChartsModule } from 'angular-google-charts';
 import { LineChartComponent } from '../line-chart/line-chart.component';
 import { CoverageSummaryComponent } from '../coverage-summary/coverage-summary.component';
+import { ExportButtonComponent } from '../../../../shared/components/export-button/export-button.component';
 
 @Component({
   selector: 'app-visualization-container',
@@ -25,12 +26,16 @@ import { CoverageSummaryComponent } from '../coverage-summary/coverage-summary.c
     HeatmapComponent,
     LineChartComponent,
     AdvancedPieComponent,
-    CoverageSummaryComponent
+    CoverageSummaryComponent,
+    ExportButtonComponent
   ],
   templateUrl: './visualization-container.component.html',
   styleUrls: ['./visualization-container.component.scss']
 })
 export class VisualizationContainerComponent implements OnInit {
+  @ViewChild('chartContainer') chartContainer: ElementRef | null = null;
+  activeChartData: any[][] = [];
+
   coverageData: CoverageData | null = null;
   hasData = false;
   activeView = 'treemap';
@@ -46,5 +51,9 @@ export class VisualizationContainerComponent implements OnInit {
 
   switchView(view: string): void {
     this.activeView = view;
+  }
+
+  setActiveChartData(data: any[][]): void {
+    this.activeChartData = data;
   }
 }
