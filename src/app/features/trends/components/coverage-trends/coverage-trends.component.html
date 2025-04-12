@@ -1,1 +1,120 @@
-<p>coverage-trends works!</p>
+<div class="trends-container">
+    <div class="trends-header">
+        <h1>Coverage Trends</h1>
+        <p class="description">Track changes in your code coverage over time</p>
+    </div>
+
+    <ng-container *ngIf="hasData; else noDataTemplate">
+        <!-- Trend Summary -->
+        <div class="trend-summary">
+            <div class="trend-card">
+                <div class="trend-icon" [ngClass]="trendStats.direction">
+                    <i class="fas" [ngClass]="{
+            'fa-arrow-up': trendStats.isPositive,
+            'fa-arrow-down': trendStats.isNegative,
+            'fa-minus': !trendStats.isPositive && !trendStats.isNegative
+          }"></i>
+                </div>
+                <div class="trend-content">
+                    <div class="trend-title">Coverage Trend</div>
+                    <div class="trend-value" [ngClass]="trendStats.direction">
+                        {{ trendStats.change > 0 ? '+' : '' }}{{ trendStats.change.toFixed(2) }}%
+                    </div>
+                    <div class="trend-subtitle">
+                        {{ trendStats.isPositive ? 'Improving' : trendStats.isNegative ? 'Declining' : 'Stable' }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="time-filter">
+                <span class="filter-label">Time Range:</span>
+                <div class="filter-buttons">
+                    <button [class.active]="timeframe === 7" (click)="changeTimeframe(7)">7 Days</button>
+                    <button [class.active]="timeframe === 14" (click)="changeTimeframe(14)">14 Days</button>
+                    <button [class.active]="timeframe === 30" (click)="changeTimeframe(30)">30 Days</button>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="action-button" (click)="clearTrends()">
+                    <i class="fas fa-trash-alt"></i> Clear History
+                </button>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-container">
+            <!-- Line Chart (Coverage over time) -->
+            <div class="chart-card">
+                <google-chart *ngIf="lineChartData.length > 0" [type]="lineChartType" [data]="lineChartData"
+                    [options]="lineChartOptions" [width]="lineChartWidth" [height]="lineChartHeight">
+                </google-chart>
+            </div>
+
+            <!-- Bar Chart (First vs Last) -->
+            <div class="chart-card" *ngIf="snapshots.length >= 2">
+                <google-chart *ngIf="barChartData.length > 0" [type]="barChartType" [data]="barChartData"
+                    [options]="barChartOptions" [width]="barChartWidth" [height]="barChartHeight">
+                </google-chart>
+            </div>
+
+            <!-- History Table -->
+            <div class="history-card">
+                <div class="history-header">
+                    <h3>Coverage History</h3>
+                    <div class="history-count">{{ snapshots.length }} snapshots</div>
+                </div>
+
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Line Coverage</th>
+                                <th>Branch Coverage</th>
+                                <th>Lines Covered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let snapshot of snapshots | slice:0:10">
+                                <td>{{ snapshot.date | date:'medium' }}</td>
+                                <td [ngClass]="getCoverageClass(snapshot.lineCoverage)">
+                                    {{ snapshot.lineCoverage.toFixed(2) }}%
+                                </td>
+                                <td [ngClass]="getCoverageClass(snapshot.branchCoverage)">
+                                    {{ snapshot.branchCoverage.toFixed(2) }}%
+                                </td>
+                                <td>{{ snapshot.linesCovered }} / {{ snapshot.linesValid }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="table-footer" *ngIf="snapshots.length > 10">
+                        <div class="more-indicator">
+                            <i class="fas fa-ellipsis-h"></i> {{ snapshots.length - 10 }} more snapshots...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noDataTemplate>
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h2>No Trend Data Available</h2>
+            <p>Upload multiple coverage reports over time to track trends.</p>
+
+            <div class="action-buttons">
+                <button routerLink="/upload" class="primary-btn">
+                    <i class="fas fa-upload"></i> Upload Report
+                </button>
+                <button (click)="generateMockData()" class="secondary-btn">
+                    <i class="fas fa-magic"></i> Generate Sample Data
+                </button>
+            </div>
+        </div>
+    </ng-template>
+</div>
