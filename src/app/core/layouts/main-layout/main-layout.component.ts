@@ -6,6 +6,7 @@ import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../side-bar/side-bar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { GlobalSpinnerComponent } from '../../../shared/ui/global-spinner.component';
+import { ModalContainerComponent } from '../../../shared/components/modal-container/modal-container.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -17,7 +18,8 @@ import { GlobalSpinnerComponent } from '../../../shared/ui/global-spinner.compon
     HeaderComponent,
     SidebarComponent,
     FooterComponent,
-    GlobalSpinnerComponent
+    GlobalSpinnerComponent,
+    ModalContainerComponent
   ],
   standalone: true
 })

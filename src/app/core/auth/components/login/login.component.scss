@@ -1,0 +1,154 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: var(--color-bg-secondary);
+
+  // Optional: add a subtle pattern or gradient
+  background-image: radial-gradient(
+    circle at top right,
+    rgba(var(--color-primary-rgb), 0.05) 0%,
+    transparent 70%
+  );
+}
+
+.login-card {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 8px;
+  background-color: var(--color-bg-primary);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.login-header {
+  padding: 2rem;
+  text-align: center;
+
+  .app-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--color-text-brand);
+    margin-bottom: 1.5rem;
+
+    .logo-icon {
+      font-size: 2rem;
+      color: var(--color-primary);
+    }
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+  }
+}
+
+.login-methods {
+  padding: 0 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  i {
+    font-size: 1.25rem;
+  }
+
+  &.github {
+    background-color: #24292e;
+    color: white;
+
+    &:hover {
+      background-color: #1a1e21;
+    }
+  }
+
+  &.microsoft {
+    background-color: #2f7bed;
+    color: white;
+
+    &:hover {
+      background-color: #246bdb;
+    }
+  }
+}
+
+.login-info {
+  padding: 0 2rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.login-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--color-border-light);
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-text-tertiary);
+
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Dark theme adjustments
+:host-context(.dark-theme) {
+  .login-container {
+    background-color: var(--color-bg-secondary);
+    background-image: radial-gradient(
+      circle at top right,
+      rgba(var(--color-primary-rgb), 0.1) 0%,
+      transparent 70%
+    );
+  }
+
+  .login-card {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+}

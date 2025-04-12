@@ -1,0 +1,64 @@
+<div class="profile-container" *ngIf="user">
+    <div class="profile-header">
+        <h1>Your Profile</h1>
+        <button class="logout-btn" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Sign Out
+        </button>
+    </div>
+
+    <div class="profile-card">
+        <div class="profile-avatar">
+            <img [src]="user.avatar || 'assets/images/default-avatar.png'" [alt]="user.name">
+            <div class="provider-badge" [class]="user.provider">
+                <i class="fab" [ngClass]="user.provider === 'github' ? 'fa-github' : 'fa-microsoft'"></i>
+            </div>
+        </div>
+
+        <div class="profile-details">
+            <h2>{{ user.name }}</h2>
+            <p class="user-email">{{ user.email }}</p>
+
+            <div class="user-roles">
+                <span class="role-badge" *ngFor="let role of user.roles">{{ role }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-sections">
+        <section class="profile-section">
+            <h3>Account Information</h3>
+            <div class="profile-field">
+                <span class="field-label">Account ID</span>
+                <span class="field-value">{{ user.id }}</span>
+            </div>
+            <div class="profile-field">
+                <span class="field-label">Authentication Provider</span>
+                <span class="field-value">{{ user.provider | titlecase }}</span>
+            </div>
+            <div class="profile-field">
+                <span class="field-label">Account Created</span>
+                <span class="field-value">{{ '2025-04-12' | date:'medium' }}</span>
+            </div>
+        </section>
+
+        <section class="profile-section">
+            <h3>Preferences</h3>
+            <div class="preference-option">
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                    Receive email notifications
+                </label>
+            </div>
+            <div class="preference-option">
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                    Save reports automatically
+                </label>
+            </div>
+        </section>
+    </div>
+</div>
+<p>user-profile works!</p>

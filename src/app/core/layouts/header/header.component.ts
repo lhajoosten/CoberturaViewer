@@ -7,7 +7,9 @@ import { ExportService } from '../../services/utils/export.service';
 import { CoverageStoreService } from '../../services/store/coverage-store.service';
 import { FileUploaderComponent } from '../../../features/file-upload/components/file-uploader/file-uploader.component';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { DynamicSettingsComponent } from '../../../shared/ui/dynamic-settings.component';
+import { Router } from '@angular/router';
+import { User } from '../../auth/models/user.interface';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -44,11 +46,15 @@ export class HeaderComponent implements OnInit {
     { value: 'csv', label: 'CSV Data', icon: 'fa-file-csv' }
   ];
 
+  currentUser: User | null = null;
+
   constructor(
     private themeStore: ThemeStoreService,
     public modalService: ModalService,
     private exportService: ExportService,
-    private coverageStore: CoverageStoreService
+    private coverageStore: CoverageStoreService,
+    private authService: AuthService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -68,6 +74,11 @@ export class HeaderComponent implements OnInit {
     // Check if coverage data exists to enable export button
     this.coverageStore.getCoverageData().subscribe(data => {
       this.hasActiveReport = !!data;
+    });
+
+    // Subscribe to auth changes
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
     });
   }
 
@@ -117,6 +128,21 @@ export class HeaderComponent implements OnInit {
 
   toggleUserMenu(): void {
     this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+
+  getUserDisplayName(): string {
+    if (!this.currentUser) return 'Guest User';
+
+    return this.currentUser.name ||
+      (this.currentUser.login ? `@${this.currentUser.login}` : 'GitHub User');
+  }
+
+  // Add a method to get the user's avatar
+  getUserAvatar(): string {
+    if (!this.currentUser || !this.currentUser.avatar) {
+      return 'assets/images/default-avatar.png';
+    }
+    return this.currentUser.avatar;
   }
 
   /**
@@ -239,10 +265,26 @@ export class HeaderComponent implements OnInit {
   }
 
   /**
-   * Placeholder for login functionality
+   * Login functionality
    */
   login(): void {
     this.isUserMenuOpen = false;
-    alert('Authentication will be implemented in a future version');
+    this.router.navigate(['/login']);
+  }
+
+  /**
+   * Logout functionality
+   */
+  logout(): void {
+    this.isUserMenuOpen = false;
+    this.authService.logout();
+  }
+
+  /**
+   * User profile functionality
+   */
+  goToProfile(): void {
+    this.isUserMenuOpen = false;
+    this.router.navigate(['/profile']);
   }
 }

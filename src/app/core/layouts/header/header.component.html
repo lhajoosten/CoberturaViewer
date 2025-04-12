@@ -34,27 +34,57 @@
         </button>
 
         <div class="user-profile" (click)="toggleUserMenu()">
-            <div class="user-avatar">
-                <i class="fas fa-user"></i>
+            <div class="user-avatar" *ngIf="currentUser; else guestAvatar">
+                <img [src]="currentUser.avatar || 'assets/images/default-avatar.png'" [alt]="currentUser.name"
+                    *ngIf="currentUser.avatar">
+                <span *ngIf="!currentUser.avatar">{{ currentUser.name.charAt(0) }}</span>
             </div>
+            <ng-template #guestAvatar>
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+            </ng-template>
+
             <div class="user-menu" *ngIf="isUserMenuOpen">
                 <div class="user-menu-header">
-                    <span class="user-name">Guest User</span>
-                    <span class="user-role">Not Signed In</span>
+                    <span class="user-name">{{ currentUser ? currentUser.name : 'Guest User' }}</span>
+                    <span class="user-role">{{ currentUser ? (currentUser.roles.includes('admin') ? 'Administrator' :
+                        'User') :
+                        'Not Signed In' }}</span>
                 </div>
                 <div class="user-menu-items">
-                    <button class="user-menu-item" (click)="login()">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
-                    <button class="user-menu-item" (click)="openSettings()">
-                        <i class="fas fa-cog"></i> Settings
-                    </button>
-                    <button class="user-menu-item" (click)="openKeyboardShortcuts()">
-                        <i class="fas fa-keyboard"></i> Keyboard Shortcuts
-                    </button>
-                    <button class="user-menu-item" (click)="openHelp()">
-                        <i class="fas fa-question-circle"></i> Help
-                    </button>
+                    <ng-container *ngIf="currentUser; else guestMenuItems">
+                        <button class="user-menu-item" (click)="goToProfile()">
+                            <i class="fas fa-user-circle"></i> View Profile
+                        </button>
+                        <button class="user-menu-item" (click)="openSettings()">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                        <button class="user-menu-item" (click)="openKeyboardShortcuts()">
+                            <i class="fas fa-keyboard"></i> Keyboard Shortcuts
+                        </button>
+                        <button class="user-menu-item" (click)="openHelp()">
+                            <i class="fas fa-question-circle"></i> Help
+                        </button>
+                        <button class="user-menu-item logout-item" (click)="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </ng-container>
+
+                    <ng-template #guestMenuItems>
+                        <button class="user-menu-item" (click)="login()">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </button>
+                        <button class="user-menu-item" (click)="openSettings()">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                        <button class="user-menu-item" (click)="openKeyboardShortcuts()">
+                            <i class="fas fa-keyboard"></i> Keyboard Shortcuts
+                        </button>
+                        <button class="user-menu-item" (click)="openHelp()">
+                            <i class="fas fa-question-circle"></i> Help
+                        </button>
+                    </ng-template>
                 </div>
             </div>
         </div>
