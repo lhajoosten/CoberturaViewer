@@ -577,8 +577,12 @@ button {
 
 // Scrollbar styling
 ::-webkit-scrollbar {
-  width: var(--scrollbar-width);
-  height: var(--scrollbar-height);
+  width: 4px;
+  height: 4px;
+  background: var(--color-scrollbar-bg);
+  border-radius: $border-radius-full;
+  transition: background-color $transition-duration-fast
+    $transition-timing-ease-in-out;
 }
 
 ::-webkit-scrollbar-track {

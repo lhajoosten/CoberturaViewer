@@ -25,8 +25,7 @@ export class LineChartComponent implements OnInit, OnDestroy {
     'Branch Coverage',
     'Method Coverage'
   ];
-  chartWidth = 850;
-  chartHeight = 500;
+  chartHeight = 950;
 
   private themeSubscription: Subscription | null = null;
   isDarkTheme = false;

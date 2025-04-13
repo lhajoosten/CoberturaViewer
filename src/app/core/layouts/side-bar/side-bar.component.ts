@@ -46,7 +46,7 @@ export class SidebarComponent {
     {
       icon: 'fas fa-file-alt',
       label: 'Recent Files',
-      route: '/recent-files'
+      route: '/upload/recent-files'
     },
     {
       icon: 'fas fa-user',

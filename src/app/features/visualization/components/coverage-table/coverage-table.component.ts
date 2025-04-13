@@ -26,8 +26,7 @@ export class CoverageTableComponent implements OnInit, OnDestroy {
     'Lines Valid',
     'Lines Covered'
   ];
-  chartWidth = 850;
-  chartHeight = 500;
+  chartHeight = 950;
 
   private themeSubscription: Subscription | null = null;
   isDarkTheme = false;

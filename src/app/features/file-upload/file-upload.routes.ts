@@ -7,7 +7,7 @@ export const fileRoutes: Routes = [
             .then(m => m.FileUploaderComponent)
     },
     {
-        path: 'recent',
+        path: 'recent-files',
         loadComponent: () => import('./components/recent-files/recent-files.component')
             .then(m => m.RecentFilesComponent)
     }

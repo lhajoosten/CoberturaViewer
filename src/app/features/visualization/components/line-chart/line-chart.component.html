@@ -4,7 +4,7 @@
     </div>
 
     <google-chart *ngIf="coverageData && chartData.length > 0" [type]="chartType" [data]="chartData"
-        [columns]="chartColumns" [options]="chartOptions" [width]="chartWidth" [height]="chartHeight">
+        [columns]="chartColumns" [options]="chartOptions" [height]="chartHeight">
     </google-chart>
 
     <div class="chart-note" *ngIf="coverageData">
