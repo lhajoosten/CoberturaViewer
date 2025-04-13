@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ToastService } from '../../../core/services/utils/toast.service';
 import { HistoricalFile } from '../models/historical-file.inteface';
+import { ToastService } from '../../../core/services/utils/toast.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +20,25 @@ export class FileHistoryService {
     return this.files.asObservable();
   }
 
-  getRecentFiles(): HistoricalFile[] {
-    return this.files.getValue();
+  /**
+   * Get file content by ID
+   */
+  getFileContent(fileId: string): string | null {
+    try {
+      const files = this.files.getValue();
+      const file = files.find(f => f.id === fileId);
+
+      if (!file) {
+        console.error(`File with ID ${fileId} not found`);
+        return null;
+      }
+
+      const content = localStorage.getItem(`file-content:${file.name}`);
+      return content;
+    } catch (error) {
+      console.error('Error getting file content:', error);
+      return null;
+    }
   }
 
   /**
@@ -42,6 +59,11 @@ export class FileHistoryService {
       // Ensure file has current date
       file.date = new Date();
 
+      // Extract summary information for XML files
+      if (file.type === 'xml' && !file.summary) {
+        file.summary = this.extractCoverageSummary(content);
+      }
+
       // Add to the beginning of the array
       const updatedFiles = [file, ...currentFiles];
 
@@ -59,7 +81,8 @@ export class FileHistoryService {
       localStorage.setItem(`file-metadata:${file.name}`, JSON.stringify({
         date: file.date.toISOString(),
         size: file.size,
-        type: file.type
+        type: file.type,
+        summary: file.summary
       }));
 
       // Save file list
@@ -67,6 +90,7 @@ export class FileHistoryService {
 
       // Update state
       this.files.next(updatedFiles);
+      console.log('File added to history:', file);
     } catch (error) {
       console.error('Error adding file to history:', error);
       this.ToastService.showError('File History Error', 'Could not save file to history');
@@ -79,38 +103,47 @@ export class FileHistoryService {
   removeFile(fileId: string): void {
     try {
       const currentFiles = this.files.getValue();
-      const fileToRemove = currentFiles.find(f => f.id === fileId);
+      const fileIndex = currentFiles.findIndex(f => f.id === fileId);
 
-      if (fileToRemove) {
-        // Remove file content
-        localStorage.removeItem(`file-content:${fileToRemove.name}`);
-
-        // Remove from list
-        const updatedFiles = currentFiles.filter(f => f.id !== fileId);
-        this.saveFiles(updatedFiles);
-
-        // Update state
-        this.files.next(updatedFiles);
+      if (fileIndex === -1) {
+        console.warn(`File with ID ${fileId} not found`);
+        return;
       }
+
+      const file = currentFiles[fileIndex];
+
+      // Remove from localStorage
+      localStorage.removeItem(`file-content:${file.name}`);
+      localStorage.removeItem(`file-metadata:${file.name}`);
+
+      // Remove from array
+      currentFiles.splice(fileIndex, 1);
+
+      // Save updated file list
+      this.saveFiles(currentFiles);
+
+      // Update state
+      this.files.next([...currentFiles]);
     } catch (error) {
-      console.error('Error removing file from history:', error);
+      console.error('Error removing file:', error);
       this.ToastService.showError('File History Error', 'Could not remove file from history');
     }
   }
 
   /**
-   * Clear all files from history
+   * Clear file history
    */
   clearHistory(): void {
     try {
+      // Clear all files from localStorage
       const currentFiles = this.files.getValue();
 
-      // Remove all file contents
-      currentFiles.forEach(file => {
+      for (const file of currentFiles) {
         localStorage.removeItem(`file-content:${file.name}`);
-      });
+        localStorage.removeItem(`file-metadata:${file.name}`);
+      }
 
-      // Clear list
+      // Clear file list
       localStorage.removeItem('recent-files');
 
       // Update state
@@ -122,19 +155,15 @@ export class FileHistoryService {
   }
 
   /**
-   * Get file content by id
+   * Private: Save file list to localStorage
    */
-  getFileContent(fileName: string): string | null {
-    try {
-      return localStorage.getItem(`file-content:${fileName}`);
-    } catch (error) {
-      console.error('Error getting file content:', error);
-      return null;
-    }
+  private saveFiles(files: HistoricalFile[]): void {
+    const fileNames = files.map(f => f.name);
+    localStorage.setItem('recent-files', JSON.stringify(fileNames));
   }
 
   /**
-   * Load files from localStorage
+   * Private: Load recent files from localStorage
    */
   private loadRecentFiles(): void {
     try {
@@ -153,68 +182,53 @@ export class FileHistoryService {
 
       for (const fileName of fileList) {
         try {
+          // Get file content
           const fileContent = localStorage.getItem(`file-content:${fileName}`);
-          let summary;
-          let size;
-          let type: 'xml' | 'json' | 'sample' = 'xml';
 
-          if (fileContent) {
-            size = fileContent.length;
-
-            // Default to XML type
-            if (fileName.toLowerCase().endsWith('.json')) {
-              type = 'json';
-            } else if (fileName.toLowerCase().includes('sample')) {
-              type = 'sample';
-            } else {
-              type = 'xml';
-            }
-
-            // Extract coverage information from XML
-            if (type === 'xml') {
-              const coverageMatch = fileContent.match(/<coverage[^>]*/);
-              if (coverageMatch) {
-                const lineRateMatch = coverageMatch[0].match(/line-rate="([^"]*)"/);
-                const branchRateMatch = coverageMatch[0].match(/branch-rate="([^"]*)"/);
-                const timestampMatch = coverageMatch[0].match(/timestamp="([^"]*)"/);
-
-                if (lineRateMatch) {
-                  summary = {
-                    lineCoverage: parseFloat(lineRateMatch[1]) * 100,
-                    timestamp: timestampMatch ? timestampMatch[1] : new Date().toISOString(),
-                    branchCoverage: 0 // Default value
-                  };
-
-                  if (branchRateMatch) {
-                    summary.branchCoverage = parseFloat(branchRateMatch[1]) * 100;
-                  }
-                }
-              }
-            }
-          }
-
-          // Attempt to get stored metadata about the file
+          // Get file metadata
+          const metadataJson = localStorage.getItem(`file-metadata:${fileName}`);
           let fileDate = new Date();
-          try {
-            const fileMetadata = localStorage.getItem(`file-metadata:${fileName}`);
-            if (fileMetadata) {
-              const metadata = JSON.parse(fileMetadata);
+          let fileSize: number | undefined = undefined;
+          let fileType: 'xml' | 'json' | 'sample' = 'xml';
+          let fileSummary = undefined;
+
+          // Parse metadata if available
+          if (metadataJson) {
+            try {
+              const metadata = JSON.parse(metadataJson);
               if (metadata.date) {
                 fileDate = new Date(metadata.date);
               }
+              if (metadata.size) {
+                fileSize = metadata.size;
+              }
+              if (metadata.type) {
+                fileType = metadata.type;
+              }
+              if (metadata.summary) {
+                fileSummary = metadata.summary;
+              }
+            } catch (e) {
+              console.error('Error parsing file metadata:', e);
             }
-          } catch (e) {
-            console.error('Error parsing file metadata:', e);
           }
+
+          // If no summary in metadata but we have content, try to extract it
+          if (!fileSummary && fileContent && fileType === 'xml') {
+            fileSummary = this.extractCoverageSummary(fileContent);
+          }
+
+          // Generate ID if needed
+          const fileId = fileName.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6);
 
           // Create historical file
           historicalFiles.push({
-            id: fileName.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6),
+            id: fileId,
             name: fileName,
             date: fileDate,
-            size,
-            summary,
-            type
+            size: fileSize,
+            type: fileType,
+            summary: fileSummary
           });
         } catch (error) {
           console.error(`Error processing file ${fileName}:`, error);
@@ -226,6 +240,7 @@ export class FileHistoryService {
 
       // Update state
       this.files.next(historicalFiles);
+      console.log('Loaded file history:', historicalFiles);
     } catch (error) {
       console.error('Error loading file history:', error);
       this.files.next([]);
@@ -233,17 +248,28 @@ export class FileHistoryService {
   }
 
   /**
-   * Save files to localStorage
+   * Extract coverage summary from XML content
    */
-  private saveFiles(files: HistoricalFile[]): void {
+  private extractCoverageSummary(xmlContent: string): { lineCoverage: number, branchCoverage?: number, timestamp: string } | undefined {
     try {
-      // Extract file names
-      const fileNames = files.map(file => file.name);
+      const coverageMatch = xmlContent.match(/<coverage[^>]*/);
+      if (coverageMatch) {
+        const lineRateMatch = coverageMatch[0].match(/line-rate="([^"]*)"/);
+        const branchRateMatch = coverageMatch[0].match(/branch-rate="([^"]*)"/);
+        const timestampMatch = coverageMatch[0].match(/timestamp="([^"]*)"/);
 
-      // Save to localStorage
-      localStorage.setItem('recent-files', JSON.stringify(fileNames));
+        if (lineRateMatch) {
+          return {
+            lineCoverage: parseFloat(lineRateMatch[1]) * 100,
+            timestamp: timestampMatch ? timestampMatch[1] : new Date().toISOString(),
+            branchCoverage: branchRateMatch ? parseFloat(branchRateMatch[1]) * 100 : undefined
+          };
+        }
+      }
+      return undefined;
     } catch (error) {
-      console.error('Error saving file history:', error);
+      console.error('Error extracting coverage summary:', error);
+      return undefined;
     }
   }
 }

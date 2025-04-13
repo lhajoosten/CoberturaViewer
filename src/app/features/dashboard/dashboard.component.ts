@@ -6,6 +6,7 @@ import { FileHistoryService } from '../file-upload/services/file-history.service
 import { Observable, Subscription } from 'rxjs';
 import { HistoricalFile } from '../file-upload/models/historical-file.inteface';
 import { ToastService } from '../../core/services/utils/toast.service';
+import { CoberturaParserService } from '../../core/services/parsers/cobertura-parser.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,7 +24,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private coverageStore: CoverageStoreService,
     private router: Router,
     private fileHistoryService: FileHistoryService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private coberturaParser: CoberturaParserService
   ) { }
 
   ngOnInit(): void {
@@ -38,6 +40,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.fileHistoryService.getFiles().subscribe(files => {
         this.recentFiles = files.slice(0, 5); // Get only the 5 most recent files
+        console.log('Recent files loaded:', this.recentFiles);
       })
     );
   }
@@ -54,7 +57,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     console.log(`Loading file: ${file.name}`);
 
     // Get the file content
-    const content = this.fileHistoryService.getFileContent(file.name);
+    const content = this.fileHistoryService.getFileContent(file.id);
 
     if (!content) {
       this.toastService.showError('Error', 'Could not load file content');
@@ -64,9 +67,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Parse and load the file into the coverage store
     try {
       if (file.type === 'xml') {
-        this.coverageStore.loadXmlData(file.name, content);
-        this.toastService.showSuccess('Success', `Loaded coverage data from ${file.name}`);
-        this.router.navigate(['/visualization']);
+        // Use the parser service directly to ensure correct parsing
+        const parsedData = this.coberturaParser.parseCoberturaXml(content);
+
+        if (parsedData) {
+          this.coverageStore.setCoverageData(parsedData);
+
+          // Update the file timestamp
+          const updatedFile = {
+            ...file,
+            date: new Date()
+          };
+
+          // Re-add to move it to the top of the list
+          this.fileHistoryService.addFile(updatedFile, content);
+
+          this.toastService.showSuccess('Success', `Loaded coverage data from ${file.name}`);
+          this.router.navigate(['/visualization']);
+        } else {
+          throw new Error('Failed to parse coverage data');
+        }
       } else {
         this.toastService.showError('Unsupported Format', 'Only XML files are supported at this time');
       }

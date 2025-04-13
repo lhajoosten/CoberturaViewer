@@ -51,9 +51,9 @@ export class CoverageStoreService {
      * Parses and sets the coverage data from a file
      * @param file The file to parse
      */
-    loadXmlData(fileName: string, fileContent: string): void {
-        console.log('Loading XML data from file:', fileName);
-        const coverageData = this.parser.parseCoberturaXml(fileContent);
+    loadXmlData(content: string): void {
+        console.log('Loading XML data');
+        const coverageData = this.parser.parseCoberturaXml(content);
         this.setCoverageData(coverageData);
     }
 }

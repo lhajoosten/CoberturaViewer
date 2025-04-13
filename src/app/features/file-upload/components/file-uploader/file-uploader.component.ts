@@ -7,6 +7,8 @@ import { ThemeStoreService } from '../../../../core/services/store/theme-store.s
 import { CoberturaParserService } from '../../../../core/services/parsers/cobertura-parser.service';
 import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
 import { ToastService } from '../../../../core/services/utils/toast.service';
+import { HistoricalFile } from '../../models/historical-file.inteface';
+import { FileHistoryService } from '../../services/file-history.service';
 
 @Component({
   selector: 'app-file-uploader',
@@ -40,7 +42,8 @@ export class FileUploaderComponent implements OnInit {
     private coverageStore: CoverageStoreService,
     private ToastService: ToastService,
     private themeStore: ThemeStoreService,
-    private router: Router
+    private router: Router,
+    private fileHistoryService: FileHistoryService
   ) {
     this.loadPreviousFiles();
   }
@@ -112,9 +115,6 @@ export class FileUploaderComponent implements OnInit {
           throw new Error('Failed to read the file content');
         }
 
-        // Save file to history
-        this.addToRecentFiles(file.name, content);
-
         // Validate that it's a Cobertura XML file
         if (!content.includes('<coverage') || !content.includes('line-rate')) {
           throw new Error('Not a valid Cobertura XML file. The file must contain coverage and line-rate attributes.');
@@ -124,6 +124,27 @@ export class FileUploaderComponent implements OnInit {
         if (coverageData) {
           // Update coverage data
           this.coverageStore.setCoverageData(coverageData);
+
+          // Add to file history using the service
+          const historicalFile: HistoricalFile = {
+            id: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            name: file.name,
+            date: new Date(),
+            size: file.size,
+            type: 'xml',
+            // Include summary directly from coverageData
+            summary: {
+              lineCoverage: coverageData.summary.lineCoverage,
+              branchCoverage: coverageData.summary.branchCoverage,
+              timestamp: coverageData.summary.timestamp || new Date().toISOString()
+            }
+          };
+
+          // Use the FileHistoryService to add the file
+          this.fileHistoryService.addFile(historicalFile, content);
+
+          // Update local previousFiles array for UI
+          this.loadPreviousFiles();
 
           // Show success notification
           this.ToastService.showSuccess(
@@ -158,30 +179,46 @@ export class FileUploaderComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Get the saved file content from localStorage
-    setTimeout(() => {
-      try {
-        const fileContent = localStorage.getItem(`file-content:${fileName}`);
-        if (!fileContent) {
-          this.ToastService.showError('File Not Found', 'Could not find the saved file content');
-          this.isLoading = false;
-          return;
-        }
+    // Find the file in our history
+    this.fileHistoryService.getFiles().subscribe(files => {
+      const historyFile = files.find(f => f.name === fileName);
 
-        // It's XML
-        const coverageData = this.parserService.parseCoberturaXml(fileContent);
+      if (!historyFile) {
+        this.ToastService.showError('File Not Found', 'Could not find the saved file');
+        this.isLoading = false;
+        return;
+      }
+
+      // Get content
+      const content = this.fileHistoryService.getFileContent(historyFile.id);
+      if (!content) {
+        this.ToastService.showError('File Not Found', 'Could not find the saved file content');
+        this.isLoading = false;
+        return;
+      }
+
+      try {
+        // Parse XML
+        const coverageData = this.parserService.parseCoberturaXml(content);
         if (!coverageData) {
           throw new Error('Failed to parse saved coverage data');
         }
+
         this.coverageStore.setCoverageData(coverageData);
+
+        // Update the file timestamp
+        const updatedHistoryFile = {
+          ...historyFile,
+          date: new Date()
+        };
+
+        // Re-add to move it to the top of the list
+        this.fileHistoryService.addFile(updatedHistoryFile, content);
 
         this.ToastService.showSuccess(
           'Historical File Loaded',
           `Loaded ${fileName} successfully`
         );
-
-        // Move this file to the top of recent files
-        this.addToRecentFiles(fileName);
 
         // Navigate to visualization
         this.router.navigate(['/visualization']);
@@ -191,7 +228,7 @@ export class FileUploaderComponent implements OnInit {
       } finally {
         this.isLoading = false;
       }
-    }, 600);
+    });
   }
 
   clearError(): void {
@@ -200,12 +237,10 @@ export class FileUploaderComponent implements OnInit {
 
   clearRecentFiles(): void {
     if (confirm('Are you sure you want to clear your recent files history?')) {
-      // Clear files from localStorage
-      this.previousFiles.forEach(file => {
-        localStorage.removeItem(`file-content:${file}`);
-      });
+      // Use the service to clear history
+      this.fileHistoryService.clearHistory();
 
-      localStorage.removeItem('recent-files');
+      // Update local state
       this.previousFiles = [];
 
       this.ToastService.showInfo('History Cleared', 'Your recent files history has been cleared');
@@ -227,15 +262,10 @@ export class FileUploaderComponent implements OnInit {
   }
 
   private loadPreviousFiles(): void {
-    try {
-      const files = localStorage.getItem('recent-files');
-      if (files) {
-        this.previousFiles = JSON.parse(files);
-      }
-    } catch (error) {
-      console.error('Error loading previous files:', error);
-      this.previousFiles = [];
-    }
+    this.fileHistoryService.getFiles().subscribe(files => {
+      // Get just the filenames for the recent files list in the UI
+      this.previousFiles = files.slice(0, 5).map(file => file.name);
+    });
   }
 
   private addToRecentFiles(fileName: string, content?: string): void {
