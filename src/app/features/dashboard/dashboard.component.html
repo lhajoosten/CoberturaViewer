@@ -40,13 +40,13 @@
             </div>
 
             <div class="card file-list-card">
-                <div *ngIf="recentFiles?.length === 0" class="empty-state">
+                <div *ngIf="!recentFiles || recentFiles.length === 0" class="empty-state">
                     <i class="fas fa-file-alt empty-icon"></i>
                     <p>No recent coverage files</p>
                     <button class="btn-primary" (click)="navigateToUpload()">Upload Coverage Report</button>
                 </div>
 
-                <ul *ngIf="recentFiles?.length! > 0" class="file-list">
+                <ul *ngIf="recentFiles && recentFiles.length > 0" class="file-list">
                     <li *ngFor="let file of recentFiles" class="file-item" (click)="loadFile(file)">
                         <div class="file-icon">
                             <i class="fas" [ngClass]="{

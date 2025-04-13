@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterEvent } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { ThemeStoreService } from '../../../../core/services/store/theme-store.service';
@@ -9,6 +9,8 @@ import { CoverageStoreService } from '../../../../core/services/store/coverage-s
 import { ToastService } from '../../../../core/services/utils/toast.service';
 import { HistoricalFile } from '../../models/historical-file.inteface';
 import { FileHistoryService } from '../../services/file-history.service';
+import { NavigationGuardService } from '../../../../core/guards/navigation.guard';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-file-uploader',
@@ -28,7 +30,7 @@ import { FileHistoryService } from '../../services/file-history.service';
     ])
   ]
 })
-export class FileUploaderComponent implements OnInit {
+export class FileUploaderComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   isDarkTheme = false;
@@ -36,6 +38,8 @@ export class FileUploaderComponent implements OnInit {
   errorMessage = '';
   isDragOver = false;
   previousFiles: string[] = [];
+  navigating = false;
+  private routerSubscription: any;
 
   constructor(
     private parserService: CoberturaParserService,
@@ -43,15 +47,38 @@ export class FileUploaderComponent implements OnInit {
     private ToastService: ToastService,
     private themeStore: ThemeStoreService,
     private router: Router,
-    private fileHistoryService: FileHistoryService
+    private fileHistoryService: FileHistoryService,
+    private navigationGuard: NavigationGuardService
+
   ) {
     this.loadPreviousFiles();
+
+    this.routerSubscription = this.router.events.subscribe((event: any) => {
+      if (event instanceof NavigationStart) {
+        console.log('Navigation started to:', event.url);
+        this.navigating = true;
+      } else if (event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError) {
+        console.log('Navigation ended or canceled');
+        this.navigating = false;
+      }
+    });
   }
 
   ngOnInit(): void {
     this.themeStore.isDarkTheme$.subscribe(isDark => {
       this.isDarkTheme = isDark;
     });
+
+    this.navigating = false;
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
   onDragOver(event: DragEvent): void {
@@ -88,6 +115,11 @@ export class FileUploaderComponent implements OnInit {
   }
 
   processFile(file: File): void {
+    if (this.isLoading || this.navigating || this.navigationGuard.isNavigatingTo('/visualization')) {
+      console.log('Preventing duplicate file processing');
+      return;
+    }
+
     // Check file type
     if (!file.name.endsWith('.xml')) {
       this.errorMessage = 'Please select an XML file with Cobertura coverage data';
@@ -153,7 +185,9 @@ export class FileUploaderComponent implements OnInit {
           );
 
           // Navigate to dashboard or visualization
-          this.router.navigate(['/visualization']);
+          this.navigationGuard.startNavigation('/visualization');
+          this.router.navigate(['/visualization'], { replaceUrl: true });
+
         } else {
           this.errorMessage = 'Failed to parse the Cobertura XML file';
         }
@@ -176,27 +210,26 @@ export class FileUploaderComponent implements OnInit {
   }
 
   loadFromHistory(fileName: string): void {
+    // Debug logging
+    console.log('Load file request:', {
+      file: fileName,
+      isLoading: this.isLoading,
+      isNavigating: this.navigating || this.navigationGuard.isNavigatingTo('/visualization')
+    });
+
+    // Combine all checks
+    if (this.isLoading ||
+      this.navigating ||
+      this.navigationGuard.isNavigatingTo('/visualization')) {
+      console.log('Preventing duplicate load - navigation in progress');
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Find the file in our history
-    this.fileHistoryService.getFiles().subscribe(files => {
-      const historyFile = files.find(f => f.name === fileName);
-
-      if (!historyFile) {
-        this.ToastService.showError('File Not Found', 'Could not find the saved file');
-        this.isLoading = false;
-        return;
-      }
-
-      // Get content
-      const content = this.fileHistoryService.getFileContent(historyFile.id);
-      if (!content) {
-        this.ToastService.showError('File Not Found', 'Could not find the saved file content');
-        this.isLoading = false;
-        return;
-      }
-
+    // Define the processFile function first before using it
+    const processFile = (historyFile: HistoricalFile, content: string) => {
       try {
         // Parse XML
         const coverageData = this.parserService.parseCoberturaXml(content);
@@ -217,18 +250,61 @@ export class FileUploaderComponent implements OnInit {
 
         this.ToastService.showSuccess(
           'Historical File Loaded',
-          `Loaded ${fileName} successfully`
+          `Loaded ${historyFile.name} successfully`
         );
 
-        // Navigate to visualization
-        this.router.navigate(['/visualization']);
+        // Set a flag in sessionStorage to track this navigation
+        sessionStorage.setItem('navigating_to_visualization', 'true');
+
+        // Navigate to visualization and prevent multiple navigations
+        this.navigationGuard.startNavigation('/visualization');
+
+        // Use setTimeout to break potential stack
+        setTimeout(() => {
+          this.router.navigate(['/visualization'], { replaceUrl: true });
+        }, 10);
       } catch (error) {
         console.error('Error loading from history:', error);
         this.ToastService.showError('Error', 'Failed to load historical file');
       } finally {
         this.isLoading = false;
       }
-    });
+    };
+
+    // Find the file in our history - Use take(1) to automatically complete the subscription
+    this.fileHistoryService.getFiles()
+      .pipe(take(1)) // <-- This is important! It ensures the subscription completes after first emission
+      .subscribe({
+        next: (files) => {
+          console.log('Files received:', files);
+          const historyFile = files.find(f => f.name === fileName);
+
+          if (!historyFile) {
+            console.error(`File "${fileName}" not found in history:`, files);
+            this.ToastService.showError('File Not Found', 'Could not find the saved file');
+            this.isLoading = false;
+            return;
+          }
+
+          console.log('Found file in history:', historyFile);
+
+          // Get content
+          const content = this.fileHistoryService.getFileContent(historyFile.id);
+          if (!content) {
+            console.error(`Content not found for file ID: ${historyFile.id}`);
+            this.ToastService.showError('File Not Found', 'Could not find the saved file content');
+            this.isLoading = false;
+            return;
+          }
+
+          processFile(historyFile, content);
+        },
+        error: (err) => {
+          console.error('Error getting files:', err);
+          this.ToastService.showError('Error', 'Failed to retrieve file history');
+          this.isLoading = false;
+        }
+      });
   }
 
   clearError(): void {
@@ -266,33 +342,5 @@ export class FileUploaderComponent implements OnInit {
       // Get just the filenames for the recent files list in the UI
       this.previousFiles = files.slice(0, 5).map(file => file.name);
     });
-  }
-
-  private addToRecentFiles(fileName: string, content?: string): void {
-    // Remove the file if it already exists to avoid duplicates
-    const existingIndex = this.previousFiles.indexOf(fileName);
-    if (existingIndex !== -1) {
-      this.previousFiles.splice(existingIndex, 1);
-    }
-
-    // Add to beginning of array
-    this.previousFiles.unshift(fileName);
-
-    // Keep only the last 5 files
-    if (this.previousFiles.length > 5) {
-      // Remove the last file content from localStorage
-      const removedFile = this.previousFiles.pop();
-      if (removedFile) {
-        localStorage.removeItem(`file-content:${removedFile}`);
-      }
-    }
-
-    // Save to localStorage
-    localStorage.setItem('recent-files', JSON.stringify(this.previousFiles));
-
-    // Save file content if provided
-    if (content) {
-      localStorage.setItem(`file-content:${fileName}`, content);
-    }
   }
 }

@@ -1,20 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ToastService } from '../../../../core/services/utils/toast.service';
 import { CoberturaParserService } from '../../../../core/services/parsers/cobertura-parser.service';
 import { CoverageStoreService } from '../../../../core/services/store/coverage-store.service';
-
-interface RecentFile {
-  name: string;
-  date: Date;
-  size?: number;
-  summary?: {
-    lineCoverage: number;
-    branchCoverage?: number;
-    timestamp: string;
-  };
-}
+import { FileHistoryService } from '../../services/file-history.service';
+import { HistoricalFile } from '../../models/historical-file.inteface';
+import { Subscription } from 'rxjs';
+import { NavigationGuardService } from '../../../../core/guards/navigation.guard';
 
 @Component({
   selector: 'app-recent-files',
@@ -23,135 +16,122 @@ interface RecentFile {
   templateUrl: './recent-files.component.html',
   styleUrls: ['./recent-files.component.scss']
 })
-export class RecentFilesComponent implements OnInit {
-  recentFiles: RecentFile[] = [];
+export class RecentFilesComponent implements OnInit, OnDestroy {
+  recentFiles: HistoricalFile[] = [];
   isLoading = false;
   sortBy = 'date'; // 'date', 'name', 'coverage'
   sortOrder = 'desc'; // 'asc', 'desc'
+  private subscription = new Subscription();
 
   constructor(
     private ToastService: ToastService,
     private parserService: CoberturaParserService,
-    private coverageStore: CoverageStoreService
+    private coverageStore: CoverageStoreService,
+    private fileHistoryService: FileHistoryService,
+    private router: Router,
+    private navigationGuard: NavigationGuardService
   ) { }
 
   ngOnInit(): void {
+    console.log('RecentFilesComponent initializing...');
     this.loadRecentFiles();
   }
 
-  loadRecentFiles(): void {
-    try {
-      // Load file names from localStorage
-      const fileNames = localStorage.getItem('recent-files');
-      if (!fileNames) {
-        this.recentFiles = [];
-        return;
-      }
-
-      const parsedNames = JSON.parse(fileNames) as string[];
-
-      // Load file details
-      this.recentFiles = parsedNames.map(name => {
-        try {
-          const fileContent = localStorage.getItem(`file-content:${name}`);
-          let summary;
-          let size;
-
-          if (fileContent) {
-            size = fileContent.length;
-
-            // XML - just get the coverage attributes
-            const coverageMatch = fileContent.match(/<coverage[^>]*/);
-            if (coverageMatch) {
-              const lineRateMatch = coverageMatch[0].match(/line-rate="([^"]*)"/);
-              const branchRateMatch = coverageMatch[0].match(/branch-rate="([^"]*)"/);
-
-              if (lineRateMatch) {
-                summary = {
-                  lineCoverage: parseFloat(lineRateMatch[1]) * 100,
-                  branchCoverage: 0,
-                  timestamp: new Date().toISOString()
-                };
-
-                if (branchRateMatch) {
-                  summary.branchCoverage = parseFloat(branchRateMatch[1]) * 100;
-                }
-              }
-            }
-          }
-
-          return {
-            name,
-            date: new Date(),
-            size,
-            summary
-          };
-        } catch (error) {
-          console.error(`Error loading file ${name}:`, error);
-          return {
-            name,
-            date: new Date()
-          };
-        }
-      });
-
-      // Apply sorting
-      this.sortFiles();
-
-    } catch (error) {
-      console.error('Error loading recent files:', error);
-      this.recentFiles = [];
-    }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
-  loadFile(file: RecentFile): void {
-    if (this.isLoading) return;
+  loadRecentFiles(): void {
+    console.log('Loading recent files...');
+
+    // Check localStorage directly for debugging
+    const filesJson = localStorage.getItem('coverage-files');
+    console.log('Files in localStorage:', filesJson);
+
+    this.subscription.add(
+      this.fileHistoryService.getFiles().subscribe({
+        next: (files) => {
+          console.log('Received files:', files);
+          this.recentFiles = files;
+          this.sortFiles();
+        },
+        error: (error) => {
+          console.error('Error getting files:', error);
+          this.recentFiles = [];
+        }
+      })
+    );
+  }
+
+  loadFile(file: HistoricalFile): void {
+    // Prevent multiple loads
+    if (this.isLoading || this.navigationGuard.isNavigatingTo('/visualization')) {
+      console.log('Preventing duplicate file load');
+      return;
+    }
 
     this.isLoading = true;
 
-    setTimeout(() => {
-      try {
-        const fileContent = localStorage.getItem(`file-content:${file.name}`);
-        if (!fileContent) {
-          this.ToastService.showError('File Not Found', 'Could not find the saved file content');
-          this.isLoading = false;
-          return;
-        }
-
-        // It's XML
-        const data = this.parserService.parseCoberturaXml(fileContent);
-        if (!data) {
-          throw new Error('Failed to parse coverage data');
-        }
-        this.coverageStore.setCoverageData(data);
-
-        this.ToastService.showSuccess('File Loaded', `Loaded ${file.name} successfully`);
-      } catch (error) {
-        console.error('Error loading file:', error);
-        this.ToastService.showError('Error', 'Failed to load the file');
-      } finally {
+    try {
+      const fileContent = this.fileHistoryService.getFileContent(file.id);
+      if (!fileContent) {
+        this.ToastService.showError('File Not Found', 'Could not find the saved file content');
         this.isLoading = false;
+        return;
       }
-    }, 300);
+
+      console.log(`Retrieved content for ${file.name}, length: ${fileContent.length}`);
+
+      // Parse the XML content
+      const parsedData = this.parserService.parseCoberturaXml(fileContent);
+
+      if (!parsedData) {
+        this.ToastService.showError('Error', 'Failed to parse coverage data');
+        this.isLoading = false;
+        return;
+      }
+
+      // Update the store
+      this.coverageStore.setCoverageData(parsedData);
+
+      // Update timestamp and move to top of list
+      const updatedFile = {
+        ...file,
+        date: new Date()
+      };
+
+      // Add to history (will move to top)
+      this.fileHistoryService.addFile(updatedFile, fileContent);
+
+      // Show success message
+      this.ToastService.showSuccess('Success', `Loaded coverage data from ${file.name}`);
+
+      // Prevent navigation loops
+      sessionStorage.setItem('navigating_to_visualization', 'true');
+
+      // Start navigation and prevent duplications
+      this.navigationGuard.startNavigation('/visualization');
+
+      // Navigate to visualization
+      setTimeout(() => {
+        this.router.navigate(['/visualization'], { replaceUrl: true });
+      }, 10);
+
+    } catch (error) {
+      console.error('Error loading file:', error);
+      this.ToastService.showError('Error', 'Failed to load the file');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  deleteFile(file: RecentFile, event: Event): void {
+  deleteFile(file: HistoricalFile, event: Event): void {
     event.stopPropagation();
 
     if (confirm(`Are you sure you want to delete ${file.name}?`)) {
       try {
-        // Remove from localStorage
-        localStorage.removeItem(`file-content:${file.name}`);
-
-        // Update recent files list
-        const index = this.recentFiles.findIndex(f => f.name === file.name);
-        if (index !== -1) {
-          this.recentFiles.splice(index, 1);
-        }
-
-        // Update localStorage
-        localStorage.setItem('recent-files', JSON.stringify(this.recentFiles.map(f => f.name)));
-
+        // Use the service to remove the file
+        this.fileHistoryService.removeFile(file.id);
         this.ToastService.showSuccess('File Deleted', `${file.name} has been deleted`);
       } catch (error) {
         console.error('Error deleting file:', error);
@@ -163,15 +143,8 @@ export class RecentFilesComponent implements OnInit {
   clearAllFiles(): void {
     if (confirm('Are you sure you want to delete all recent files?')) {
       try {
-        // Remove all files from localStorage
-        this.recentFiles.forEach(file => {
-          localStorage.removeItem(`file-content:${file.name}`);
-        });
-
-        // Clear the list
-        this.recentFiles = [];
-        localStorage.removeItem('recent-files');
-
+        // Use the service to clear all files
+        this.fileHistoryService.clearHistory();
         this.ToastService.showSuccess('Files Cleared', 'All recent files have been deleted');
       } catch (error) {
         console.error('Error clearing files:', error);
@@ -197,9 +170,12 @@ export class RecentFilesComponent implements OnInit {
   sortFiles(): void {
     this.recentFiles.sort((a, b) => {
       if (this.sortBy === 'date') {
+        const aTime = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
+        const bTime = b.date instanceof Date ? b.date.getTime() : new Date(b.date).getTime();
+
         return this.sortOrder === 'asc'
-          ? a.date.getTime() - b.date.getTime()
-          : b.date.getTime() - a.date.getTime();
+          ? aTime - bTime
+          : bTime - aTime;
       } else if (this.sortBy === 'name') {
         return this.sortOrder === 'asc'
           ? a.name.localeCompare(b.name)

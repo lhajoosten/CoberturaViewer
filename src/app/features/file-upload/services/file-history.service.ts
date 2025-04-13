@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HistoricalFile } from '../models/historical-file.inteface';
 import { ToastService } from '../../../core/services/utils/toast.service';
 
@@ -9,8 +9,12 @@ import { ToastService } from '../../../core/services/utils/toast.service';
 export class FileHistoryService {
   private files = new BehaviorSubject<HistoricalFile[]>([]);
 
+  private readonly FILE_LIST_KEY = 'coverage-files';
+  private readonly CONTENT_PREFIX = 'coverage-content-';
+
   constructor(private ToastService: ToastService) {
     this.loadRecentFiles();
+    console.log('FileHistoryService initialized');
   }
 
   /**
@@ -25,18 +29,14 @@ export class FileHistoryService {
    */
   getFileContent(fileId: string): string | null {
     try {
-      const files = this.files.getValue();
-      const file = files.find(f => f.id === fileId);
-
-      if (!file) {
-        console.error(`File with ID ${fileId} not found`);
-        return null;
+      // Use consistent key prefix for content
+      const content = localStorage.getItem(`${this.CONTENT_PREFIX}${fileId}`);
+      if (!content) {
+        console.error(`No content found for file ID: ${fileId}`);
       }
-
-      const content = localStorage.getItem(`file-content:${file.name}`);
       return content;
     } catch (error) {
-      console.error('Error getting file content:', error);
+      console.error('Error retrieving file content:', error);
       return null;
     }
   }
@@ -49,47 +49,31 @@ export class FileHistoryService {
       // Load current files
       const currentFiles = this.files.getValue();
 
-      // Check if file already exists
-      const existingIndex = currentFiles.findIndex(f => f.name === file.name);
-      if (existingIndex !== -1) {
-        // Update existing file
-        currentFiles.splice(existingIndex, 1);
-      }
-
-      // Ensure file has current date
-      file.date = new Date();
-
-      // Extract summary information for XML files
-      if (file.type === 'xml' && !file.summary) {
-        file.summary = this.extractCoverageSummary(content);
-      }
+      // Remove existing file with same ID or name if exists
+      const updatedFiles = currentFiles.filter(f =>
+        f.id !== file.id && f.name !== file.name
+      );
 
       // Add to the beginning of the array
-      const updatedFiles = [file, ...currentFiles];
+      updatedFiles.unshift(file);
 
       // Keep only last 30 files
       if (updatedFiles.length > 30) {
         const removedFile = updatedFiles.pop();
         if (removedFile) {
-          localStorage.removeItem(`file-content:${removedFile.name}`);
-          localStorage.removeItem(`file-metadata:${removedFile.name}`);
+          localStorage.removeItem(`${this.CONTENT_PREFIX}${removedFile.id}`);
         }
       }
 
-      // Save file content and metadata
-      localStorage.setItem(`file-content:${file.name}`, content);
-      localStorage.setItem(`file-metadata:${file.name}`, JSON.stringify({
-        date: file.date.toISOString(),
-        size: file.size,
-        type: file.type,
-        summary: file.summary
-      }));
+      // Store content by file ID
+      localStorage.setItem(`${this.CONTENT_PREFIX}${file.id}`, content);
 
-      // Save file list
+      // Save complete file objects to localStorage
       this.saveFiles(updatedFiles);
 
       // Update state
       this.files.next(updatedFiles);
+      console.log('File added to history:', file.name);
     } catch (error) {
       console.error('Error adding file to history:', error);
       this.ToastService.showError('File History Error', 'Could not save file to history');
@@ -97,32 +81,26 @@ export class FileHistoryService {
   }
 
   /**
-   * Remove file from history
-   */
+  * Remove file from history
+  */
   removeFile(fileId: string): void {
     try {
       const currentFiles = this.files.getValue();
-      const fileIndex = currentFiles.findIndex(f => f.id === fileId);
+      const updatedFiles = currentFiles.filter(f => f.id !== fileId);
 
-      if (fileIndex === -1) {
+      if (updatedFiles.length === currentFiles.length) {
         console.warn(`File with ID ${fileId} not found`);
         return;
       }
 
-      const file = currentFiles[fileIndex];
-
       // Remove from localStorage
-      localStorage.removeItem(`file-content:${file.name}`);
-      localStorage.removeItem(`file-metadata:${file.name}`);
-
-      // Remove from array
-      currentFiles.splice(fileIndex, 1);
+      localStorage.removeItem(`${this.CONTENT_PREFIX}${fileId}`);
 
       // Save updated file list
-      this.saveFiles(currentFiles);
+      this.saveFiles(updatedFiles);
 
       // Update state
-      this.files.next([...currentFiles]);
+      this.files.next(updatedFiles);
     } catch (error) {
       console.error('Error removing file:', error);
       this.ToastService.showError('File History Error', 'Could not remove file from history');
@@ -134,16 +112,16 @@ export class FileHistoryService {
    */
   clearHistory(): void {
     try {
-      // Clear all files from localStorage
+      // Get all current files
       const currentFiles = this.files.getValue();
 
+      // Clear all file content from localStorage
       for (const file of currentFiles) {
-        localStorage.removeItem(`file-content:${file.name}`);
-        localStorage.removeItem(`file-metadata:${file.name}`);
+        localStorage.removeItem(`${this.CONTENT_PREFIX}${file.id}`);
       }
 
       // Clear file list
-      localStorage.removeItem('recent-files');
+      localStorage.removeItem(this.FILE_LIST_KEY);
 
       // Update state
       this.files.next([]);
@@ -157,8 +135,12 @@ export class FileHistoryService {
    * Private: Save file list to localStorage
    */
   private saveFiles(files: HistoricalFile[]): void {
-    const fileNames = files.map(f => f.name);
-    localStorage.setItem('recent-files', JSON.stringify(fileNames));
+    try {
+      // Store full file objects, not just names
+      localStorage.setItem(this.FILE_LIST_KEY, JSON.stringify(files));
+    } catch (error) {
+      console.error('Error saving files to localStorage:', error);
+    }
   }
 
   /**
@@ -166,79 +148,47 @@ export class FileHistoryService {
    */
   private loadRecentFiles(): void {
     try {
-      // Get file list
-      const fileListJson = localStorage.getItem('recent-files');
-      if (!fileListJson) {
+      // Get file list as complete objects
+      const filesJson = localStorage.getItem(this.FILE_LIST_KEY);
+      if (!filesJson) {
+        console.log('No files found in localStorage');
         this.files.next([]);
         return;
       }
 
       // Parse file list
-      const fileList = JSON.parse(fileListJson);
+      let loadedFiles: HistoricalFile[] = [];
+      try {
+        const parsed = JSON.parse(filesJson);
+        if (Array.isArray(parsed)) {
+          loadedFiles = parsed;
 
-      // Convert to historical files
-      const historicalFiles: HistoricalFile[] = [];
-
-      for (const fileName of fileList) {
-        try {
-          // Get file content
-          const fileContent = localStorage.getItem(`file-content:${fileName}`);
-
-          // Get file metadata
-          const metadataJson = localStorage.getItem(`file-metadata:${fileName}`);
-          let fileDate = new Date();
-          let fileSize: number | undefined = undefined;
-          let fileType: 'xml' | 'json' | 'sample' = 'xml';
-          let fileSummary = undefined;
-
-          // Parse metadata if available
-          if (metadataJson) {
-            try {
-              const metadata = JSON.parse(metadataJson);
-              if (metadata.date) {
-                fileDate = new Date(metadata.date);
-              }
-              if (metadata.size) {
-                fileSize = metadata.size;
-              }
-              if (metadata.type) {
-                fileType = metadata.type;
-              }
-              if (metadata.summary) {
-                fileSummary = metadata.summary;
-              }
-            } catch (e) {
-              console.error('Error parsing file metadata:', e);
+          // Ensure dates are properly parsed as Date objects
+          loadedFiles.forEach(file => {
+            if (typeof file.date === 'string') {
+              file.date = new Date(file.date);
             }
-          }
-
-          // If no summary in metadata but we have content, try to extract it
-          if (!fileSummary && fileContent && fileType === 'xml') {
-            fileSummary = this.extractCoverageSummary(fileContent);
-          }
-
-          // Generate ID if needed
-          const fileId = fileName.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6);
-
-          // Create historical file
-          historicalFiles.push({
-            id: fileId,
-            name: fileName,
-            date: fileDate,
-            size: fileSize,
-            type: fileType,
-            summary: fileSummary
           });
-        } catch (error) {
-          console.error(`Error processing file ${fileName}:`, error);
+        } else {
+          throw new Error('Invalid file list format');
         }
+      } catch (e) {
+        console.error('Failed to parse file list:', e);
+        this.files.next([]);
+        return;
       }
 
       // Sort by date (newest first)
-      historicalFiles.sort((a, b) => b.date.getTime() - a.date.getTime());
+      loadedFiles.sort((a, b) => {
+        const dateA = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime();
+        const dateB = b.date instanceof Date ? b.date.getTime() : new Date(b.date).getTime();
+        return dateB - dateA;
+      });
+
+      console.log(`Loaded ${loadedFiles.length} files from localStorage`);
 
       // Update state
-      this.files.next(historicalFiles);
+      this.files.next(loadedFiles);
     } catch (error) {
       console.error('Error loading file history:', error);
       this.files.next([]);
