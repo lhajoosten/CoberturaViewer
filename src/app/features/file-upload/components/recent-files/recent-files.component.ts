@@ -60,28 +60,21 @@ export class RecentFilesComponent implements OnInit {
           if (fileContent) {
             size = fileContent.length;
 
-            // Try to parse summary info
-            if (fileContent.trim().startsWith('{')) {
-              // JSON (sample data)
-              const data = JSON.parse(fileContent);
-              summary = data.summary;
-            } else {
-              // XML - just get the coverage attributes
-              const coverageMatch = fileContent.match(/<coverage[^>]*/);
-              if (coverageMatch) {
-                const lineRateMatch = coverageMatch[0].match(/line-rate="([^"]*)"/);
-                const branchRateMatch = coverageMatch[0].match(/branch-rate="([^"]*)"/);
+            // XML - just get the coverage attributes
+            const coverageMatch = fileContent.match(/<coverage[^>]*/);
+            if (coverageMatch) {
+              const lineRateMatch = coverageMatch[0].match(/line-rate="([^"]*)"/);
+              const branchRateMatch = coverageMatch[0].match(/branch-rate="([^"]*)"/);
 
-                if (lineRateMatch) {
-                  summary = {
-                    lineCoverage: parseFloat(lineRateMatch[1]) * 100,
-                    branchCoverage: 0,
-                    timestamp: new Date().toISOString()
-                  };
+              if (lineRateMatch) {
+                summary = {
+                  lineCoverage: parseFloat(lineRateMatch[1]) * 100,
+                  branchCoverage: 0,
+                  timestamp: new Date().toISOString()
+                };
 
-                  if (branchRateMatch) {
-                    summary.branchCoverage = parseFloat(branchRateMatch[1]) * 100;
-                  }
+                if (branchRateMatch) {
+                  summary.branchCoverage = parseFloat(branchRateMatch[1]) * 100;
                 }
               }
             }
@@ -125,19 +118,12 @@ export class RecentFilesComponent implements OnInit {
           return;
         }
 
-        // Check if it's JSON or XML
-        if (fileContent.trim().startsWith('{')) {
-          // It's JSON (sample data)
-          const data = JSON.parse(fileContent);
-          this.coverageStore.setCoverageData(data);
-        } else {
-          // It's XML
-          const data = this.parserService.parseCoberturaXml(fileContent);
-          if (!data) {
-            throw new Error('Failed to parse coverage data');
-          }
-          this.coverageStore.setCoverageData(data);
+        // It's XML
+        const data = this.parserService.parseCoberturaXml(fileContent);
+        if (!data) {
+          throw new Error('Failed to parse coverage data');
         }
+        this.coverageStore.setCoverageData(data);
 
         this.ToastService.showSuccess('File Loaded', `Loaded ${file.name} successfully`);
       } catch (error) {

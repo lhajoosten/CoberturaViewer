@@ -20,6 +20,10 @@ export class FileHistoryService {
     return this.files.asObservable();
   }
 
+  getRecentFiles(): HistoricalFile[] {
+    return this.files.getValue();
+  }
+
   /**
    * Add file to history
    */
@@ -35,6 +39,9 @@ export class FileHistoryService {
         currentFiles.splice(existingIndex, 1);
       }
 
+      // Ensure file has current date
+      file.date = new Date();
+
       // Add to the beginning of the array
       const updatedFiles = [file, ...currentFiles];
 
@@ -43,11 +50,17 @@ export class FileHistoryService {
         const removedFile = updatedFiles.pop();
         if (removedFile) {
           localStorage.removeItem(`file-content:${removedFile.name}`);
+          localStorage.removeItem(`file-metadata:${removedFile.name}`);
         }
       }
 
-      // Save file content
+      // Save file content and metadata
       localStorage.setItem(`file-content:${file.name}`, content);
+      localStorage.setItem(`file-metadata:${file.name}`, JSON.stringify({
+        date: file.date.toISOString(),
+        size: file.size,
+        type: file.type
+      }));
 
       // Save file list
       this.saveFiles(updatedFiles);
@@ -148,29 +161,27 @@ export class FileHistoryService {
           if (fileContent) {
             size = fileContent.length;
 
-            // Determine file type and extract summary
-            if (fileContent.trim().startsWith('{')) {
-              // JSON (sample data)
+            // Default to XML type
+            if (fileName.toLowerCase().endsWith('.json')) {
               type = 'json';
-              const data = JSON.parse(fileContent);
-              summary = data.summary;
-
-              // Check if it's a sample file
-              if (fileName.includes('sample-')) {
-                type = 'sample';
-              }
+            } else if (fileName.toLowerCase().includes('sample')) {
+              type = 'sample';
             } else {
-              // XML
               type = 'xml';
+            }
+
+            // Extract coverage information from XML
+            if (type === 'xml') {
               const coverageMatch = fileContent.match(/<coverage[^>]*/);
               if (coverageMatch) {
                 const lineRateMatch = coverageMatch[0].match(/line-rate="([^"]*)"/);
                 const branchRateMatch = coverageMatch[0].match(/branch-rate="([^"]*)"/);
+                const timestampMatch = coverageMatch[0].match(/timestamp="([^"]*)"/);
 
                 if (lineRateMatch) {
                   summary = {
                     lineCoverage: parseFloat(lineRateMatch[1]) * 100,
-                    timestamp: new Date().toISOString(),
+                    timestamp: timestampMatch ? timestampMatch[1] : new Date().toISOString(),
                     branchCoverage: 0 // Default value
                   };
 
@@ -182,11 +193,25 @@ export class FileHistoryService {
             }
           }
 
+          // Attempt to get stored metadata about the file
+          let fileDate = new Date();
+          try {
+            const fileMetadata = localStorage.getItem(`file-metadata:${fileName}`);
+            if (fileMetadata) {
+              const metadata = JSON.parse(fileMetadata);
+              if (metadata.date) {
+                fileDate = new Date(metadata.date);
+              }
+            }
+          } catch (e) {
+            console.error('Error parsing file metadata:', e);
+          }
+
           // Create historical file
           historicalFiles.push({
-            id: Math.random().toString(36).substring(2, 9),
+            id: fileName.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 6),
             name: fileName,
-            date: new Date(),
+            date: fileDate,
             size,
             summary,
             type
@@ -195,6 +220,9 @@ export class FileHistoryService {
           console.error(`Error processing file ${fileName}:`, error);
         }
       }
+
+      // Sort by date (newest first)
+      historicalFiles.sort((a, b) => b.date.getTime() - a.date.getTime());
 
       // Update state
       this.files.next(historicalFiles);

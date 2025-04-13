@@ -252,13 +252,17 @@
 
 .recent-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 1rem;
 }
 
 .recent-item {
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
+  margin-top: 5px;
   padding: 0.5rem 0.75rem;
   background-color: var(--color-bg-tertiary);
   border: 1px solid var(--color-border-default);
@@ -279,40 +283,6 @@
 
   span {
     color: var(--color-text-tertiary);
-  }
-}
-
-.sample-data {
-  .sample-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: flex-end;
-  }
-
-  .sample-button {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.5rem 0.75rem;
-    background-color: var(--color-bg-tertiary);
-    border: 1px solid var(--color-border-default);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      background-color: rgba(var(--color-primary-rgb), 0.1);
-      border-color: var(--color-primary);
-    }
-
-    i {
-      margin-right: 0.5rem;
-      color: var(--color-primary);
-    }
-
-    span {
-      color: var(--color-text-tertiary);
-    }
   }
 }
 

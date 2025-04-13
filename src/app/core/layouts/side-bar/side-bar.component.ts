@@ -42,6 +42,16 @@ export class SidebarComponent {
       icon: 'fas fa-exchange-alt',
       label: 'Comparison',
       route: '/comparison'
+    },
+    {
+      icon: 'fas fa-file-alt',
+      label: 'Recent Files',
+      route: '/recent-files'
+    },
+    {
+      icon: 'fas fa-user',
+      label: 'Profile',
+      route: '/user/profile'
     }
   ];
 }

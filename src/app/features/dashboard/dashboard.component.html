@@ -36,28 +36,35 @@
         <section class="recent-files">
             <div class="section-header">
                 <h2>Recent Files</h2>
-                <a routerLink="/upload" class="view-all">View All</a>
+                <a routerLink="/recent-files" class="view-all">View All</a>
             </div>
 
             <div class="card file-list-card">
-                <div *ngIf="recentFiles.length === 0" class="empty-state">
+                <div *ngIf="recentFiles?.length === 0" class="empty-state">
                     <i class="fas fa-file-alt empty-icon"></i>
                     <p>No recent coverage files</p>
                     <button class="btn-primary" (click)="navigateToUpload()">Upload Coverage Report</button>
                 </div>
 
-                <ul *ngIf="recentFiles.length > 0" class="file-list">
-                    <li *ngFor="let file of recentFiles" class="file-item" (click)="loadFile(file.name)">
+                <ul *ngIf="recentFiles?.length! > 0" class="file-list">
+                    <li *ngFor="let file of recentFiles" class="file-item" (click)="loadFile(file)">
                         <div class="file-icon">
-                            <i class="fas fa-file-code"></i>
+                            <i class="fas" [ngClass]="{
+                            'fa-file-code': file.type === 'xml' || file.type === 'json',
+                            'fa-file-alt': file.type === 'sample'}"></i>
                         </div>
                         <div class="file-info">
                             <div class="file-name">{{ file.name }}</div>
                             <div class="file-date">{{ file.date | date:'medium' }}</div>
                         </div>
-                        <div class="file-coverage"
-                            [ngClass]="{'high': file.coverage >= 80, 'medium': file.coverage >= 60 && file.coverage < 80, 'low': file.coverage < 60}">
-                            {{ file.coverage.toFixed(1) }}%
+                        <div class="file-coverage" *ngIf="file.summary?.lineCoverage !== undefined" [ngClass]="{
+                            'high': file.summary!.lineCoverage >= 80, 
+                            'medium': file.summary!.lineCoverage >= 60 && file.summary!.lineCoverage < 80, 
+                            'low': file.summary!.lineCoverage < 60 }">
+                            {{ file.summary!.lineCoverage.toFixed(1) }}%
+                        </div>
+                        <div class="file-size" *ngIf="!file.summary?.lineCoverage && file.size">
+                            {{ formatFileSize(file.size) }}
                         </div>
                     </li>
                 </ul>

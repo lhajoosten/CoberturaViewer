@@ -73,6 +73,11 @@ export const routes: Routes = [
                 path: 'comparison',
                 loadComponent: () => import('./features/comparison/components/report-comparison/report-comparison.component')
                     .then(m => m.ReportComparisonComponent)
+            },
+            {
+                path: 'recent-files',
+                loadComponent: () => import('./features/file-upload/components/recent-files/recent-files.component')
+                    .then(m => m.RecentFilesComponent)
             }
         ]
     },

@@ -154,38 +154,6 @@ export class FileUploaderComponent implements OnInit {
     reader.readAsText(file);
   }
 
-  loadSampleData(type: 'basic' | 'complex' = 'basic'): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    // Simulate loading with timeout
-    setTimeout(() => {
-      try {
-        const sampleData = type === 'complex'
-          ? this.generateComplexSampleData()
-          : this.generateBasicSampleData();
-
-        this.coverageStore.setCoverageData(sampleData);
-
-        this.ToastService.showSuccess(
-          'Sample Data Loaded',
-          `Loaded ${type} sample data with ${sampleData.summary.lineCoverage.toFixed(1)}% coverage`
-        );
-
-        // Add to recent files
-        this.addToRecentFiles(`sample-${type}-data.xml`, JSON.stringify(sampleData));
-
-        // Navigate to visualization
-        this.router.navigate(['/visualization']);
-      } catch (error) {
-        this.errorMessage = 'Failed to load sample data';
-        this.ToastService.showError('Error', 'Failed to load sample data');
-      } finally {
-        this.isLoading = false;
-      }
-    }, 800);
-  }
-
   loadFromHistory(fileName: string): void {
     this.isLoading = true;
     this.errorMessage = '';
@@ -200,19 +168,12 @@ export class FileUploaderComponent implements OnInit {
           return;
         }
 
-        // Check if it's a JSON string (sample data) or XML
-        if (fileContent.trim().startsWith('{')) {
-          // It's JSON (sample data)
-          const coverageData = JSON.parse(fileContent);
-          this.coverageStore.setCoverageData(coverageData);
-        } else {
-          // It's XML
-          const coverageData = this.parserService.parseCoberturaXml(fileContent);
-          if (!coverageData) {
-            throw new Error('Failed to parse saved coverage data');
-          }
-          this.coverageStore.setCoverageData(coverageData);
+        // It's XML
+        const coverageData = this.parserService.parseCoberturaXml(fileContent);
+        if (!coverageData) {
+          throw new Error('Failed to parse saved coverage data');
         }
+        this.coverageStore.setCoverageData(coverageData);
 
         this.ToastService.showSuccess(
           'Historical File Loaded',
@@ -303,44 +264,5 @@ export class FileUploaderComponent implements OnInit {
     if (content) {
       localStorage.setItem(`file-content:${fileName}`, content);
     }
-  }
-
-  // Sample data generation methods - shortened for brevity
-  private generateBasicSampleData() {
-    // Basic implementation - you can replace with the detailed implementation from the provided code
-    return {
-      summary: {
-        lineCoverage: 84.7,
-        branchCoverage: 76.3,
-        methodCoverage: 80.5,
-        classCoverage: 85.2,
-        complexity: 24,
-        linesValid: 450,
-        linesCovered: 381,
-        branchesValid: 200,
-        branchesCovered: 152,
-        timestamp: new Date().toISOString()
-      },
-      packages: []
-    };
-  }
-
-  private generateComplexSampleData() {
-    // Complex implementation - you can replace with the detailed implementation from the provided code
-    return {
-      summary: {
-        lineCoverage: 78.5,
-        branchCoverage: 65.3,
-        methodCoverage: 72.8,
-        classCoverage: 70.2,
-        complexity: 34,
-        linesValid: 1250,
-        linesCovered: 981,
-        branchesValid: 500,
-        branchesCovered: 325,
-        timestamp: new Date().toISOString()
-      },
-      packages: []
-    };
   }
 }

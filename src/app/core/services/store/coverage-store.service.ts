@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { CoverageData } from '../../models/coverage.model';
+import { CoberturaParserService } from '../parsers/cobertura-parser.service';
 
 /**
  * Service for storing and retrieving coverage data
@@ -12,7 +13,7 @@ import { CoverageData } from '../../models/coverage.model';
 export class CoverageStoreService {
     private coverageData = new BehaviorSubject<CoverageData | null>(null);
 
-    constructor() { }
+    constructor(private parser: CoberturaParserService) { }
 
     /**
      * Sets the current coverage data
@@ -44,5 +45,15 @@ export class CoverageStoreService {
      */
     clearData(): void {
         this.coverageData.next(null);
+    }
+
+    /**
+     * Parses and sets the coverage data from a file
+     * @param file The file to parse
+     */
+    loadXmlData(fileName: string, fileContent: string): void {
+        console.log('Loading XML data from file:', fileName);
+        const coverageData = this.parser.parseCoberturaXml(fileContent);
+        this.setCoverageData(coverageData);
     }
 }
