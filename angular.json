@@ -39,6 +39,9 @@
                 "replace": "src/env/environment.ts",
                 "with": "src/env/env.develop.ts"
               }
+            ],
+            "allowedCommonJsDependencies": [
+              "html2canvas"
             ]
           },
           "configurations": {
