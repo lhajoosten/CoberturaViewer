@@ -1,0 +1,263 @@
+<div class="comparison-container">
+    <div class="comparison-header">
+        <h1>Coverage Report Comparison</h1>
+        <p class="description">Compare the current coverage report with a previously saved report</p>
+    </div>
+
+    <ng-container *ngIf="currentReport; else noCurrentReportTemplate">
+        <div class="current-report-info">
+            <div class="report-card">
+                <div class="report-header">
+                    <h3>Current Report</h3>
+                    <button class="save-button" (click)="saveCurrentReport()">
+                        <i class="fas fa-save"></i> Save for Comparison
+                    </button>
+                </div>
+
+                <div class="report-summary">
+                    <div class="summary-item">
+                        <div class="item-label">Line Coverage</div>
+                        <div class="item-value" [ngClass]="currentReport.summary.lineCoverage >= 80 ? 'high-value' : 
+                        currentReport.summary.lineCoverage >= 60 ? 'medium-value' : 'low-value'">
+                            {{ currentReport.summary.lineCoverage.toFixed(2) }}%
+                        </div>
+                    </div>
+
+                    <div class="summary-item" *ngIf="currentReport.summary.branchCoverage !== undefined">
+                        <div class="item-label">Branch Coverage</div>
+                        <div class="item-value" [ngClass]="currentReport.summary.branchCoverage >= 80 ? 'high-value' : 
+                        currentReport.summary.branchCoverage >= 60 ? 'medium-value' : 'low-value'">
+                            {{ currentReport.summary.branchCoverage.toFixed(2) }}%
+                        </div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="item-label">Lines Covered</div>
+                        <div class="item-value">
+                            {{ currentReport.summary.linesCovered }} / {{ currentReport.summary.linesValid }}
+                        </div>
+                    </div>
+
+                    <div class="summary-item">
+                        <div class="item-label">Packages / Classes</div>
+                        <div class="item-value">
+                            {{ currentReport.packages.length }} / {{ getClassCount(currentReport) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stored-reports-section">
+            <h2>Saved Reports</h2>
+
+            <div *ngIf="storedReports.length === 0" class="no-stored-reports">
+                <p>No saved reports. Save the current report to enable comparison.</p>
+            </div>
+
+            <div class="report-list" *ngIf="storedReports.length > 0">
+                <div class="report-item" *ngFor="let report of storedReports"
+                    [class.selected]="selectedReportId === report.id">
+                    <div class="report-info">
+                        <div class="report-name">{{ report.name }}</div>
+                        <div class="report-meta">
+                            <span class="report-date">{{ report.date | date:'medium' }}</span>
+                            <span class="report-coverage">{{ report.summary.lineCoverage.toFixed(2) }}% line
+                                coverage</span>
+                        </div>
+                    </div>
+
+                    <div class="report-actions">
+                        <button class="compare-button" (click)="compareWithReport(report.id)">
+                            <i class="fas fa-balance-scale"></i> Compare
+                        </button>
+                        <button class="delete-button" (click)="deleteStoredReport(report.id)">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Results -->
+        <div class="comparison-results" *ngIf="comparisonResult">
+            <h2>Comparison Results</h2>
+
+            <div class="toggle-buttons">
+                <button [class.active]="compareMode === 'coverage'" (click)="toggleCompareMode('coverage')">
+                    <i class="fas fa-chart-pie"></i> Coverage Changes
+                </button>
+                <button [class.active]="compareMode === 'structure'" (click)="toggleCompareMode('structure')">
+                    <i class="fas fa-code-branch"></i> Structure Changes
+                </button>
+            </div>
+
+            <!-- Coverage Mode -->
+            <div class="coverage-comparison" *ngIf="compareMode === 'coverage'">
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <div class="stat-title">Line Coverage</div>
+                        <div class="stat-change"
+                            [ngClass]="getChangeClass(comparisonResult.summary.lineCoverageChange)">
+                            {{ formatChange(comparisonResult.summary.lineCoverageChange) }}
+                        </div>
+                    </div>
+
+                    <div class="stat-card" *ngIf="comparisonResult.summary.branchCoverageChange !== undefined">
+                        <div class="stat-title">Branch Coverage</div>
+                        <div class="stat-change"
+                            [ngClass]="getChangeClass(comparisonResult.summary.branchCoverageChange)">
+                            {{ formatChange(comparisonResult.summary.branchCoverageChange) }}
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-title">Lines Covered</div>
+                        <div class="stat-change"
+                            [ngClass]="getChangeClass(comparisonResult.summary.linesCoveredChange)">
+                            {{ comparisonResult.summary.linesCoveredChange > 0 ? '+' : '' }}{{
+                            comparisonResult.summary.linesCoveredChange }}
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-title">Total Lines</div>
+                        <div class="stat-change" [ngClass]="getChangeClass(comparisonResult.summary.linesValidChange)">
+                            {{ comparisonResult.summary.linesValidChange > 0 ? '+' : '' }}{{
+                            comparisonResult.summary.linesValidChange }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <google-chart [type]="diffChartType" [data]="diffChartData" [options]="diffChartOptions"
+                            [width]="diffChartWidth" [height]="diffChartHeight">
+                        </google-chart>
+                    </div>
+
+                    <div class="chart-card">
+                        <google-chart [type]="packageChangesType" [data]="packageChangesData"
+                            [options]="packageChangesOptions" [width]="packageChangesWidth"
+                            [height]="packageChangesHeight">
+                        </google-chart>
+                    </div>
+                </div>
+
+                <!-- Package Comparison Table -->
+                <div class="package-comparison">
+                    <h3>Package Coverage Changes</h3>
+
+                    <div class="comparison-table-container">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Package</th>
+                                    <th>Previous</th>
+                                    <th>Current</th>
+                                    <th>Change</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let pkg of comparisonResult.packageComparisons">
+                                    <td [ngClass]="{'new-item': !pkg.exists1, 'removed-item': !pkg.exists2}">
+                                        {{ pkg.name }}
+                                        <span class="status-badge" *ngIf="!pkg.exists1">New</span>
+                                        <span class="status-badge removed" *ngIf="!pkg.exists2">Removed</span>
+                                    </td>
+                                    <td>{{ pkg.exists1 ? (pkg.lineCoverage1?.toFixed(2) + '%') : 'N/A' }}</td>
+                                    <td>{{ pkg.exists2 ? (pkg.lineCoverage2?.toFixed(2) + '%') : 'N/A' }}</td>
+                                    <td [ngClass]="getChangeClass(pkg.lineCoverageChange)">
+                                        {{ pkg.exists1 && pkg.exists2 ? formatChange(pkg.lineCoverageChange) : 'N/A' }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Structure Mode -->
+            <div class="structure-comparison" *ngIf="compareMode === 'structure'">
+                <div class="structure-summary">
+                    <div class="structure-stat-card">
+                        <div class="stat-icon"><i class="fas fa-plus-circle"></i></div>
+                        <div class="stat-value">{{ comparisonResult.summary.newPackages.length }}</div>
+                        <div class="stat-label">New Packages</div>
+                    </div>
+
+                    <div class="structure-stat-card">
+                        <div class="stat-icon"><i class="fas fa-minus-circle"></i></div>
+                        <div class="stat-value">{{ comparisonResult.summary.removedPackages.length }}</div>
+                        <div class="stat-label">Removed Packages</div>
+                    </div>
+
+                    <div class="structure-stat-card">
+                        <div class="stat-icon"><i class="fas fa-plus"></i></div>
+                        <div class="stat-value">{{ comparisonResult.summary.newClasses.length }}</div>
+                        <div class="stat-label">New Classes</div>
+                    </div>
+
+                    <div class="structure-stat-card">
+                        <div class="stat-icon"><i class="fas fa-minus"></i></div>
+                        <div class="stat-value">{{ comparisonResult.summary.removedClasses.length }}</div>
+                        <div class="stat-label">Removed Classes</div>
+                    </div>
+                </div>
+
+                <!-- Structure Changes -->
+                <div class="changes-container">
+                    <!-- New Packages -->
+                    <div class="changes-section" *ngIf="comparisonResult.summary.newPackages.length > 0">
+                        <h3><i class="fas fa-plus-circle"></i> New Packages</h3>
+                        <ul class="changes-list">
+                            <li *ngFor="let pkg of comparisonResult.summary.newPackages">{{ pkg }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- Removed Packages -->
+                    <div class="changes-section" *ngIf="comparisonResult.summary.removedPackages.length > 0">
+                        <h3><i class="fas fa-minus-circle"></i> Removed Packages</h3>
+                        <ul class="changes-list">
+                            <li *ngFor="let pkg of comparisonResult.summary.removedPackages">{{ pkg }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- New Classes -->
+                    <div class="changes-section" *ngIf="comparisonResult.summary.newClasses.length > 0">
+                        <h3><i class="fas fa-plus"></i> New Classes</h3>
+                        <ul class="changes-list">
+                            <li *ngFor="let cls of comparisonResult.summary.newClasses">
+                                {{ cls.packageName }}.{{ cls.className }}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Removed Classes -->
+                    <div class="changes-section" *ngIf="comparisonResult.summary.removedClasses.length > 0">
+                        <h3><i class="fas fa-minus"></i> Removed Classes</h3>
+                        <ul class="changes-list">
+                            <li *ngFor="let cls of comparisonResult.summary.removedClasses">
+                                {{ cls.packageName }}.{{ cls.className }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noCurrentReportTemplate>
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <h2>No Current Coverage Report</h2>
+            <p>Upload a coverage report to enable comparison features.</p>
+            <button routerLink="/upload" class="primary-btn">
+                <i class="fas fa-upload"></i> Upload Coverage Report
+            </button>
+        </div>
+    </ng-template>
+</div>

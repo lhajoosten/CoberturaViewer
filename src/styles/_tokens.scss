@@ -1,346 +1,207 @@
-@use "sass:color";
-@use "sass:map";
+// ==========================================================
+// DESIGN TOKENS
+// ==========================================================
+// These tokens are used with the mixins to maintain
+// visual consistency throughout the application
 
-// ========================================================
-// COLOR PALETTE
-// ========================================================
+// COLORS
+// ----------------------------------------------------------
+// Brand colors
+$color-primary: #3366ff;
+$color-secondary: #00c8ff;
+$color-accent: #ff3366;
 
-// Primary Colors
-$primary-color: #5b2ac3;
-$primary-light: #7c49e3;
-$primary-dark: #4a1eb0;
-$primary-bg: rgba(91, 42, 195, 0.08);
+// Brand color variants
+// Primary palette
+$color-primary-50: #e6ecff;
+$color-primary-100: #ccd9ff;
+$color-primary-200: #99b3ff;
+$color-primary-300: #668cff;
+$color-primary-400: #3366ff; // Base primary
+$color-primary-500: #2952cc;
+$color-primary-600: #1f3d99;
+$color-primary-700: #162966;
+$color-primary-800: #0c1433;
+$color-primary-900: #060a19;
 
-// Accent Colors
-$accent-color: #00ff95;
-$accent-light: #66ffbc;
-$accent-dark: #00cc78;
-$accent-bg: rgba(0, 255, 149, 0.08);
+// Secondary palette
+$color-secondary-50: #e6f9ff;
+$color-secondary-100: #ccf4ff;
+$color-secondary-200: #99e9ff;
+$color-secondary-300: #66deff;
+$color-secondary-400: #00c8ff; // Base secondary
+$color-secondary-500: #00a0cc;
+$color-secondary-600: #007899;
+$color-secondary-700: #005066;
+$color-secondary-800: #002833;
+$color-secondary-900: #001419;
 
-// ========================================================
-// THEME COLORS
-// ========================================================
+// Accent palette
+$color-accent-50: #ffe6ec;
+$color-accent-100: #ffccd9;
+$color-accent-200: #ff99b3;
+$color-accent-300: #ff668c;
+$color-accent-400: #ff3366; // Base accent
+$color-accent-500: #cc2952;
+$color-accent-600: #991f3d;
+$color-accent-700: #661629;
+$color-accent-800: #330c14;
+$color-accent-900: #19060a;
 
-// Light Theme
-$background-color: #f8f9fa;
-$surface-color: #ffffff;
-$card-bg: #ffffff;
-$card-header-bg: #f8fafc;
-$border-color: #e2e8f0;
+// UI colors
+$color-success: #0ab15d;
+$color-warning: #ffc400;
+$color-error: #ff3333;
+$color-info: #0a6bb1;
 
-// Dark Theme
-$background-color-dark: #121829;
-$surface-color-dark: #1e2133;
-$card-bg-dark: #1e2133;
-$card-header-bg-dark: #262b40;
-$border-color-dark: #2e355a;
+// Neutral colors
+$color-background: #ffffff;
+$color-surface: #f5f7fa;
+$color-border: #e1e5eb;
 
-// ========================================================
-// TYPOGRAPHY COLORS
-// ========================================================
-$text-color: #1a202c;
-$text-muted: #718096;
-$text-on-primary: #ffffff;
-$text-on-primary-dark: #1a202c;
-$text-on-accent: #1a202c;
+// Text colors
+$color-text-primary: #2a2e35;
+$color-text-secondary: #5c6370;
+$color-text-tertiary: #9aa1b1;
+$color-text-inverse: #ffffff;
 
-$text-dark: #e2e8f0;
-$text-muted-dark: #a0aec0;
+// Overlay colors
+$color-overlay-light: rgba(255, 255, 255, 0.8);
+$color-overlay-dark: rgba(0, 0, 0, 0.6);
 
-// ========================================================
-// FEEDBACK COLORS
-// ========================================================
-$success-color: #00cc78;
-$success-bg: rgba(0, 204, 120, 0.1);
-$info-color: #7c49e3;
-$info-bg: rgba(124, 73, 227, 0.1);
-$warning-color: #ffb400;
-$warning-bg: rgba(255, 180, 0, 0.1);
-$error-color: #e53e3e;
-$error-bg: rgba(229, 62, 62, 0.1);
+// TYPOGRAPHY
+// ----------------------------------------------------------
+// Font families
+$font-family-base: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  sans-serif;
+$font-family-heading: "Roboto Condensed", -apple-system, BlinkMacSystemFont,
+  "Segoe UI", sans-serif;
+$font-family-mono: "Roboto Mono", monospace;
 
-// ========================================================
-// BREAKPOINTS
-// ========================================================
-$breakpoint-sm: 576px;
-$breakpoint-md: 768px;
-$breakpoint-lg: 992px;
-$breakpoint-xl: 1200px;
+// Font sizes
+$font-size-xs: 0.75rem; // 12px
+$font-size-sm: 0.875rem; // 14px
+$font-size-md: 1rem; // 16px
+$font-size-lg: 1.125rem; // 18px
+$font-size-xl: 1.25rem; // 20px
+$font-size-2xl: 1.5rem; // 24px
+$font-size-3xl: 1.875rem; // 30px
+$font-size-4xl: 2.25rem; // 36px
 
-// ========================================================
-// SPACING SCALE
-// ========================================================
-$spacing-scale: (
-  "xxs": 0.125rem,
-  // 2px
-  "xs": 0.25rem,
-  // 4px
-  "sm": 0.5rem,
-  // 8px
-  "md": 1rem,
-  // 16px
-  "lg": 1.5rem,
-  // 24px
-  "xl": 2rem,
-  // 32px
-  "xxl": 3rem,
-  // 48px
-  "xxxl": 4rem // 64px,,,,,,,,,,,,,,,,,,
-);
+// Font weights
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
 
-// ========================================================
-// FONT SIZES
-// ========================================================
-$font-sizes: (
-  "xs": 0.7rem,
-  // 11.2px
-  "sm": 0.8rem,
-  // 12.8px
-  "base": 0.9rem,
-  // 14.4px
-  "md": 1rem,
-  // 16px
-  "lg": 1.1rem,
-  // 17.6px
-  "xl": 1.25rem,
-  // 20px
-  "xxl": 1.5rem,
-  // 24px
-  "huge": 2rem,
-  // 32px
-);
+// Line heights
+$line-height-tight: 1.25;
+$line-height-base: 1.5;
+$line-height-loose: 1.75;
 
-// ========================================================
-// BORDER RADIUS
-// ========================================================
-$border-radius: (
-  "sm": 3px,
-  "md": 4px,
-  "lg": 6px,
-  "xl": 8px,
-  "round": 50%,
-  "pill": 9999px,
-  "circle": 50%,
-);
+// SPACING
+// ----------------------------------------------------------
+// Base spacing unit = 0.25rem (4px)
+$spacing-0: 0;
+$spacing-1: 0.25rem; // 4px
+$spacing-2: 0.5rem; // 8px
+$spacing-3: 0.75rem; // 12px
+$spacing-4: 1rem; // 16px
+$spacing-5: 1.25rem; // 20px
+$spacing-6: 1.5rem; // 24px
+$spacing-8: 2rem; // 32px
+$spacing-10: 2.5rem; // 40px
+$spacing-12: 3rem; // 48px
+$spacing-16: 4rem; // 64px
+$spacing-20: 5rem; // 80px
+$spacing-24: 6rem; // 96px
 
-// ========================================================
+// BORDERS
+// ----------------------------------------------------------
+$border-radius-none: 0;
+$border-radius-sm: 0.125rem; // 2px
+$border-radius-md: 0.25rem; // 4px
+$border-radius-lg: 0.5rem; // 8px
+$border-radius-xl: 1rem; // 16px
+$border-radius-full: 9999px; // Circle/Pill
+
+$border-width-none: 0;
+$border-width-thin: 1px;
+$border-width-thick: 2px;
+$border-width-heavy: 4px;
+
 // SHADOWS
-// ========================================================
-$shadows: (
-  "xs": 0 0.5px 1px rgba(91, 42, 195, 0.05),
-  "sm": 0 1px 2px rgba(91, 42, 195, 0.05),
-  "base": 0 1px 3px rgba(91, 42, 195, 0.1),
-  "md": 0 2px 4px rgba(91, 42, 195, 0.1),
-  "lg": 0 2px 8px rgba(91, 42, 195, 0.15),
-  "xl": 0 4px 16px rgba(91, 42, 195, 0.15),
-  "elevated": 0 4px 8px rgba(91, 42, 195, 0.2),
-  "hover": 0 1px 3px rgba(91, 42, 195, 0.2),
-  "inner": inset 0 1px 3px rgba(91, 42, 195, 0.2),
-);
+// ----------------------------------------------------------
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+  0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+  0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+  0 10px 10px -5px rgba(0, 0, 0, 0.04);
+$shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 
-// Shadow for dark mode
-$shadows-dark: (
-  "xs": 0 0.5px 1px rgba(0, 0, 0, 0.2),
-  "sm": 0 1px 2px rgba(0, 0, 0, 0.2),
-  "base": 0 1px 3px rgba(0, 0, 0, 0.3),
-  "md": 0 2px 4px rgba(0, 0, 0, 0.3),
-  "lg": 0 2px 8px rgba(0, 0, 0, 0.4),
-  "xl": 0 4px 16px rgba(0, 0, 0, 0.4),
-  "elevated": 0 4px 8px rgba(0, 0, 0, 0.5),
-  "hover": 0 1px 3px rgba(0, 0, 0, 0.3),
-  "inner": inset 0 1px 3px rgba(0, 0, 0, 0.3),
-);
-
-// ========================================================
-// Z-INDEX SCALE
-// ========================================================
-$z-index: (
-  "base": 1,
-  "dropdown": 10,
-  "sticky": 20,
-  "fixed": 30,
-  "modal": 40,
-  "popover": 50,
-  "tooltip": 60,
-);
-
-// ========================================================
 // TRANSITIONS
-// ========================================================
-$transition-speed: (
-  "fast": 0.15s,
-  "base": 0.3s,
-  "slow": 0.5s,
-);
+// ----------------------------------------------------------
+$transition-duration-fast: 150ms;
+$transition-duration-base: 300ms;
+$transition-duration-slow: 500ms;
 
-$transition-easing: (
-  "in": cubic-bezier(0.4, 0, 1, 1),
-  "out": cubic-bezier(0, 0, 0.2, 1),
-  "in-out": cubic-bezier(0.4, 0, 0.2, 1),
-);
+$transition-timing-ease: ease;
+$transition-timing-ease-in: ease-in;
+$transition-timing-ease-out: ease-out;
+$transition-timing-ease-in-out: ease-in-out;
+$transition-timing-linear: linear;
 
-// ========================================================
-// COLOR MAP FOR EASIER COLOR RETRIEVAL
-// ========================================================
-$color-map: (
-  // Primary and accent
-  "primary": $primary-color,
-  "primary-light": $primary-light,
-  "primary-dark": $primary-dark,
-  "primary-bg": $primary-bg,
-  "accent": $accent-color,
-  "accent-light": $accent-light,
-  "accent-dark": $accent-dark,
-  "accent-bg": $accent-bg,
+// Z-INDEX
+// ----------------------------------------------------------
+$z-index-below: -1;
+$z-index-base: 1;
+$z-index-footer: 20;
+$z-index-header: 30;
+$z-index-dropdown: 50;
+$z-index-modal: 100;
+$z-index-toast: 110;
+$z-index-tooltip: 120;
 
-  // Theme colors - light
-  "background": $background-color,
-  "surface": $surface-color,
-  "card-bg": $card-bg,
-  "card-header-bg": $card-header-bg,
-  "border": $border-color,
+// BREAKPOINTS
+// ----------------------------------------------------------
+$breakpoint-mobile: 767px;
+$breakpoint-tablet-min: 768px;
+$breakpoint-tablet-max: 1023px;
+$breakpoint-desktop-min: 1024px;
+$breakpoint-desktop-max: 1439px;
+$breakpoint-large: 1440px;
 
-  // Theme colors - dark
-  "background-dark": $background-color-dark,
-  "surface-dark": $surface-color-dark,
-  "card-bg-dark": $card-bg-dark,
-  "card-header-bg-dark": $card-header-bg-dark,
-  "border-dark": $border-color-dark,
+// GRID
+// ----------------------------------------------------------
+$grid-columns: 12;
+$grid-gutter-sm: $spacing-2; // 8px
+$grid-gutter-md: $spacing-4; // 16px
+$grid-gutter-lg: $spacing-6; // 24px
 
-  // Typography
-  "text": $text-color,
-  "text-muted": $text-muted,
-  "text-on-primary": $text-on-primary-dark,
-  "text-on-primary-dark": $text-on-primary,
-  "text-on-accent": $text-on-accent,
-  "text-dark": $text-dark,
-  "text-muted-dark": $text-muted-dark,
+// FOCUS
+// ----------------------------------------------------------
+$focus-color: $color-primary;
+$focus-offset: 2px;
+$focus-width: 2px;
 
-  // Feedback
-  "success": $success-color,
-  "success-bg": $success-bg,
-  "info": $info-color,
-  "info-light": $info-color,
-  "info-bg": $info-bg,
-  "warning": $warning-color,
-  "warning-bg": $warning-bg,
-  "error": $error-color,
-  "error-bg": $error-bg,
-  "hover": $primary-light,
-  "hover-background": $primary-bg,
-  "hover-background-dark": $primary-bg,
-  "hover-bg": $primary-bg,
-  "hover-bg-dark": $primary-bg
-);
+// ANIMATIONS
+// ----------------------------------------------------------
+$animation-duration-fast: 200ms;
+$animation-duration-base: 300ms;
+$animation-duration-slow: 500ms;
 
-// ========================================================
-// UTILITY FUNCTIONS
-// ========================================================
+$animation-timing-ease: ease;
+$animation-timing-ease-in: ease-in;
+$animation-timing-ease-out: ease-out;
+$animation-timing-ease-in-out: ease-in-out;
+$animation-timing-linear: linear;
 
-// Color Function - Get color with optional opacity
-@function color($key, $opacity: 1) {
-  @if map.has-key($color-map, $key) {
-    $color: map.get($color-map, $key);
-    @return rgba($color, $opacity);
-  }
-  @warn "Unknown color `#{$key}` in color map.";
-  @return null;
-}
-
-// Spacing Function - Get spacing value by key
-@function spacing($key) {
-  @if map.has-key($spacing-scale, $key) {
-    @return map.get($spacing-scale, $key);
-  }
-  @warn "Unknown spacing key `#{$key}` in spacing scale.";
-  @return null;
-}
-
-// Font Size Function - Get font size by key
-@function font-size($key) {
-  @if map.has-key($font-sizes, $key) {
-    @return map.get($font-sizes, $key);
-  }
-  @warn "Unknown font size key `#{$key}` in font sizes.";
-  @return null;
-}
-
-// Border Radius Function - Get border radius by key
-@function border-radius($key) {
-  @if map.has-key($border-radius, $key) {
-    @return map.get($border-radius, $key);
-  }
-  @warn "Unknown border radius key `#{$key}` in border radius.";
-  @return null;
-}
-
-// Z-Index Function - Get z-index by key
-@function z-index($key) {
-  @if map.has-key($z-index, $key) {
-    @return map.get($z-index, $key);
-  }
-  @warn "Unknown z-index key `#{$key}` in z-index scale.";
-  @return null;
-}
-
-// Shadow Function - Get shadow by key
-@function shadow($key, $dark: false) {
-  $shadow-map: if($dark, $shadows-dark, $shadows);
-  @if map.has-key($shadow-map, $key) {
-    @return map.get($shadow-map, $key);
-  }
-  @warn "Unknown shadow key `#{$key}` in shadow map.";
-  @return null;
-}
-
-// Transition Function - Get transition
-@function transition($speed: "base", $property: all, $easing: "in-out") {
-  $duration: map.get($transition-speed, $speed);
-  $ease: map.get($transition-easing, $easing);
-  @return $property $duration $ease;
-}
-
-// CSS Variables Export - Creates CSS variables for tokens
-@mixin export-css-variables() {
-  :root {
-    // Colors
-    @each $name, $value in $color-map {
-      --color-#{$name}: #{$value};
-    }
-
-    // Spacing
-    @each $name, $value in $spacing-scale {
-      --space-#{$name}: #{$value};
-    }
-
-    // Font sizes
-    @each $name, $value in $font-sizes {
-      --font-size-#{$name}: #{$value};
-    }
-
-    // Border radius
-    @each $name, $value in $border-radius {
-      --border-radius-#{$name}: #{$value};
-    }
-
-    // Shadows
-    @each $name, $value in $shadows {
-      --shadow-#{$name}: #{$value};
-    }
-
-    // Transitions
-    @each $name, $value in $transition-speed {
-      --transition-#{$name}: #{$value};
-    }
-
-    // Z-indices
-    @each $name, $value in $z-index {
-      --z-#{$name}: #{$value};
-    }
-
-    // Base transitions
-    --transition-base: #{transition()};
-    --transition-fast: #{transition("fast")};
-    --transition-slow: #{transition("slow")};
-  }
-}
+// SCROLLBARS
+// ----------------------------------------------------------
+$scrollbar-width: 8px;
+$scrollbar-height: 8px;
+$scrollbar-track-color: rgba(0, 0, 0, 0.1);
+$scrollbar-thumb-color: rgba(0, 0, 0, 0.3);
+$scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.5);

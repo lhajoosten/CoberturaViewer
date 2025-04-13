@@ -1,0 +1,31 @@
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="app-logo">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <span>Coverage Explorer</span>
+            </div>
+            <h1>Sign In</h1>
+            <p>Continue with your GitHub account to access Coverage Explorer</p>
+        </div>
+
+        <div class="login-methods">
+            <button class="login-btn github"
+                (click)="loginWithGitHub(); $event.preventDefault(); $event.stopPropagation();">
+                <i class="fab fa-github"></i>
+                <span>Continue with GitHub</span>
+            </button>
+        </div>
+
+        <div class="login-info">
+            <p>
+                <i class="fas fa-info-circle"></i>
+                Signing in gives you access to all features, including report history and personal settings.
+            </p>
+        </div>
+
+        <div class="login-footer">
+            <p>By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
+        </div>
+    </div>
+</div>

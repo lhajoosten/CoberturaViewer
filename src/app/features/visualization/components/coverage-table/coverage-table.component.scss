@@ -1,0 +1,66 @@
+.table-container {
+  height: 100%;
+  position: relative;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+}
+
+google-chart {
+  width: 100%;
+  min-height: 500px;
+}
+
+::ng-deep {
+  .table-header {
+    background-color: #f5f7fa;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .table-header-dark {
+    background-color: #333;
+    font-weight: bold;
+    color: #eee;
+  }
+
+  .table-row {
+    background-color: #fff;
+  }
+
+  .table-row-dark {
+    background-color: #1e1e1e;
+    color: #eee;
+  }
+
+  .table-row-odd {
+    background-color: #f8f9fa;
+  }
+
+  .table-row-odd-dark {
+    background-color: #262626;
+    color: #eee;
+  }
+
+  .table-row-selected {
+    background-color: #e6f2ff;
+  }
+
+  .table-row-selected-dark {
+    background-color: #333f55;
+  }
+
+  .table-row-hover {
+    background-color: #f0f7ff;
+  }
+
+  .table-row-hover-dark {
+    background-color: #384860;
+  }
+}

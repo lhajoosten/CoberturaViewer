@@ -1,0 +1,243 @@
+.risk-trends-container {
+  padding: 1rem 0;
+}
+
+.risk-trends-header {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+  }
+}
+
+.controls-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  .time-filter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .filter-label {
+      font-size: 0.95rem;
+      color: var(--color-text-secondary);
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--color-border-default);
+        border-radius: 6px;
+        background-color: var(--color-bg-tertiary);
+        color: var(--color-text-secondary);
+        font-size: 0.9rem;
+        cursor: pointer;
+
+        &:hover:not(.active) {
+          background-color: var(--color-bg-secondary);
+        }
+
+        &.active {
+          background-color: var(--color-primary);
+          color: white;
+          border-color: var(--color-primary);
+        }
+      }
+    }
+  }
+
+  .actions {
+    .action-button {
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--color-border-default);
+      border-radius: 6px;
+      background-color: var(--color-bg-tertiary);
+      color: var(--color-text-secondary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-error);
+      }
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+.charts-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (min-width: 992px) {
+    grid-template-columns: 3fr 2fr;
+  }
+
+  .chart-card {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-default);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+}
+
+.risk-analysis-section {
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .risk-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+
+    .metric-card {
+      background-color: var(--color-bg-secondary);
+      border: 1px solid var(--color-border-default);
+      border-radius: 8px;
+      padding: 1.25rem;
+
+      .metric-title {
+        font-size: 0.9rem;
+        color: var(--color-text-secondary);
+        margin-bottom: 0.75rem;
+      }
+
+      .metric-value {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+
+        &.high-risk {
+          color: #f44336;
+        }
+
+        &.medium-risk {
+          color: #ffb300;
+        }
+
+        &.low-risk {
+          color: #4caf50;
+        }
+
+        &.positive-trend {
+          color: #4caf50;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        &.negative-trend {
+          color: #f44336;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        &.neutral-trend {
+          color: var(--color-text-default);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
+
+      .metric-label {
+        font-size: 0.9rem;
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+}
+
+.no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+
+  .no-data-icon {
+    font-size: 4rem;
+    color: var(--color-text-tertiary);
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    margin-bottom: 2rem;
+    max-width: 500px;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+
+    button {
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+
+      i {
+        font-size: 1.1rem;
+      }
+
+      &.primary-btn {
+        background-color: var(--color-primary);
+        color: white;
+        border: none;
+
+        &:hover {
+          background-color: var(--color-btn-primary-hover);
+        }
+      }
+
+      &.secondary-btn {
+        background-color: var(--color-bg-tertiary);
+        color: var(--color-text-default);
+        border: 1px solid var(--color-border-default);
+
+        &:hover {
+          background-color: var(--color-bg-secondary);
+        }
+      }
+    }
+  }
+}
+
+:host {
+  --color-primary-rgb: 51, 102, 255;
+}

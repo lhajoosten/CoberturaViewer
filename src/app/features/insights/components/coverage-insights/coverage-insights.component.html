@@ -1,0 +1,153 @@
+<div class="insights-container">
+    <div class="insights-header">
+        <h1>Coverage Insights</h1>
+        <p class="description">Get actionable insights and recommendations for improving your code coverage</p>
+    </div>
+
+    <!-- Insight navigation component -->
+    <app-insights-nav></app-insights-nav>
+
+    <ng-container *ngIf="hasData; else noDataTemplate">
+        <div class="metrics-section">
+            <div class="metrics-grid">
+                <!-- Coverage meter -->
+                <div class="metric-card coverage-meter">
+                    <div class="metric-header">
+                        <h3>Overall Coverage</h3>
+                    </div>
+                    <div class="coverage-gauge" *ngIf="coverageData">
+                        <svg viewBox="0 0 120 120" class="gauge">
+                            <circle class="gauge-bg" cx="60" cy="60" r="54" stroke-width="12" />
+                            <circle class="gauge-fill"
+                                [class]="coverageData.summary.lineCoverage >= 80 ? 'high' : coverageData.summary.lineCoverage >= 60 ? 'medium' : 'low'"
+                                cx="60" cy="60" r="54" stroke-width="12"
+                                [style.stroke-dasharray]="(coverageData.summary.lineCoverage * 3.39) + ' 339'" />
+                            <text x="60" y="60" class="gauge-text">{{ coverageData.summary.lineCoverage.toFixed(1)
+                                }}%</text>
+                            <text x="60" y="75" class="gauge-label">line coverage</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Risk indicator -->
+                <div class="metric-card risk-indicator" *ngIf="riskAnalysis">
+                    <div class="metric-header">
+                        <h3>Risk Assessment</h3>
+                    </div>
+                    <div class="risk-gauge">
+                        <google-chart [type]="gaugeChartType" [data]="gaugeChartData" [options]="gaugeChartOptions"
+                            [width]="gaugeChartWidth" [height]="gaugeChartHeight">
+                        </google-chart>
+                        <div class="risk-level" [ngClass]="getRiskLevelClass(riskAnalysis.riskLevel)">
+                            {{ riskAnalysis.riskLevel | titlecase }} Risk
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coverage distribution -->
+                <div class="metric-card coverage-distribution">
+                    <div class="metric-header">
+                        <h3>Coverage Distribution</h3>
+                    </div>
+                    <div class="distribution-chart">
+                        <google-chart [type]="pieChartType" [data]="pieChartData" [options]="pieChartOptions"
+                            [width]="pieChartWidth" [height]="pieChartHeight">
+                        </google-chart>
+                    </div>
+                </div>
+
+                <!-- High risk classes -->
+                <div class="metric-card risk-classes" *ngIf="riskAnalysis">
+                    <div class="metric-header">
+                        <h3>High Risk Classes</h3>
+                        <div class="count-badge" *ngIf="riskAnalysis.highRiskClasses.length > 0">
+                            {{ riskAnalysis.highRiskClasses.length }}
+                        </div>
+                    </div>
+
+                    <div class="no-risk-message" *ngIf="riskAnalysis.highRiskClasses.length === 0">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No high-risk classes detected</p>
+                    </div>
+
+                    <div class="risk-list" *ngIf="riskAnalysis.highRiskClasses.length > 0">
+                        <div class="risk-item" *ngFor="let risk of riskAnalysis.highRiskClasses.slice(0, 5)">
+                            <div class="risk-info">
+                                <div class="risk-name">{{ risk.path }}</div>
+                                <div class="risk-metrics">
+                                    <span
+                                        [ngClass]="risk.coverage >= 80 ? 'high-coverage' : risk.coverage >= 60 ? 'medium-coverage' : 'low-coverage'">
+                                        {{ risk.coverage.toFixed(1) }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="risk-bar">
+                                <div class="risk-fill" [style.width.%]="risk.coverage"
+                                    [ngClass]="risk.coverage >= 80 ? 'high-coverage' : risk.coverage >= 60 ? 'medium-coverage' : 'low-coverage'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insights section -->
+        <div class="insights-section">
+            <h2>Insights</h2>
+            <div class="insights-list">
+                <div class="insight-card" *ngFor="let insight of insights" [ngClass]="'insight-' + insight.type">
+                    <div class="insight-header" (click)="toggleInsight(insight)">
+                        <div class="insight-icon">
+                            <i class="fas" [ngClass]="insight.icon"></i>
+                        </div>
+                        <div class="insight-title">{{ insight.title }}</div>
+                        <div class="insight-toggle">
+                            <i class="fas" [ngClass]="insight.expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        </div>
+                    </div>
+                    <div class="insight-body" [ngClass]="{'expanded': insight.expanded}">
+                        <p class="insight-description">{{ insight.description }}</p>
+                        <div class="insight-details" *ngIf="insight.details">
+                            <p [innerHTML]="insight.details | nl2br"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations section -->
+        <div class="recommendations-section">
+            <h2>Recommendations</h2>
+            <div class="recommendations-list">
+                <div class="recommendation-card" *ngFor="let rec of recommendations">
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">
+                            <i class="fas" [ngClass]="rec.icon"></i>
+                        </div>
+                        <div class="recommendation-title">{{ rec.title }}</div>
+                    </div>
+                    <div class="recommendation-body">
+                        <p class="recommendation-description">{{ rec.description }}</p>
+                        <div class="recommendation-details" *ngIf="rec.details">
+                            <p>{{ rec.details }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noDataTemplate>
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <h2>No Coverage Data Available</h2>
+            <p>Upload a coverage report to receive insights and recommendations.</p>
+            <button routerLink="/upload" class="primary-btn">
+                <i class="fas fa-upload"></i> Upload Coverage Report
+            </button>
+        </div>
+    </ng-template>
+</div>

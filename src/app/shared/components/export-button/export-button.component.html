@@ -1,0 +1,23 @@
+<div class="export-container">
+    <button class="export-button" (click)="toggleDropdown()" [disabled]="exporting">
+        <i class="fas" [ngClass]="exporting ? 'fa-spinner fa-spin' : 'fa-download'"></i> Export
+    </button>
+
+    <div class="export-dropdown" *ngIf="showDropdown && !exporting">
+        <div class="dropdown-item" (click)="exportGoogleChartAsPng()" *ngIf="targetElement">
+            <i class="fas fa-image"></i> PNG Image (Google Chart)
+        </div>
+        <div class="dropdown-item" (click)="exportAsPng()" *ngIf="targetElement">
+            <i class="fas fa-image"></i> PNG Image (Standard)
+        </div>
+        <div class="dropdown-item" (click)="exportAsSvg()" *ngIf="targetElement && targetElement.querySelector('svg')">
+            <i class="fas fa-bezier-curve"></i> SVG Vector
+        </div>
+        <div class="dropdown-item" (click)="exportAsPdf()" *ngIf="targetElement">
+            <i class="fas fa-file-pdf"></i> PDF Document
+        </div>
+        <div class="dropdown-item" (click)="exportAsCsv()" *ngIf="chartData">
+            <i class="fas fa-file-csv"></i> CSV Data
+        </div>
+    </div>
+</div>

@@ -1,0 +1,248 @@
+<div class="package-insights-container">
+    <div class="insights-header">
+        <h1>Package & Class Insights</h1>
+        <p class="description">Explore detailed insights about packages and classes in your codebase</p>
+    </div>
+
+    <!-- Insight navigation component -->
+    <app-insights-nav></app-insights-nav>
+
+    <ng-container *ngIf="hasData; else noDataTemplate">
+        <div class="filters-section">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()"
+                    placeholder="Search packages and classes..." class="search-input" />
+                <button *ngIf="searchQuery" class="clear-search" (click)="searchQuery = ''; applyFilters()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Coverage</label>
+                    <select [(ngModel)]="coverageFilter" (change)="applyFilters()">
+                        <option value="all">All</option>
+                        <option value="high">High (80%+)</option>
+                        <option value="medium">Medium (60-80%)</option>
+                        <option value="low">Low (< 60%)</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Sort By</label>
+                    <div class="sort-buttons">
+                        <button [class.active]="sortBy === 'name'" (click)="updateSorting('name')">
+                            Name
+                            <i *ngIf="sortBy === 'name'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-alpha-down' : 'fa-sort-alpha-up'"></i>
+                        </button>
+
+                        <button [class.active]="sortBy === 'coverage'" (click)="updateSorting('coverage')">
+                            Coverage
+                            <i *ngIf="sortBy === 'coverage'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-numeric-down' : 'fa-sort-numeric-up'"></i>
+                        </button>
+
+                        <button [class.active]="sortBy === 'size'" (click)="updateSorting('size')">
+                            Size
+                            <i *ngIf="sortBy === 'size'" class="fas"
+                                [ngClass]="sortOrder === 'asc' ? 'fa-sort-numeric-down' : 'fa-sort-numeric-up'"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-content">
+            <!-- Packages List -->
+            <div class="packages-section">
+                <h2>Packages ({{ filteredPackages.length }})</h2>
+
+                <div class="no-results" *ngIf="filteredPackages.length === 0">
+                    <i class="fas fa-search"></i>
+                    <p>No packages match your search criteria</p>
+                </div>
+
+                <div class="package-list" *ngIf="filteredPackages.length > 0">
+                    <div class="package-item" *ngFor="let pkg of filteredPackages"
+                        [class.selected]="selectedPackage?.name === pkg.name" (click)="selectPackage(pkg)">
+
+                        <div class="package-info">
+                            <div class="package-name">{{ pkg.name }}</div>
+                            <div class="package-metrics">
+                                <span class="package-coverage" [ngClass]="getCoverageClass(pkg.lineCoverage)">
+                                    {{ pkg.lineCoverage.toFixed(1) }}%
+                                </span>
+                                <span class="package-size" [ngClass]="getSizeClass(pkg.linesValid)">
+                                    {{ pkg.linesValid }} lines
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Package Details -->
+            <div class="package-details" *ngIf="selectedPackage">
+                <div class="package-header">
+                    <h2>{{ selectedPackage.name }}</h2>
+                    <div class="package-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Line Coverage</div>
+                            <div class="stat-value" [ngClass]="getCoverageClass(selectedPackage.lineCoverage)">
+                                {{ selectedPackage.lineCoverage.toFixed(2) }}%
+                            </div>
+                        </div>
+
+                        <div class="stat-item" *ngIf="selectedPackage.branchCoverage !== undefined">
+                            <div class="stat-label">Branch Coverage</div>
+                            <div class="stat-value" [ngClass]="getCoverageClass(selectedPackage.branchCoverage)">
+                                {{ selectedPackage.branchCoverage.toFixed(2) }}%
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-label">Lines Covered</div>
+                            <div class="stat-value">
+                                {{ selectedPackage.linesCovered }} / {{ selectedPackage.linesValid }}
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-label">Classes</div>
+                            <div class="stat-value">
+                                {{ selectedPackage.classes.length }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Package Chart -->
+                <div class="package-chart" *ngIf="packageChartData.length > 1">
+                    <google-chart [type]="packageChartType" [data]="packageChartData" [options]="packageChartOptions"
+                        [width]="1000" [height]="350">
+                    </google-chart>
+                </div>
+
+                <!-- Classes in Package -->
+                <div class="classes-section">
+                    <h3>Classes ({{ filteredClasses.length }})</h3>
+
+                    <div class="no-results" *ngIf="filteredClasses.length === 0">
+                        <i class="fas fa-search"></i>
+                        <p>No classes match your search criteria</p>
+                    </div>
+
+                    <div class="class-list" *ngIf="filteredClasses.length > 0">
+                        <div class="class-item" *ngFor="let cls of filteredClasses"
+                            [class.selected]="selectedClass?.name === cls.name" (click)="selectClass(cls)">
+
+                            <div class="class-info">
+                                <div class="class-name">{{ cls.name }}</div>
+                                <div class="class-metrics">
+                                    <span class="class-coverage" [ngClass]="getCoverageClass(cls.lineCoverage)">
+                                        {{ cls.lineCoverage.toFixed(1) }}%
+                                    </span>
+                                    <span class="class-size" [ngClass]="getSizeClass(cls.linesValid)">
+                                        {{ cls.linesValid }} lines
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="coverage-bar">
+                                <div class="bar-fill" [ngClass]="getCoverageClass(cls.lineCoverage)"
+                                    [style.width.%]="cls.lineCoverage">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class Chart -->
+                <div class="class-chart" *ngIf="classChartData.length > 1">
+                    <google-chart [type]="classChartType" [data]="classChartData" [options]="classChartOptions"
+                        [width]="1000" [height]="350">
+                    </google-chart>
+                </div>
+
+                <!-- Class Details -->
+                <div class="class-details" *ngIf="selectedClass">
+                    <h3>{{ selectedClass.name }}</h3>
+                    <div class="class-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Line Coverage</div>
+                            <div class="stat-value" [ngClass]="getCoverageClass(selectedClass.lineCoverage)">
+                                {{ selectedClass.lineCoverage.toFixed(2) }}%
+                            </div>
+                        </div>
+
+                        <div class="stat-item" *ngIf="selectedClass.branchCoverage !== undefined">
+                            <div class="stat-label">Branch Coverage</div>
+                            <div class="stat-value" [ngClass]="getCoverageClass(selectedClass.branchCoverage)">
+                                {{ selectedClass.branchCoverage.toFixed(2) }}%
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-label">Lines Covered</div>
+                            <div class="stat-value">
+                                {{ selectedClass.linesCovered }} / {{ selectedClass.linesValid }}
+                            </div>
+                        </div>
+
+                        <div class="stat-item" *ngIf="selectedClass.complexity !== undefined">
+                            <div class="stat-label">Complexity</div>
+                            <div class="stat-value">
+                                {{ selectedClass.complexity.toFixed(0) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Line Details Table -->
+                    <div class="line-details">
+                        <h4>Line Details</h4>
+                        <div class="line-table-container">
+                            <table class="line-table">
+                                <thead>
+                                    <tr>
+                                        <th>Line</th>
+                                        <th>Hits</th>
+                                        <th>Branch</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let line of selectedClass.lines">
+                                        <td>{{ line.number }}</td>
+                                        <td>{{ line.hits }}</td>
+                                        <td>{{ line.branch ? 'Yes' : 'No' }}</td>
+                                        <td>
+                                            <span class="status-badge"
+                                                [ngClass]="line.hits > 0 ? 'covered-status' : 'uncovered-status'">
+                                                {{ line.hits > 0 ? 'Covered' : 'Uncovered' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-template #noDataTemplate>
+        <div class="no-data-container">
+            <div class="no-data-icon">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <h2>No Coverage Data Available</h2>
+            <p>Upload a coverage report to explore package and class insights.</p>
+            <button routerLink="/upload" class="primary-btn">
+                <i class="fas fa-upload"></i> Upload Coverage Report
+            </button>
+        </div>
+    </ng-template>
+</div>

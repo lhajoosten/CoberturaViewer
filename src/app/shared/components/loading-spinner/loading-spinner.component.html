@@ -1,0 +1,8 @@
+<div class="spinner-container" [class.overlay]="overlay">
+    <div class="spinner" [ngClass]="size">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <div *ngIf="text" class="spinner-text">{{ text }}</div>
+</div>

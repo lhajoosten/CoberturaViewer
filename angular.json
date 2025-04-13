@@ -97,8 +97,21 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy"
         }
       }
     }
+  },
+  "cli": {
+    "packageManager": "npm",
+    "cache": {
+      "enabled": false
+    },
+    "warnings": {
+      "versionMismatch": false
+    },
+    "analytics": false
   }
 }

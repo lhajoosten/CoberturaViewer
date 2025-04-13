@@ -1,0 +1,14 @@
+<div class="line-chart-container" #chartContainer>
+    <div *ngIf="!coverageData" class="no-data-message">
+        <p>No coverage data to display</p>
+    </div>
+
+    <google-chart *ngIf="coverageData && chartData.length > 0" [type]="chartType" [data]="chartData"
+        [columns]="chartColumns" [options]="chartOptions" [height]="chartHeight">
+    </google-chart>
+
+    <div class="chart-note" *ngIf="coverageData">
+        <i class="fas fa-info-circle"></i>
+        <span>Note: This chart shows simulated historical trends based on your current coverage data.</span>
+    </div>
+</div>

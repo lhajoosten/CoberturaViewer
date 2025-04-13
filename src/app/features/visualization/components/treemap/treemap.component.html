@@ -1,0 +1,105 @@
+<div class="treemap-container" #chartContainer (mousemove)="onMouseMove($event)">
+    <div *ngIf="!coverageData" class="no-data-message">
+        <div class="message-content">
+            <i class="material-icons">bar_chart</i>
+            <p>No coverage data to display</p>
+        </div>
+    </div>
+
+    <div *ngIf="coverageData && chartData.length > 0">
+        <!-- Controls for hierarchy depth and debugging -->
+        <div class="treemap-controls">
+            <div class="depth-controls">
+                <button class="depth-button" [disabled]="currentMaxDepth <= 1" (click)="decreaseDepth()">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span class="depth-label">Level {{currentMaxDepth}} of {{maxHierarchyDepth}}</span>
+                <button class="depth-button" [disabled]="currentMaxDepth >= maxHierarchyDepth"
+                    (click)="increaseDepth()">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- Debug buttons -->
+            <div class="debug-controls">
+                <button class="debug-button" (click)="toggleDebugMode()" title="Toggle Debug Mode">
+                    <i class="fas fa-bug"></i>
+                </button>
+
+                <button class="debug-button" (click)="forceShowTooltip()" title="Force Show Tooltip">
+                    <i class="fas fa-thumbs-up"></i>
+                </button>
+
+                <button class="debug-button" (click)="debugHierarchy()" title="Log Hierarchy to Console">
+                    <i class="fas fa-tree"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Debug information (conditionally shown) -->
+        <div *ngIf="isDebugMode" class="debug-info">
+            <h4>Debug Information</h4>
+            <div class="debug-section">
+                <strong>Chart Ready:</strong> {{chartReady}}
+            </div>
+            <div class="debug-section">
+                <strong>Active Tooltip:</strong> {{activeTooltip ? 'Yes' : 'No'}}
+                <div *ngIf="activeTooltip">
+                    <pre>{{activeTooltip | json}}</pre>
+                </div>
+            </div>
+            <div class="debug-section">
+                <strong>Chart Data Sample:</strong>
+                <pre>{{getChartDataSample() | json}}</pre>
+            </div>
+            <div class="debug-section">
+                <strong>Hierarchy Depth:</strong> {{maxHierarchyDepth}}
+            </div>
+        </div>
+
+        <div class="chart-wrapper">
+            <google-chart [type]="chartType" [data]="chartData" [columns]="chartColumns" [options]="chartOptions"
+                [height]="chartHeight" [dynamicResize]="true" (ready)="onChartReady($event)"
+                (error)="onChartError($event)">
+            </google-chart>
+
+            <!-- Enhanced custom hover tooltip -->
+            <div class="custom-tooltip" *ngIf="activeTooltip" [style.left.px]="tooltipX" [style.top.px]="tooltipY">
+                <div class="tooltip-title">{{activeTooltip.id}}</div>
+
+                <div class="tooltip-row tooltip-path"
+                    *ngIf="activeTooltip.path && activeTooltip.path !== activeTooltip.id">
+                    <span class="path-label">Path:</span>
+                    <span class="path-value">{{activeTooltip.path}}</span>
+                </div>
+
+                <div class="tooltip-row">
+                    <span>Coverage:</span>
+                    <span [class]="'coverage-value ' + getCoverageClass(activeTooltip.coverage)">
+                        {{activeTooltip.coverage.toFixed(1)}}% ({{getCoverageStatus(activeTooltip.coverage)}})
+                    </span>
+                </div>
+
+                <div class="tooltip-row" *ngIf="activeTooltip.lines">
+                    <span>Lines:</span>
+                    <span>{{activeTooltip.lines}}</span>
+                </div>
+            </div>
+
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <span class="color-box high"></span>
+                    <span>High Coverage (≥80%)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box medium"></span>
+                    <span>Medium Coverage (60–79%)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box low"></span>
+                    <span>Low Coverage (&lt;60%)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

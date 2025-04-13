@@ -1,0 +1,492 @@
+// ==========================================================
+// THEMING SYSTEM
+// ==========================================================
+// This file defines the theme variables for the application
+// Import this file after _tokens.scss
+
+@use "./tokens" as *;
+@use "sass:color";
+
+// Theme Interface
+// ----------------------------------------------------------
+// Variables that can be themed (CSS custom properties)
+:root {
+  // Base colors
+  --color-primary: #{$color-primary};
+  --color-secondary: #{$color-secondary};
+  --color-accent: #{$color-accent};
+
+  // Status colors
+  --color-success: #{$color-success};
+  --color-warning: #{$color-warning};
+  --color-error: #{$color-error};
+  --color-info: #{$color-info};
+
+  // Background colors
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #{$color-surface};
+  --color-bg-tertiary: #f0f2f5;
+  --color-bg-inverse: #{$color-text-primary};
+  --color-bg-overlay: #{$color-overlay-light};
+
+  // Surface/component colors
+  --color-surface-default: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-overlay: #ffffff;
+  --color-surface-sunken: #{$color-surface};
+
+  // Border colors
+  --color-border-default: #{$color-border};
+  --color-border-strong: #c8ccd4;
+  --color-border-light: #eef1f5;
+
+  // Text colors
+  --color-text-default: #{$color-text-primary};
+  --color-text-secondary: #{$color-text-secondary};
+  --color-text-tertiary: #{$color-text-tertiary};
+  --color-text-disabled: #c0c6d0;
+  --color-text-inverse: #{$color-text-inverse};
+  --color-text-brand: #{$color-primary};
+  --color-text-accent: #{$color-accent};
+  --color-text-success: #{$color-success};
+  --color-text-error: #{$color-error};
+  --color-text-warning: #{$color-warning};
+  --color-text-info: #{$color-info};
+
+  // Shadow colors
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-shadow-dark: rgba(0, 0, 0, 0.2);
+
+  // Focus rings
+  --color-focus-ring: #{$color-primary-300};
+
+  // Chart colors (for data visualization)
+  --color-chart-1: #{$color-primary-400};
+  --color-chart-2: #{$color-secondary-400};
+  --color-chart-3: #{$color-accent-400};
+  --color-chart-4: #{color.adjust($color-primary-300, $lightness: -10%)};
+  --color-chart-5: #{color.adjust($color-secondary-300, $lightness: -10%)};
+  --color-chart-6: #{color.adjust($color-accent-300, $lightness: -10%)};
+
+  // Heatmap specific colors (for code coverage)
+  --color-coverage-high: #4caf50;
+  --color-coverage-medium: #ffeb3b;
+  --color-coverage-low: #f44336;
+  --color-coverage-none: #e0e0e0;
+
+  // Scrollbar colors
+  --color-scrollbar-track: #{$scrollbar-track-color};
+  --color-scrollbar-thumb: #{$scrollbar-thumb-color};
+  --color-scrollbar-thumb-hover: #{$scrollbar-thumb-hover-color};
+
+  // Element specific variables
+  --color-header-bg: #ffffff;
+  --color-footer-bg: #{$color-surface};
+  --color-card-bg: #ffffff;
+  --color-card-shadow: #{$shadow-md};
+  --color-tooltip-bg: #{$color-text-primary};
+  --color-tooltip-text: #ffffff;
+
+  // Button variants
+  --color-btn-primary-bg: var(--color-primary);
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-hover: #{$color-primary-500};
+  --color-btn-primary-active: #{$color-primary-600};
+
+  --color-btn-secondary-bg: var(--color-secondary);
+  --color-btn-secondary-text: #ffffff;
+  --color-btn-secondary-hover: #{$color-secondary-500};
+  --color-btn-secondary-active: #{$color-secondary-600};
+
+  --color-btn-accent-bg: var(--color-accent);
+  --color-btn-accent-text: #ffffff;
+  --color-btn-accent-hover: #{$color-accent-500};
+  --color-btn-accent-active: #{$color-accent-600};
+
+  --color-btn-outline-border: var(--color-border-strong);
+  --color-btn-outline-text: var(--color-text-secondary);
+  --color-btn-outline-hover: var(--color-bg-tertiary);
+  --color-btn-outline-active: var(--color-bg-tertiary);
+}
+
+// Light Theme (default)
+// ----------------------------------------------------------
+.theme-light {
+  // Base colors inherit from root
+}
+
+// Dark Theme
+// ----------------------------------------------------------
+.theme-dark {
+  // Base colors
+  --color-primary: #{$color-primary-300};
+  --color-secondary: #{$color-secondary-300};
+  --color-accent: #{$color-accent-300};
+
+  // Status colors - brightened for dark theme
+  --color-success: #{color.adjust($color-success, $lightness: 10%)};
+  --color-warning: #{$color-warning};
+  --color-error: #{color.adjust($color-error, $lightness: 5%)};
+  --color-info: #{color.adjust($color-info, $lightness: 15%)};
+
+  // Background colors
+  --color-bg-primary: #121212;
+  --color-bg-secondary: #1e1e1e;
+  --color-bg-tertiary: #2c2c2c;
+  --color-bg-inverse: #ffffff;
+  --color-bg-overlay: #{$color-overlay-dark};
+
+  // Surface/component colors
+  --color-surface-default: #121212;
+  --color-surface-raised: #1e1e1e;
+  --color-surface-overlay: rgba(30, 30, 30, 0.9);
+  --color-surface-sunken: #0a0a0a;
+
+  // Border colors
+  --color-border-default: #333333;
+  --color-border-strong: #444444;
+  --color-border-light: #2a2a2a;
+
+  // Text colors
+  --color-text-default: #e0e0e0;
+  --color-text-secondary: #a0a0a0;
+  --color-text-tertiary: #707070;
+  --color-text-disabled: #505050;
+  --color-text-inverse: #121212;
+  --color-text-brand: #{$color-primary-200};
+  --color-text-accent: #{$color-accent-200};
+  --color-text-success: #{color.adjust($color-success, $lightness: 10%)};
+  --color-text-error: #{color.adjust($color-error, $lightness: 10%)};
+  --color-text-warning: #{$color-warning};
+  --color-text-info: #{color.adjust($color-info, $lightness: 20%)};
+
+  // Shadow colors
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-shadow-dark: rgba(0, 0, 0, 0.5);
+
+  // Focus rings
+  --color-focus-ring: #{$color-primary-300};
+
+  // Chart colors (for data visualization) - brightened for dark theme
+  --color-chart-1: #{$color-primary-300};
+  --color-chart-2: #{$color-secondary-300};
+  --color-chart-3: #{$color-accent-300};
+  --color-chart-4: #{color.adjust($color-primary-400, $lightness: 10%)};
+  --color-chart-5: #{color.adjust($color-secondary-400, $lightness: 10%)};
+  --color-chart-6: #{color.adjust($color-accent-400, $lightness: 10%)};
+
+  // Heatmap specific colors (for code coverage) - adjusted for dark theme
+  --color-coverage-high: #{color.adjust(#4caf50, $lightness: 5%)};
+  --color-coverage-medium: #{color.adjust(#ffeb3b, $lightness: -15%)};
+  --color-coverage-low: #{color.adjust(#f44336, $lightness: 5%)};
+  --color-coverage-none: #444444;
+
+  // Scrollbar colors
+  --color-scrollbar-track: rgba(255, 255, 255, 0.1);
+  --color-scrollbar-thumb: rgba(255, 255, 255, 0.3);
+  --color-scrollbar-thumb-hover: rgba(255, 255, 255, 0.5);
+
+  // Element specific variables
+  --color-header-bg: #1a1a1a;
+  --color-footer-bg: #1a1a1a;
+  --color-card-bg: #1e1e1e;
+  --color-card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --color-tooltip-bg: #e0e0e0;
+  --color-tooltip-text: #121212;
+
+  // Button variants
+  --color-btn-primary-bg: var(--color-primary);
+  --color-btn-primary-text: #121212;
+  --color-btn-primary-hover: #{color.adjust($color-primary-300, $lightness: 10%)};
+  --color-btn-primary-active: #{color.adjust($color-primary-300, $lightness: 5%)};
+
+  --color-btn-secondary-bg: var(--color-secondary);
+  --color-btn-secondary-text: #121212;
+  --color-btn-secondary-hover: #{color.adjust(
+      $color-secondary-300,
+      $lightness: 10%
+    )};
+  --color-btn-secondary-active: #{color.adjust(
+      $color-secondary-300,
+      $lightness: 5%
+    )};
+
+  --color-btn-accent-bg: var(--color-accent);
+  --color-btn-accent-text: #121212;
+  --color-btn-accent-hover: #{color.adjust($color-accent-300, $lightness: 10%)};
+  --color-btn-accent-active: #{color.adjust($color-accent-300, $lightness: 5%)};
+
+  --color-btn-outline-border: #444444;
+  --color-btn-outline-text: #e0e0e0;
+  --color-btn-outline-hover: #333333;
+  --color-btn-outline-active: #3a3a3a;
+}
+
+// High Contrast Theme
+// ----------------------------------------------------------
+.theme-high-contrast {
+  // Base colors - with higher contrast
+  --color-primary: #{$color-primary-500};
+  --color-secondary: #{$color-secondary-500};
+  --color-accent: #{$color-accent-500};
+
+  // Status colors - made stronger
+  --color-success: #00a040;
+  --color-warning: #e68a00;
+  --color-error: #d40000;
+  --color-info: #0050c8;
+
+  // Background colors - starker contrast
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f0f0f0;
+  --color-bg-tertiary: #e0e0e0;
+  --color-bg-inverse: #000000;
+  --color-bg-overlay: rgba(255, 255, 255, 0.95);
+
+  // Surface/component colors
+  --color-surface-default: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-overlay: #ffffff;
+  --color-surface-sunken: #e8e8e8;
+
+  // Border colors - stronger
+  --color-border-default: #888888;
+  --color-border-strong: #555555;
+  --color-border-light: #cccccc;
+
+  // Text colors - maximum contrast
+  --color-text-default: #000000;
+  --color-text-secondary: #333333;
+  --color-text-tertiary: #555555;
+  --color-text-disabled: #777777;
+  --color-text-inverse: #ffffff;
+  --color-text-brand: #003399;
+  --color-text-accent: #990033;
+  --color-text-success: #006600;
+  --color-text-error: #cc0000;
+  --color-text-warning: #994d00;
+  --color-text-info: #003d99;
+
+  // Shadow colors - more defined
+  --color-shadow: rgba(0, 0, 0, 0.2);
+  --color-shadow-dark: rgba(0, 0, 0, 0.4);
+
+  // Focus rings - more prominent
+  --color-focus-ring: #{$color-primary-500};
+
+  // Chart colors - stronger variants
+  --color-chart-1: #0033cc;
+  --color-chart-2: #008ab3;
+  --color-chart-3: #cc0033;
+  --color-chart-4: #4d4dff;
+  --color-chart-5: #00b8e6;
+  --color-chart-6: #ff3355;
+
+  // Heatmap colors - more distinct
+  --color-coverage-high: #008800;
+  --color-coverage-medium: #cc8800;
+  --color-coverage-low: #cc0000;
+  --color-coverage-none: #aaaaaa;
+
+  // Scrollbar colors - higher contrast
+  --color-scrollbar-track: #dddddd;
+  --color-scrollbar-thumb: #888888;
+  --color-scrollbar-thumb-hover: #555555;
+
+  // Element specific variables
+  --color-header-bg: #f0f0f0;
+  --color-footer-bg: #f0f0f0;
+  --color-card-bg: #ffffff;
+  --color-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --color-tooltip-bg: #000000;
+  --color-tooltip-text: #ffffff;
+
+  // Button variants - with strong contrast
+  --color-btn-primary-bg: #000099;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-hover: #0000cc;
+  --color-btn-primary-active: #000066;
+
+  --color-btn-secondary-bg: #007799;
+  --color-btn-secondary-text: #ffffff;
+  --color-btn-secondary-hover: #0099cc;
+  --color-btn-secondary-active: #006680;
+
+  --color-btn-accent-bg: #990033;
+  --color-btn-accent-text: #ffffff;
+  --color-btn-accent-hover: #cc0044;
+  --color-btn-accent-active: #800029;
+
+  --color-btn-outline-border: #000000;
+  --color-btn-outline-text: #000000;
+  --color-btn-outline-hover: #f0f0f0;
+  --color-btn-outline-active: #e0e0e0;
+}
+
+// Dimmed Theme
+// ----------------------------------------------------------
+.theme-dimmed {
+  // Base colors - softened
+  --color-primary: #{$color-primary-300};
+  --color-secondary: #{$color-secondary-300};
+  --color-accent: #{$color-accent-300};
+
+  // Status colors - muted
+  --color-success: #{color.adjust($color-success, $saturation: -20%)};
+  --color-warning: #{color.adjust($color-warning, $saturation: -20%)};
+  --color-error: #{color.adjust($color-error, $saturation: -20%)};
+  --color-info: #{color.adjust($color-info, $saturation: -20%)};
+
+  // Background colors - softer
+  --color-bg-primary: #f2f2f2;
+  --color-bg-secondary: #e8e8e8;
+  --color-bg-tertiary: #dedede;
+  --color-bg-inverse: #2c2c2c;
+  --color-bg-overlay: rgba(242, 242, 242, 0.9);
+
+  // Surface/component colors
+  --color-surface-default: #f2f2f2;
+  --color-surface-raised: #f8f8f8;
+  --color-surface-overlay: rgba(248, 248, 248, 0.95);
+  --color-surface-sunken: #e5e5e5;
+
+  // Border colors - subtle
+  --color-border-default: #d8d8d8;
+  --color-border-strong: #c0c0c0;
+  --color-border-light: #e5e5e5;
+
+  // Text colors - less harsh
+  --color-text-default: #404040;
+  --color-text-secondary: #606060;
+  --color-text-tertiary: #808080;
+  --color-text-disabled: #a0a0a0;
+  --color-text-inverse: #e8e8e8;
+  --color-text-brand: #{color.adjust($color-primary-300, $lightness: -10%)};
+  --color-text-accent: #{color.adjust($color-accent-300, $lightness: -10%)};
+  --color-text-success: #{color.adjust(
+      color.adjust($color-success, $saturation: -10%),
+      $lightness: -5%
+    )};
+  --color-text-error: #{color.adjust(
+      color.adjust($color-error, $saturation: -10%),
+      $lightness: -5%
+    )};
+  --color-text-warning: #{color.adjust(
+      color.adjust($color-warning, $saturation: -10%),
+      $lightness: -15%
+    )};
+  --color-text-info: #{color.adjust(
+      color.adjust($color-info, $saturation: -10%),
+      $lightness: -5%
+    )};
+
+  // Shadow colors - softer
+  --color-shadow: rgba(0, 0, 0, 0.06);
+  --color-shadow-dark: rgba(0, 0, 0, 0.12);
+
+  // Focus rings
+  --color-focus-ring: #{color.mix($color-primary-200, #e0e0e0, 70%)};
+
+  // Chart colors - muted
+  --color-chart-1: #{color.adjust($color-primary-300, $saturation: -20%)};
+  --color-chart-2: #{color.adjust($color-secondary-300, $saturation: -20%)};
+  --color-chart-3: #{color.adjust($color-accent-300, $saturation: -20%)};
+  --color-chart-4: #{color.adjust(
+      color.adjust($color-primary-200, $lightness: -10%),
+      $saturation: -20%
+    )};
+  --color-chart-5: #{color.adjust(
+      color.adjust($color-secondary-200, $lightness: -10%),
+      $saturation: -20%
+    )};
+  --color-chart-6: #{color.adjust(
+      color.adjust($color-accent-200, $lightness: -10%),
+      $saturation: -20%
+    )};
+
+  // Heatmap specific colors - softer
+  --color-coverage-high: #{color.adjust(#4caf50, $saturation: -20%)};
+  --color-coverage-medium: #{color.adjust(#ffeb3b, $saturation: -20%)};
+  --color-coverage-low: #{color.adjust(#f44336, $saturation: -20%)};
+  --color-coverage-none: #d0d0d0;
+
+  // Scrollbar colors
+  --color-scrollbar-track: rgba(0, 0, 0, 0.05);
+  --color-scrollbar-thumb: rgba(0, 0, 0, 0.18);
+  --color-scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+
+  // Element specific variables
+  --color-header-bg: #f8f8f8;
+  --color-footer-bg: #f0f0f0;
+  --color-card-bg: #f8f8f8;
+  --color-card-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --color-tooltip-bg: rgba(60, 60, 60, 0.95);
+  --color-tooltip-text: #f0f0f0;
+
+  // Button variants - softer
+  --color-btn-primary-bg: #{color.adjust($color-primary-300, $saturation: -15%)};
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-hover: #{color.adjust(
+      $color-primary-400,
+      $saturation: -15%
+    )};
+  --color-btn-primary-active: #{color.adjust(
+      $color-primary-500,
+      $saturation: -15%
+    )};
+
+  --color-btn-secondary-bg: #{color.adjust(
+      $color-secondary-300,
+      $saturation: -15%
+    )};
+  --color-btn-secondary-text: #ffffff;
+  --color-btn-secondary-hover: #{color.adjust(
+      $color-secondary-400,
+      $saturation: -15%
+    )};
+  --color-btn-secondary-active: #{color.adjust(
+      $color-secondary-500,
+      $saturation: -15%
+    )};
+
+  --color-btn-accent-bg: #{color.adjust($color-accent-300, $saturation: -15%)};
+  --color-btn-accent-text: #ffffff;
+  --color-btn-accent-hover: #{color.adjust($color-accent-400, $saturation: -15%)};
+  --color-btn-accent-active: #{color.adjust(
+      $color-accent-500,
+      $saturation: -15%
+    )};
+
+  --color-btn-outline-border: #c8c8c8;
+  --color-btn-outline-text: #505050;
+  --color-btn-outline-hover: #e8e8e8;
+  --color-btn-outline-active: #d8d8d8;
+}
+
+// Theme Mixins
+// ----------------------------------------------------------
+// Use these to apply themed styles to your components
+
+@mixin themed() {
+  .theme-light & {
+    @content;
+  }
+}
+
+@mixin themed-dark() {
+  .theme-dark & {
+    @content;
+  }
+}
+
+@mixin themed-high-contrast() {
+  .theme-high-contrast & {
+    @content;
+  }
+}
+
+@mixin themed-dimmed() {
+  .theme-dimmed & {
+    @content;
+  }
+}

@@ -1,0 +1,9 @@
+<div class="table-container" #chartContainer>
+    <div *ngIf="!coverageData" class="no-data-message">
+        <p>No coverage data to display</p>
+    </div>
+
+    <google-chart *ngIf="coverageData && chartData.length > 0" [type]="chartType" [data]="chartData"
+        [columns]="chartColumns" [options]="chartOptions" [height]="chartHeight">
+    </google-chart>
+</div>
