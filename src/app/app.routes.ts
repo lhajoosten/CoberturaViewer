@@ -1,10 +1,9 @@
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, Routes } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './core/layouts/main-layout/main-layout.component';
 import { AuthLayoutComponent } from './core/layouts/auth-layout/auth-layout.component';
-import { inject } from '@angular/core';
-import { AuthService } from './core/auth/services/auth.service';
 import { UnauthenticatedGuard } from './core/guards/unauthenticated.guard';
+import { NgModule } from '@angular/core';
 
 export const routes: Routes = [
     // Auth callback - specific route for callback

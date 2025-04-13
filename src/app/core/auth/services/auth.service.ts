@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { environment } from '../../../../env/env.develop';
+import { environment } from '../../../../env/environment';
 import { ToastService } from '../../services/utils/toast.service';
 import { User } from '../models/user.interface';
 import { SessionService } from './session.service';

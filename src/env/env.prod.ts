@@ -1,7 +1,7 @@
 export const environment = {
     production: true,
     github: {
-        clientId: 'Ov23liUghCDZkiBqtV6L',
+        clientId: 'Ov23li4pCX49borQ7Onb',
         redirectUri: 'https://lhajoosten.github.io/CoberturaViewer/auth/callback',
         scope: 'read:user user:email'
     },

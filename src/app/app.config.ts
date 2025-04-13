@@ -1,5 +1,5 @@
 import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, Router, withHashLocation } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -7,6 +7,7 @@ import { GoogleChartsModule } from 'angular-google-charts';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { LayoutService } from './core/layouts/layout.service';
 import { AuthService } from './core/auth/services/auth.service';
+import { HashLocationStrategy } from '@angular/common';
 
 function initializeApp(
   authService: AuthService,
