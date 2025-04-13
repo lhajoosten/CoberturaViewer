@@ -1,22 +1,33 @@
 {
-    "rewrites": [
+    "version": 2,
+    "routes": [
         {
-            "source": "/assets/(.*)",
-            "destination": "/assets/$1"
+            "handle": "filesystem"
         },
         {
-            "source": "/(.*)\\.([a-z0-9]{8})\\.js",
-            "destination": "/$1.$2.js"
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
         },
         {
-            "source": "/(.*)\\.([a-z0-9]{8})\\.css",
-            "destination": "/$1.$2.css"
+            "src": "/assets/(.*)",
+            "dest": "/assets/$1"
         },
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico)$)",
+            "dest": "/$1"
+        },
+        {
+            "src": "/env/(.*)",
+            "dest": "/env/$1"
+        },
+        {
+            "src": "/(.*)",
+            "status": 200,
+            "dest": "/index.html"
         }
     ],
-    "cleanUrls": true,
-    "trailingSlash": false
+    "env": {
+        "FRONTEND_URL": "https://cobertura-viewer.vercel.app",
+        "GITHUB_CLIENT_ID": "Ov23li4pCX49borQ7Onb"
+    }
 }

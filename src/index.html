@@ -28,6 +28,21 @@
 
 <body>
   <app-root></app-root>
+  <script>
+    // Check if the document is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+      // If we're not on index.html, e.g., we're on /dashboard directly
+      if (window.location.pathname !== '/' && !document.querySelector('app-root app-component')) {
+        // Wait a bit to check if Angular router kicks in
+        setTimeout(function () {
+          // If Angular didn't render anything, try reloading with / to engage the router
+          if (!document.querySelector('app-root app-component')) {
+            window.location.href = '/';
+          }
+        }, 1000);
+      }
+    });
+  </script>
 </body>
 
 </html>

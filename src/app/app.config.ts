@@ -7,7 +7,7 @@ import { GoogleChartsModule } from 'angular-google-charts';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { LayoutService } from './core/layouts/layout.service';
 import { AuthService } from './core/auth/services/auth.service';
-import { HashLocationStrategy } from '@angular/common';
+import { HashLocationStrategy, LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 function initializeApp(
   authService: AuthService,
@@ -37,6 +37,10 @@ function initializeApp(
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
+    {
+      provide: LocationStrategy,
+      useClass: PathLocationStrategy
+    },
     provideHttpClient(withInterceptors([authInterceptor])),
     {
       provide: APP_INITIALIZER,
