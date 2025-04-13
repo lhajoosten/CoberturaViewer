@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../../../env/env.develop';
 import { ToastService } from '../../services/utils/toast.service';
 import { User } from '../models/user.interface';
+import { SessionService } from './session.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private sessionService: SessionService
   ) {
     // Initialize from localStorage on service creation
     this.loadUserFromStorage();
@@ -113,6 +115,8 @@ export class AuthService {
         // Store user and return
         this.currentUserSubject.next(githubUser);
         localStorage.setItem('current_user', JSON.stringify(githubUser));
+
+        this.sessionService.startNewSession(); // Start a new session
 
         return of(githubUser);
       }),
@@ -243,6 +247,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
     localStorage.removeItem('current_user');
     localStorage.removeItem('access_token');
+    this.sessionService.resetSession(); // Reset session data
     this.toastService.showInfo('Logged Out', 'You have been successfully logged out.');
     this.router.navigate(['/']);
   }

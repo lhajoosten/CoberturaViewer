@@ -459,3 +459,306 @@
     cursor: not-allowed;
   }
 }
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .session-updated {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+  }
+}
+
+.refresh-session-btn {
+  margin-top: 1rem;
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-light);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  i {
+    font-size: 0.875rem;
+  }
+}
+
+// Section icons
+.profile-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  i {
+    color: var(--color-primary);
+    font-size: 1.125rem;
+  }
+}
+
+// Unsaved changes indicator
+.unsaved-changes-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-warning);
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+// Disable button styling
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+// Security & Access section
+.security-section {
+  margin-bottom: 1.5rem;
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    color: var(--color-text-primary);
+  }
+}
+
+// Connected applications
+.connected-app {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: var(--color-bg-secondary);
+  margin-bottom: 0.75rem;
+
+  .app-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+
+    &.github {
+      background-color: #24292e;
+      color: white;
+
+      i {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .app-details {
+    flex-grow: 1;
+
+    .app-name {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .app-status {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .app-permissions {
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  .disconnect-btn {
+    background: none;
+    border: none;
+    color: var(--color-danger);
+    cursor: pointer;
+    font-size: 1.125rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+
+    &:hover:not([disabled]) {
+      background-color: rgba(var(--color-danger-rgb), 0.1);
+    }
+
+    &[disabled] {
+      color: var(--color-text-secondary);
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.no-other-connections {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  padding: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  i {
+    color: var(--color-info);
+  }
+}
+
+// Access history
+.access-history {
+  margin-bottom: 0.75rem;
+}
+
+.access-entry {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: var(--color-bg-secondary);
+  margin-bottom: 0.75rem;
+
+  &.current {
+    border-left: 3px solid var(--color-success);
+  }
+
+  .access-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--color-bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+
+    i {
+      color: var(--color-primary);
+    }
+  }
+
+  .access-details {
+    flex-grow: 1;
+
+    .access-device {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .access-time {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .access-location {
+      font-size: 0.8rem;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  .access-status {
+    .active-badge {
+      background-color: var(--color-success);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.view-all-link {
+  font-size: 0.875rem;
+  text-align: right;
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Security options
+.security-option {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .option-details {
+    flex-grow: 1;
+
+    .option-name {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .option-description {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  .option-action {
+    .enable-2fa-btn {
+      background-color: var(--color-primary);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--color-primary-dark);
+      }
+    }
+
+    .form-select {
+      min-width: 120px;
+    }
+  }
+}
+
+// Make the profile sections display in a 2x2 grid on larger screens
+@media (min-width: 992px) {
+  .profile-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}

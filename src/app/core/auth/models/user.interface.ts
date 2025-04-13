@@ -18,6 +18,10 @@ export interface User {
     following?: number;
     publicRepos?: number;
     publicGists?: number;
+
+    // Additional fields can be added here
+    updatedAt?: string;
+    lastLogin?: string;
 }
 
 // Add a new interface for user preferences
@@ -27,4 +31,5 @@ export interface UserPreferences {
     darkMode: boolean;
     language: 'en' | 'es' | 'fr' | 'de';
     dashboardLayout: 'compact' | 'comfortable' | 'spacious';
+    sessionTimeout: 'never' | '15m' | '30m' | '1h' | '2h';
 }

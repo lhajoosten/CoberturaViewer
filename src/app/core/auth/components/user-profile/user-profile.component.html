@@ -1,4 +1,5 @@
 <div class="profile-container" *ngIf="user">
+    <!-- Header with Profile Title and Actions -->
     <div class="profile-header">
         <h1>Your Profile</h1>
         <div class="header-actions">
@@ -17,7 +18,9 @@
         </div>
     </div>
 
+    <!-- Profile Card with Avatar and Basic Information -->
     <div class="profile-card">
+        <!-- Avatar Section -->
         <div class="profile-avatar">
             <img [src]="user.avatar || 'assets/images/default-avatar.png'" [alt]="user.name">
             <div class="provider-badge github">
@@ -25,12 +28,14 @@
             </div>
         </div>
 
+        <!-- Basic Profile Details -->
         <div class="profile-details">
             <h2>{{ user.name }}</h2>
             <p class="user-login" *ngIf="user.login">&#64;{{ user.login }}</p>
             <p class="user-email">{{ user.email }}</p>
             <p class="user-bio" *ngIf="user.bio">{{ user.bio }}</p>
 
+            <!-- User Metadata -->
             <div class="user-meta">
                 <span class="user-meta-item" *ngIf="user.location">
                     <i class="fas fa-map-marker-alt"></i> {{ user.location }}
@@ -44,6 +49,7 @@
                 </span>
             </div>
 
+            <!-- GitHub Statistics -->
             <div class="github-stats" *ngIf="user.followers !== undefined || user.publicRepos !== undefined">
                 <div class="stat-item" *ngIf="user.followers !== undefined">
                     <span class="stat-value">{{ user.followers }}</span>
@@ -63,15 +69,21 @@
                 </div>
             </div>
 
+            <!-- User Roles -->
             <div class="user-roles">
                 <span class="role-badge" *ngFor="let role of user.roles">{{ role }}</span>
             </div>
         </div>
     </div>
 
+    <!-- Detailed Sections -->
     <div class="profile-sections">
+        <!-- Account Information Section -->
         <section class="profile-section">
-            <h3>Account Information</h3>
+            <h3>
+                <i class="fas fa-user-circle"></i>
+                Account Information
+            </h3>
             <div class="profile-field">
                 <span class="field-label">Account ID</span>
                 <span class="field-value">{{ user.id }}</span>
@@ -86,38 +98,81 @@
                 <span class="field-label">GitHub Account Created</span>
                 <span class="field-value">{{ user.createdAt | date:'medium' }}</span>
             </div>
-            <div class="profile-field">
-                <span class="field-label">App Sign-In</span>
-                <span class="field-value">{{ appLoginDate | date:'medium' }}</span>
+            <div class="profile-field" *ngIf="user.updatedAt">
+                <span class="field-label">Last Updated</span>
+                <span class="field-value">{{ user.updatedAt | date:'medium' }}</span>
             </div>
         </section>
 
+        <!-- Login Activity Section -->
         <section class="profile-section">
-            <h3>Application Preferences</h3>
+            <h3>
+                <i class="fas fa-sign-in-alt"></i>
+                Login Activity
+            </h3>
+            <div class="session-header">
+                <h4>Current Session</h4>
+                <div class="session-updated">
+                    Last Updated: {{ sessionLastUpdated }}
+                </div>
+            </div>
 
+            <div class="profile-field">
+                <span class="field-label">Sign-In Date</span>
+                <span class="field-value">{{ appLoginDate }}</span>
+            </div>
+            <div class="profile-field">
+                <span class="field-label">Sign-In Time</span>
+                <span class="field-value">{{ appLoginTime }}</span>
+            </div>
+            <div class="profile-field">
+                <span class="field-label">Timezone</span>
+                <span class="field-value">{{ appLoginTimezone }}</span>
+            </div>
+            <div class="profile-field">
+                <span class="field-label">Session Duration</span>
+                <span class="field-value">{{ sessionDuration }}</span>
+            </div>
+
+            <button class="refresh-session-btn" (click)="updateSessionDuration()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </section>
+
+        <!-- Application Preferences Section -->
+        <section class="profile-section">
+            <h3>
+                <i class="fas fa-sliders-h"></i>
+                Application Preferences
+            </h3>
+
+            <!-- Notifications & Automation -->
             <div class="preference-section">
                 <h4>Notifications & Automation</h4>
                 <div class="preference-option">
                     <label class="toggle-switch">
-                        <input type="checkbox" [(ngModel)]="preferences.emailNotifications">
+                        <input type="checkbox" [(ngModel)]="preferences.emailNotifications"
+                            (change)="onPreferenceChanged()">
                         <span class="toggle-slider"></span>
                         Receive email notifications
                     </label>
                 </div>
                 <div class="preference-option">
                     <label class="toggle-switch">
-                        <input type="checkbox" [(ngModel)]="preferences.autoSaveReports">
+                        <input type="checkbox" [(ngModel)]="preferences.autoSaveReports"
+                            (change)="onPreferenceChanged()">
                         <span class="toggle-slider"></span>
                         Save reports automatically
                     </label>
                 </div>
             </div>
 
+            <!-- Appearance -->
             <div class="preference-section">
                 <h4>Appearance</h4>
                 <div class="preference-option">
                     <label class="toggle-switch">
-                        <input type="checkbox" [(ngModel)]="preferences.darkMode">
+                        <input type="checkbox" [(ngModel)]="preferences.darkMode" (change)="onPreferenceChanged()">
                         <span class="toggle-slider"></span>
                         Dark mode
                     </label>
@@ -127,31 +182,124 @@
                     <label>Dashboard Layout</label>
                     <div class="radio-group">
                         <label *ngFor="let layout of layouts" class="radio-option">
-                            <input type="radio" [value]="layout.value" [(ngModel)]="preferences.dashboardLayout">
+                            <input type="radio" [value]="layout.value" [(ngModel)]="preferences.dashboardLayout"
+                                (change)="onPreferenceChanged()">
                             <span>{{ layout.label }}</span>
                         </label>
                     </div>
                 </div>
             </div>
 
+            <!-- Language & Region -->
             <div class="preference-section">
                 <h4>Language & Region</h4>
                 <div class="preference-option">
                     <label>Interface Language</label>
-                    <select [(ngModel)]="preferences.language" class="form-select">
+                    <select [(ngModel)]="preferences.language" class="form-select" (change)="onPreferenceChanged()">
                         <option *ngFor="let lang of languages" [value]="lang.code">{{ lang.name }}</option>
                     </select>
                 </div>
             </div>
 
-            <button class="save-preferences-btn" (click)="savePreferences()" [disabled]="loading">
+            <!-- Save Button -->
+            <button class="save-preferences-btn" (click)="savePreferences()" [disabled]="loading || !hasUnsavedChanges">
                 <i class="fas" [ngClass]="loading ? 'fa-spin fa-circle-notch' : 'fa-save'"></i>
                 Save Preferences
             </button>
+
+            <!-- Unsaved Changes Indicator -->
+            <div class="unsaved-changes-indicator" *ngIf="hasUnsavedChanges">
+                <i class="fas fa-exclamation-circle"></i>
+                You have unsaved changes
+            </div>
+        </section>
+
+        <!-- Security & Access Section -->
+        <section class="profile-section">
+            <h3>
+                <i class="fas fa-shield-alt"></i>
+                Security & Access
+            </h3>
+
+            <!-- Connected Applications -->
+            <div class="security-section">
+                <h4>Connected Applications</h4>
+                <div class="connected-app">
+                    <div class="app-icon github">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <div class="app-details">
+                        <div class="app-name">GitHub</div>
+                        <div class="app-status">Connected since {{ appLoginDate }}</div>
+                        <div class="app-permissions">Permissions: Read profile, Email access</div>
+                    </div>
+                    <button class="disconnect-btn" title="Disconnect GitHub" disabled>
+                        <i class="fas fa-unlink"></i>
+                    </button>
+                </div>
+                <div class="no-other-connections">
+                    <i class="fas fa-info-circle"></i>
+                    No other applications connected
+                </div>
+            </div>
+
+            <!-- Access History -->
+            <div class="security-section">
+                <h4>Recent Access</h4>
+                <div class="access-history">
+                    <div class="access-entry current">
+                        <div class="access-icon">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div class="access-details">
+                            <div class="access-device">Current Browser</div>
+                            <div class="access-time">Signed in {{ sessionDuration }} ago</div>
+                            <div class="access-location" *ngIf="userLocation">{{ userLocation }}</div>
+                        </div>
+                        <div class="access-status">
+                            <span class="active-badge">Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="view-all-link">
+                    <a href="javascript:void(0)" (click)="showAccessHistory()">View full access history</a>
+                </div>
+            </div>
+
+            <!-- Security Options -->
+            <div class="security-section">
+                <h4>Security Options</h4>
+                <div class="security-option">
+                    <div class="option-details">
+                        <div class="option-name">Two-Factor Authentication</div>
+                        <div class="option-description">Add an extra layer of security to your account</div>
+                    </div>
+                    <div class="option-action">
+                        <button class="enable-2fa-btn" (click)="setupTwoFactor()">Enable</button>
+                    </div>
+                </div>
+                <div class="security-option">
+                    <div class="option-details">
+                        <div class="option-name">Session Timeout</div>
+                        <div class="option-description">Automatically log out after inactivity</div>
+                    </div>
+                    <div class="option-action">
+                        <select [(ngModel)]="preferences.sessionTimeout" class="form-select"
+                            (change)="onPreferenceChanged()">
+                            <option value="never">Never</option>
+                            <option value="30min">30 minutes</option>
+                            <option value="1hour">1 hour</option>
+                            <option value="4hours">4 hours</option>
+                            <option value="8hours">8 hours</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </section>
     </div>
 </div>
 
+<!-- Not Signed In State -->
 <div class="profile-not-found" *ngIf="!user">
     <div class="not-found-content">
         <i class="fas fa-user-slash"></i>
