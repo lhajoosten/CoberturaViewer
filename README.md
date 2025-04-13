@@ -1,59 +1,76 @@
-# CoberturaViewer
+# Cobertura Viewer
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.6.
+Interactive Visualization Tool for Code Coverage Reports
 
-## Development server
+Cobertura Viewer is a modern, responsive web application for visualizing and analyzing Cobertura XML code coverage reports. Built with Angular, this tool helps development teams gain insights into their test coverage, identify underperforming areas, and improve code quality.
 
-To start a local development server, run:
+![Cobertura Viewer](https://via.placeholder.com/800x450)
 
-```bash
-ng serve
-```
+## Features
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Interactive Coverage Visualization:** View coverage data through intuitive charts and graphs.
+- **Code Analysis:** Inspect line-by-line coverage with syntax highlighting.
+- **Risk Assessment:** Identify high-risk areas in your codebase.
+- **Detailed Statistics:** Get comprehensive metrics on line, branch, and method coverage.
+- **GitHub Integration:** Authenticate with GitHub to save and share reports.
+- **Responsive Design:** Works on desktop and mobile devices.
+- **Light/Dark Theme:** Choose your preferred viewing experience.
 
-## Code scaffolding
+## Getting Started
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Prerequisites
 
-```bash
-ng generate component component-name
-```
+- Node.js (v20 or higher)
+- npm (v10.9.2 or higher)
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Installation
 
-```bash
-ng generate --help
-```
+The application will be available at [http://localhost:4200/](http://localhost:4200/).
 
-## Building
+### Usage
 
-To build the project run:
+1. Upload your Cobertura XML file through the interface.
+2. Explore the coverage data using various visualization tools.
+3. Drill down into specific packages, classes, and methods.
+4. Export reports for sharing with your team.
 
-```bash
-ng build
-```
+## Building for Production
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### Environment Configuration
 
-## Running unit tests
+The application uses environment-specific configuration files:
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+- `environment.ts` - Default development environment.
+- `env.develop.ts` - Development build configuration.
+- `env.prod.ts` - Production build configuration.
 
-```bash
-ng test
-```
+## Contributing
 
-## Running end-to-end tests
+Contributions are welcome! Follow these steps:
 
-For end-to-end (e2e) testing, run:
+1. Fork the repository.
+2. Create your feature branch:
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. Commit your changes:
+   ```bash
+   git commit -m 'Add some amazing feature'
+   ```
+4. Push to the branch:
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+5. Open a Pull Request.
 
-```bash
-ng e2e
-```
+## License
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+This project is licensed under the [MIT License](LICENSE).
 
-## Additional Resources
+## Acknowledgments
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Angular:** The web framework used.
+- **Google Charts:** For data visualization.
+- **Cobertura:** The code coverage tool that generates the XML reports.
+
+Created with ❤️ by lhajoosten
