@@ -60,12 +60,13 @@ export class ExportService {
     }
 
     /**
-     * Export chart as SVG
-     */
+ * Export chart as SVG
+ */
     exportChartAsSvg(chartElement: HTMLElement, filename: string = 'chart'): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             if (!chartElement) {
                 this.toastService.showError('Export Error', 'No chart element found to export');
+                reject(new Error('No chart element'));
                 return;
             }
 
@@ -108,9 +109,11 @@ export class ExportService {
                 // Clean up
                 URL.revokeObjectURL(url);
                 this.toastService.showSuccess('Export Complete', 'Chart exported as SVG');
+                resolve(); // Add this to resolve the promise on success
             } catch (error) {
                 console.error('Error exporting SVG:', error);
                 this.toastService.showError('Export Failed', `Could not export the chart as SVG: ${error}`);
+                reject(error); // Add this to reject the promise on error
             }
         });
     }
@@ -122,6 +125,7 @@ export class ExportService {
         return new Promise<void>((resolve, reject) => {
             if (!chartElement) {
                 this.toastService.showError('Export Error', 'No chart element found to export');
+                reject(new Error('No chart element'));
                 return;
             }
 
@@ -154,10 +158,16 @@ export class ExportService {
                     pdf.save(`${filename}.pdf`);
 
                     this.toastService.showSuccess('Export Complete', 'Chart exported as PDF');
+                    resolve(); // Add this to resolve the promise on success
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    this.toastService.showError('Export Failed', 'Could not export the chart as PDF');
+                    reject(error); // Add this to reject the promise on error
                 });
             } catch (error) {
                 console.error('Error exporting PDF:', error);
                 this.toastService.showError('Export Failed', 'Could not export the chart as PDF');
+                reject(error); // Add this to reject the promise on error
             }
         });
     }
@@ -216,9 +226,12 @@ export class ExportService {
                 // Clean up
                 URL.revokeObjectURL(url);
                 this.toastService.showSuccess('Export Complete', 'Data exported as CSV');
+
+                resolve();
             } catch (error) {
                 console.error('Error exporting CSV:', error);
                 this.toastService.showError('Export Failed', 'Could not export the data as CSV');
+                reject(error); // Make sure to reject the promise on error
             }
         });
     }

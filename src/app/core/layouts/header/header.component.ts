@@ -257,31 +257,27 @@ export class HeaderComponent implements OnInit {
       // Handle promise completion
       exportPromise
         .then(() => {
-          // Success - handled in the export service
+          // Success - close the modal
+          if (this.exportModalRef) {
+            this.exportModalRef.close();
+          }
         })
         .catch(error => {
           console.error('Export failed:', error);
+          // On error, keep the modal open
         })
         .finally(() => {
-          // Remove exporting indicator
+          // Always remove the exporting indicator
           if (exportingIndicator.parentNode) {
             exportingIndicator.parentNode.removeChild(exportingIndicator);
-          }
-
-          // Close modal
-          if (this.exportModalRef) {
-            this.exportModalRef.close();
           }
         });
 
     } catch (error) {
-      this.toastService.showError('Error', `Failed to export the report. ${error}`);
-      // Remove exporting indicator and close modal on error
+      this.toastService.showError('Error', `Failed to export the report: ${error}`);
+      // Remove exporting indicator on error but keep modal open
       if (exportingIndicator.parentNode) {
         exportingIndicator.parentNode.removeChild(exportingIndicator);
-      }
-      if (this.exportModalRef) {
-        this.exportModalRef.close();
       }
     }
   }
