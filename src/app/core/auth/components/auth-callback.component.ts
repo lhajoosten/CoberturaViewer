@@ -56,22 +56,12 @@ export class AuthCallbackComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    console.log('Auth callback component initialized');
-    console.log('Current URL:', window.location.href);
-
-    // Log route parameters
-    console.log('Route params:', {
-      code: this.route.snapshot.queryParamMap.get('code'),
-      state: this.route.snapshot.queryParamMap.get('state')
-    });
-
     // First, check for query parameters directly from the route
     const routeCode = this.route.snapshot.queryParamMap.get('code');
     const routeState = this.route.snapshot.queryParamMap.get('state');
 
     // If we have these parameters directly, use them
     if (routeCode && routeState) {
-      console.log('Using parameters from route');
       this.processAuth(routeCode, routeState);
       return;
     }
@@ -88,7 +78,6 @@ export class AuthCallbackComponent implements OnInit {
     // If no code in regular query string, try hash fragment
     if (!params['code'] && hashQueryString) {
       params = this.parseQueryString(hashQueryString);
-      console.log('Extracted params from hash fragment:', params);
     }
 
     const code = params['code'];
@@ -104,14 +93,10 @@ export class AuthCallbackComponent implements OnInit {
 
   // Extract the authentication logic to a separate method
   private processAuth(code: string, state: string): void {
-    console.log('Processing auth with code:', code.substring(0, 5) + '...', 'state:', state);
 
     // Handle the callback
     this.authService.handleAuthCallback(code, state).subscribe({
       next: (user) => {
-        console.log('Auth callback successful, user:', user);
-        console.log('Is user object present?', !!user);
-        console.log('About to redirect user...');
 
         if (user) {
           // Success - redirect to home or stored redirect URL
@@ -124,11 +109,8 @@ export class AuthCallbackComponent implements OnInit {
             `Welcome, ${user.name || user.login}!`
           );
 
-          console.log('Redirecting to:', redirectUrl);
-
           // Add a small delay to ensure state propagation
           setTimeout(() => {
-            console.log('Executing redirect now...');
             this.router.navigateByUrl(redirectUrl);
           }, 300);
         } else {

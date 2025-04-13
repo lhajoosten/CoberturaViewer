@@ -18,15 +18,12 @@ function initializeApp(
     const storedUser = localStorage.getItem('current_user');
     const isAuthenticated = !!storedUser;
 
-    console.log('App initializer - Auth check:', isAuthenticated);
-
     // Set appropriate layout
     layoutService.setLayout(isAuthenticated ? 'main' : 'auth');
 
     // If authenticated and on auth pages, redirect to dashboard
     if (isAuthenticated) {
       const currentPath = window.location.pathname;
-      console.log('Current path:', currentPath);
       if (currentPath === '/' || currentPath === '/login') {
         router.navigate(['/dashboard']);
       }

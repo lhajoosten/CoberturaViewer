@@ -23,7 +23,6 @@ export class LoginComponent {
   }
 
   loginWithGitHub(): void {
-    console.log('Login component: starting GitHub login...');
     this.authService.loginWithGitHub();
   }
 }

@@ -109,36 +109,37 @@
 
 <!-- Export Options Modal Template -->
 <ng-template #exportOptionsTemplate>
-    <div class="export-options-container">
-        <div class="export-form">
-            <div class="form-group">
-                <label for="exportFileName">File name</label>
-                <input type="text" id="exportFileName" [(ngModel)]="exportFileName" placeholder="coverage-report">
-            </div>
-
-            <div class="form-group">
-                <label>Format</label>
-                <div class="format-options">
-                    <div *ngFor="let format of exportFormats" class="format-option"
-                        [class.selected]="selectedExportFormat === format.value"
-                        (click)="selectedExportFormat = format.value">
-                        <i class="fas" [ngClass]="format.icon"></i>
-                        <span>{{ format.label }}</span>
-                    </div>
+    <div class="export-content">
+        <div class="export-options">
+            <div *ngFor="let format of exportFormats" class="export-format-option"
+                [class.selected]="selectedExportFormat === format.value" (click)="selectedExportFormat = format.value">
+                <div class="format-icon">
+                    <i class="fas" [ngClass]="format.icon"></i>
+                </div>
+                <div class="format-details">
+                    <div class="format-name">{{ format.label }}</div>
+                    <div class="format-desc">{{
+                        format.value === 'png' ? 'Best for sharing and presentations' :
+                        format.value === 'svg' ? 'Scalable vector format for editing' :
+                        format.value === 'pdf' ? 'Document format for printing' :
+                        'Raw data for spreadsheets and analysis'
+                        }}</div>
                 </div>
             </div>
+        </div>
 
-            <div class="info-text" *ngIf="selectedExportFormat === 'csv'">
-                <i class="fas fa-info-circle"></i>
-                CSV export contains raw coverage data without visualizations.
-            </div>
+        <div class="filename-input">
+            <label for="exportFileName">File name:</label>
+            <input type="text" id="exportFileName" [(ngModel)]="exportFileName" placeholder="Enter file name">
+        </div>
 
-            <div class="export-actions">
-                <button class="cancel-btn" (click)="modalService.close!">Cancel</button>
-                <button class="export-btn" (click)="exportReport()">
-                    <i class="fas fa-file-export"></i> Export
-                </button>
-            </div>
+        <div class="modal-actions">
+            <!-- Use the stored reference for closing -->
+            <button class="btn-secondary" (click)="exportModalRef?.close()">Cancel</button>
+            <button class="btn-primary" (click)="exportReport()">
+                <i class="fas" [ngClass]="exportIcon"></i>
+                Export
+            </button>
         </div>
     </div>
 </ng-template>

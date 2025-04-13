@@ -1,8 +1,8 @@
-import { Component, Output, EventEmitter, OnInit, HostListener, ViewChild, TemplateRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Output, EventEmitter, OnInit, HostListener, ViewChild, TemplateRef, inject, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ThemeStoreService } from '../../services/store/theme-store.service';
-import { ModalService } from '../../services/utils/modal.service';
+import { ModalRef, ModalService } from '../../services/utils/modal.service';
 import { ExportService } from '../../services/utils/export.service';
 import { CoverageStoreService } from '../../services/store/coverage-store.service';
 import { FileUploaderComponent } from '../../../features/file-upload/components/file-uploader/file-uploader.component';
@@ -10,6 +10,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User } from '../../auth/models/user.interface';
 import { AuthService } from '../../auth/services/auth.service';
+import { ToastService } from '../../services/utils/toast.service';
 
 @Component({
   selector: 'app-header',
@@ -40,13 +41,34 @@ export class HeaderComponent implements OnInit {
   exportFileName = 'coverage-report';
   selectedExportFormat = 'png';
   exportFormats = [
-    { value: 'png', label: 'PNG Image', icon: 'fa-file-image' },
-    { value: 'svg', label: 'SVG Vector', icon: 'fa-bezier-curve' },
-    { value: 'pdf', label: 'PDF Document', icon: 'fa-file-pdf' },
-    { value: 'csv', label: 'CSV Data', icon: 'fa-file-csv' }
+    {
+      value: 'png',
+      label: 'PNG Image',
+      icon: 'fa-file-image',
+      description: 'Best for sharing and presentations'
+    },
+    {
+      value: 'svg',
+      label: 'SVG Vector',
+      icon: 'fa-bezier-curve',
+      description: 'Scalable vector format for editing'
+    },
+    {
+      value: 'pdf',
+      label: 'PDF Document',
+      icon: 'fa-file-pdf',
+      description: 'Document format for printing'
+    },
+    {
+      value: 'csv',
+      label: 'CSV Data',
+      icon: 'fa-file-csv',
+      description: 'Raw data for spreadsheets and analysis'
+    }
   ];
 
   currentUser: User | null = null;
+  protected exportModalRef: ModalRef | null = null;
 
   constructor(
     private themeStore: ThemeStoreService,
@@ -54,7 +76,9 @@ export class HeaderComponent implements OnInit {
     private exportService: ExportService,
     private coverageStore: CoverageStoreService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService,
+    @Inject(DOCUMENT) private document: Document
   ) { }
 
   ngOnInit(): void {
@@ -94,6 +118,16 @@ export class HeaderComponent implements OnInit {
 
     if (!userMenuElement?.contains(event.target as Node)) {
       this.isUserMenuOpen = false;
+    }
+  }
+
+  get exportIcon(): string {
+    switch (this.selectedExportFormat) {
+      case 'png': return 'fa-file-image';
+      case 'svg': return 'fa-bezier-curve';
+      case 'pdf': return 'fa-file-pdf';
+      case 'csv': return 'fa-file-csv';
+      default: return 'fa-download';
     }
   }
 
@@ -163,7 +197,8 @@ export class HeaderComponent implements OnInit {
    */
   onExportReport(): void {
     if (this.hasActiveReport) {
-      this.modalService.openTemplate(this.exportOptionsTemplate, {}, {
+      // Store the reference when opening the modal
+      this.exportModalRef = this.modalService.openTemplate(this.exportOptionsTemplate, {}, {
         title: 'Export Report',
         width: '500px',
         cssClass: 'export-modal'
@@ -172,45 +207,148 @@ export class HeaderComponent implements OnInit {
   }
 
   /**
-   * Export report in selected format
-   */
+ * Export report in selected format
+ */
   exportReport(): void {
-    // Get the main chart element
-    const chartElement = document.querySelector('.coverage-chart-container') as HTMLElement;
+    // First try to find the visualization container component's active chart
+    let chartElement: HTMLElement | null = this.findVisualizationChartElement();
+
+    // If not found, try the legacy selector
+    if (!chartElement) {
+      chartElement = this.document.querySelector('.coverage-chart-container') as HTMLElement;
+    }
 
     if (!chartElement) {
-      console.error('Chart element not found for export');
+      this.toastService.showError('Error', 'No chart found to export.');
+      if (this.exportModalRef) {
+        this.exportModalRef.close();
+      }
       return;
     }
 
-    // Export based on selected format
-    switch (this.selectedExportFormat) {
-      case 'png':
-        this.exportService.exportChartAsPng(chartElement, this.exportFileName);
-        break;
-      case 'svg':
-        this.exportService.exportChartAsSvg(chartElement, this.exportFileName);
-        break;
-      case 'pdf':
-        this.exportService.exportChartAsPdf(chartElement, this.exportFileName);
-        break;
-      case 'csv':
-        // For CSV export we need to prepare data in the right format
-        // Get the data from the coverage store
-        const coverageData = this.coverageStore.getCurrentCoverageData();
-        if (coverageData) {
-          // Transform data to 2D array for CSV export
-          const csvData = this.prepareCsvData(coverageData);
-          this.exportService.exportDataAsCsv(csvData, this.exportFileName);
+    // Set exporting state
+    const exportingIndicator = this.document.createElement('div');
+    exportingIndicator.className = 'exporting-indicator';
+    exportingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+    this.document.body.appendChild(exportingIndicator);
+
+    try {
+      let exportPromise: Promise<void>;
+
+      switch (this.selectedExportFormat) {
+        case 'png':
+          exportPromise = this.exportService.exportChartAsPng(chartElement, this.exportFileName);
+          break;
+        case 'svg':
+          exportPromise = this.exportService.exportChartAsSvg(chartElement, this.exportFileName);
+          break;
+        case 'pdf':
+          exportPromise = this.exportService.exportChartAsPdf(chartElement, this.exportFileName);
+          break;
+        case 'csv':
+          const csvData = this.getExportData() || this.prepareCsvData(this.coverageStore.getCurrentCoverageData());
+          exportPromise = this.exportService.exportDataAsCsv(csvData, this.exportFileName);
+          break;
+        default:
+          this.toastService.showError('Error', 'Unknown export format selected.');
+          throw new Error('Unknown export format');
+      }
+
+      // Handle promise completion
+      exportPromise
+        .then(() => {
+          // Success - handled in the export service
+        })
+        .catch(error => {
+          console.error('Export failed:', error);
+        })
+        .finally(() => {
+          // Remove exporting indicator
+          if (exportingIndicator.parentNode) {
+            exportingIndicator.parentNode.removeChild(exportingIndicator);
+          }
+
+          // Close modal
+          if (this.exportModalRef) {
+            this.exportModalRef.close();
+          }
+        });
+
+    } catch (error) {
+      this.toastService.showError('Error', `Failed to export the report. ${error}`);
+      // Remove exporting indicator and close modal on error
+      if (exportingIndicator.parentNode) {
+        exportingIndicator.parentNode.removeChild(exportingIndicator);
+      }
+      if (this.exportModalRef) {
+        this.exportModalRef.close();
+      }
+    }
+  }
+
+  /**
+   * Find the current active chart element in the visualization container
+   */
+  private findVisualizationChartElement(): HTMLElement | null {
+    try {
+      // Try to find visualization container
+      const visualizationContainer = this.document.querySelector('app-visualization-container');
+      if (!visualizationContainer) {
+        return null;
+      }
+
+      // Look for google-chart element first (most common)
+      const googleChart = visualizationContainer.querySelector('google-chart');
+      if (googleChart) {
+        return googleChart as HTMLElement;
+      }
+
+      // Find active chart container based on common CSS class patterns
+      const chartContainers = [
+        '.chart-container .active', // If using active class for current view
+        '.treemap-container',
+        '.sunburst-container',
+        '.heatmap-container',
+        '.pie-container',
+        '.coverage-table-container'
+      ];
+
+      // Try each potential selector
+      for (const selector of chartContainers) {
+        const element = visualizationContainer.querySelector(selector);
+        if (element) {
+          return element as HTMLElement;
         }
-        break;
+      }
+
+      // Last resort: try to find any chart-related container
+      const anyChartContainer = visualizationContainer.querySelector('[class*="-container"]');
+      if (anyChartContainer) {
+        return anyChartContainer as HTMLElement;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error finding chart element:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get export data from visualization container if possible
+   */
+  private getExportData(): any[][] | null {
+    // Try to access the active chart data from the visualization container
+    const visualizationContainer = this.document.querySelector('app-visualization-container') as any;
+    if (visualizationContainer && visualizationContainer.getExportData) {
+      try {
+        return visualizationContainer.getExportData();
+      } catch (e) {
+        console.error('Error getting export data from visualization container:', e);
+      }
     }
 
-    // Close the modal
-    const modals = document.querySelectorAll('.export-modal');
-    if (modals.length > 0) {
-      this.modalService.close((modals[0] as any).id);
-    }
+    return null;
   }
 
   /**

@@ -20,7 +20,6 @@ export class CoverageStoreService {
      * @param data The coverage data to store
      */
     setCoverageData(data: CoverageData | null): void {
-        console.log('Setting coverage data in store:', data);
         this.coverageData.next(data);
     }
 
@@ -52,7 +51,6 @@ export class CoverageStoreService {
      * @param file The file to parse
      */
     loadXmlData(content: string): void {
-        console.log('Loading XML data');
         const coverageData = this.parser.parseCoberturaXml(content);
         this.setCoverageData(coverageData);
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChartType, GoogleChartsModule } from 'angular-google-charts';
@@ -14,12 +14,13 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./advanced-pie.component.scss']
 })
 export class AdvancedPieComponent implements OnInit, OnDestroy {
+  @ViewChild('chartContainer') chartContainer!: ElementRef;
   @Input() coverageData: CoverageData | null = null;
 
   chartType: ChartType = ChartType.PieChart;
   chartData: any[] = [];
   chartOptions: any = {};
-  chartWidth = 1140;
+  chartWidth = 850;
   chartHeight = 500;
 
   // Chart customization options

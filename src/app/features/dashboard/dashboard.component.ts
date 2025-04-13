@@ -40,7 +40,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.fileHistoryService.getFiles().subscribe(files => {
         this.recentFiles = files.slice(0, 5); // Get only the 5 most recent files
-        console.log('Recent files loaded:', this.recentFiles);
       })
     );
   }
@@ -54,8 +53,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadFile(file: HistoricalFile): void {
-    console.log(`Loading file: ${file.name}`);
-
     // Get the file content
     const content = this.fileHistoryService.getFileContent(file.id);
 

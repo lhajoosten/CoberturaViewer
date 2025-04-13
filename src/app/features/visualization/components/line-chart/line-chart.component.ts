@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartType, GoogleChartsModule } from 'angular-google-charts';
 import { CoverageData } from '../../../../core/models/coverage.model';
@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./line-chart.component.scss']
 })
 export class LineChartComponent implements OnInit, OnDestroy {
+  @ViewChild('chartContainer') chartContainer!: ElementRef;
   @Input() coverageData: CoverageData | null = null;
 
   chartType: ChartType = ChartType.LineChart;
@@ -24,7 +25,7 @@ export class LineChartComponent implements OnInit, OnDestroy {
     'Branch Coverage',
     'Method Coverage'
   ];
-  chartWidth = 1140;
+  chartWidth = 850;
   chartHeight = 500;
 
   private themeSubscription: Subscription | null = null;

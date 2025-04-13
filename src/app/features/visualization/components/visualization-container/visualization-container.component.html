@@ -1,9 +1,8 @@
-<!-- src/app/features/visualization/components/visualization-container/visualization-container.component.html -->
 <div class="visualization-container">
     <div class="visualization-header">
         <h1>Coverage Visualization</h1>
         <div class="visualization-controls">
-            <app-export-button [targetElement]="chartContainer?.nativeElement" [chartData]="activeChartData"
+            <app-export-button [targetElement]="getActiveChartElement()" [chartData]="activeChartData"
                 [filename]="'coverage-' + activeView">
             </app-export-button>
 
@@ -35,7 +34,7 @@
         <app-coverage-summary [coverageData]="coverageData"></app-coverage-summary>
 
         <div class="content-container">
-            <div [ngSwitch]="activeView" class="chart-container">
+            <div #chartContainer [ngSwitch]="activeView" class="chart-container">
                 <app-treemap *ngSwitchCase="'treemap'" [coverageData]="coverageData"></app-treemap>
                 <app-sunburst *ngSwitchCase="'sunburst'" [coverageData]="coverageData"></app-sunburst>
                 <app-advanced-pie *ngSwitchCase="'advanced-pie'" [coverageData]="coverageData"></app-advanced-pie>

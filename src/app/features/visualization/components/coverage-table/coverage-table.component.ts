@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartType, GoogleChartsModule } from 'angular-google-charts';
 import { CoverageData } from '../../../../core/models/coverage.model';
@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./coverage-table.component.scss']
 })
 export class CoverageTableComponent implements OnInit, OnDestroy {
+  @ViewChild('chartContainer') chartContainer!: ElementRef;
   @Input() coverageData: CoverageData | null = null;
 
   chartType: ChartType = ChartType.Table;
@@ -25,7 +26,7 @@ export class CoverageTableComponent implements OnInit, OnDestroy {
     'Lines Valid',
     'Lines Covered'
   ];
-  chartWidth = 1140;
+  chartWidth = 850;
   chartHeight = 500;
 
   private themeSubscription: Subscription | null = null;
@@ -48,6 +49,33 @@ export class CoverageTableComponent implements OnInit, OnDestroy {
     if (this.themeSubscription) {
       this.themeSubscription.unsubscribe();
     }
+  }
+
+  getExportData(): any[][] {
+    if (!this.coverageData) {
+      return [];
+    }
+
+    // Create header row
+    const exportData: any[][] = [
+      ['Package', 'Class', 'Line Coverage (%)', 'Branch Coverage (%)', 'Complexity', 'Lines']
+    ];
+
+    // Add data rows
+    this.coverageData.packages.forEach(pkg => {
+      pkg.classes.forEach(cls => {
+        exportData.push([
+          pkg.name,
+          cls.name,
+          cls.lineCoverage * 100,
+          cls.branchCoverage * 100,
+          cls.complexity || 0,
+          cls.lines.length
+        ]);
+      });
+    });
+
+    return exportData;
   }
 
   private prepareChartData(): void {

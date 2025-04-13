@@ -17,7 +17,6 @@ export class UnauthenticatedGuard implements CanActivate {
 
         // If user is already logged in, redirect to dashboard
         if (this.authService.isLoggedIn()) {
-            console.log('User is already authenticated, redirecting to dashboard');
             this.router.navigate(['/dashboard']);
             return false;
         }

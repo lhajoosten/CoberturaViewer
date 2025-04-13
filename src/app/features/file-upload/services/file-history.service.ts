@@ -90,7 +90,6 @@ export class FileHistoryService {
 
       // Update state
       this.files.next(updatedFiles);
-      console.log('File added to history:', file);
     } catch (error) {
       console.error('Error adding file to history:', error);
       this.ToastService.showError('File History Error', 'Could not save file to history');
@@ -240,7 +239,6 @@ export class FileHistoryService {
 
       // Update state
       this.files.next(historicalFiles);
-      console.log('Loaded file history:', historicalFiles);
     } catch (error) {
       console.error('Error loading file history:', error);
       this.files.next([]);

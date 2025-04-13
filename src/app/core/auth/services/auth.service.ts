@@ -29,7 +29,6 @@ export class AuthService {
    * Initialize GitHub OAuth flow
    */
   loginWithGitHub(): void {
-    console.log('AuthService: initiating GitHub OAuth flow');
 
     // Clear any existing state
     localStorage.removeItem('github_auth_state');
@@ -45,7 +44,6 @@ export class AuthService {
 
     const authUrl = `${githubAuthUrl}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
 
-    console.log('Redirecting to:', authUrl);
     window.location.href = authUrl;
   }
 
@@ -53,11 +51,9 @@ export class AuthService {
    * Handle the OAuth callback from GitHub
    */
   handleAuthCallback(code: string, state: string): Observable<User> {
-    console.log('Handling auth callback with code', code.substring(0, 5) + '...');
 
     // Verify state to prevent CSRF attacks
     const savedState = localStorage.getItem('github_auth_state');
-    console.log('Saved state:', savedState, 'Received state:', state);
 
     if (!savedState) {
       console.error('No state found in localStorage');
@@ -68,8 +64,6 @@ export class AuthService {
       console.error('State mismatch: Expected', savedState, 'Got', state);
       return throwError(() => new Error('Security verification failed. Invalid state parameter.'));
     }
-
-    console.log('State verification successful!');
 
     // Clear stored state
     localStorage.removeItem('github_auth_state');
@@ -89,7 +83,6 @@ export class AuthService {
 
         // Store token
         localStorage.setItem('access_token', token);
-        console.log('Token stored in localStorage');
 
         // Map GitHub user to our User model
         const githubUser: User = {
@@ -195,12 +188,10 @@ export class AuthService {
    */
   private loadUserFromStorage(): void {
     const storedUser = localStorage.getItem('current_user');
-    console.log('Loading user from storage:', storedUser);
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         this.currentUserSubject.next(user);
-        console.log('Loaded user from storage:', user);
       } catch (e) {
         console.error('Error loading user from storage:', e);
         localStorage.removeItem('current_user');
@@ -213,7 +204,6 @@ export class AuthService {
    */
   isLoggedIn(): boolean {
     const hasUser = this.currentUserSubject.value !== null;
-    console.log('isLoggedIn() check:', hasUser, 'user:', this.currentUserSubject.value);
     return hasUser;
   }
 
