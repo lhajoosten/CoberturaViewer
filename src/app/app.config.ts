@@ -25,7 +25,8 @@ function initializeApp(
 
     // If authenticated and on auth pages, redirect to dashboard
     if (isAuthenticated) {
-      const currentPath = window.location.hash.replace('#', '');
+      const currentPath = window.location.pathname;
+      console.log('Current path:', currentPath);
       if (currentPath === '/' || currentPath === '/login') {
         router.navigate(['/dashboard']);
       }

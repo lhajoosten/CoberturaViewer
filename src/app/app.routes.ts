@@ -1,14 +1,25 @@
-import { Routes } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { MainLayoutComponent } from './core/layouts/main-layout/main-layout.component';
 import { AuthLayoutComponent } from './core/layouts/auth-layout/auth-layout.component';
+import { inject } from '@angular/core';
+import { AuthService } from './core/auth/services/auth.service';
+import { UnauthenticatedGuard } from './core/guards/unauthenticated.guard';
 
 export const routes: Routes = [
+
+    // Auth callback - needs special handling
+    {
+        path: 'auth/callback',
+        loadComponent: () => import('./core/auth/components/auth-callback.component')
+            .then(m => m.AuthCallbackComponent)
+    },
 
     // Public routes - no auth required
     {
         path: '',
         component: AuthLayoutComponent,
+        canActivate: [UnauthenticatedGuard],
         children: [
             {
                 path: '',
@@ -20,12 +31,6 @@ export const routes: Routes = [
                 loadChildren: () => import('./core/auth/auth.module')
                     .then(m => m.AuthModule)
             },
-            // This route is for the auth callback after login
-            {
-                path: 'auth/callback',
-                loadComponent: () => import('./core/auth/components/auth-callback.component')
-                    .then(m => m.AuthCallbackComponent)
-            }
         ]
     },
 
