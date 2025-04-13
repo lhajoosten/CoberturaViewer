@@ -26,10 +26,9 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
+              "src/public/favicon.ico",
+              "src/public/assets",
+              "src/public/404.html"
             ],
             "styles": [
               "src/styles.scss"
@@ -52,6 +51,11 @@
                   "with": "src/env/env.prod.ts"
                 }
               ],
+              "assets": [
+                "src/public/favicon.ico",
+                "src/public/assets",
+                "src/public/404.html"
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -67,7 +71,7 @@
               "outputHashing": "all"
             },
             "development": {
-              "optimization": false,
+              "optimization": true,
               "extractLicenses": false,
               "sourceMap": true
             }
@@ -99,10 +103,9 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
+              "src/public/favicon.ico",
+              "src/public/assets",
+              "src/public/404.html"
             ],
             "styles": [
               "src/styles.scss"
