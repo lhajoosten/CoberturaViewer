@@ -17,7 +17,8 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist",
+            "outputPath": "dist/cobertura-viewer",
+            "baseHref": "/",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -26,9 +27,16 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/public/favicon.ico",
-              "src/public/assets",
-              "src/public/404.html"
+              {
+                "glob": "**/*",
+                "input": "src/public",
+                "output": "/"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/env",
+                "output": "/env"
+              }
             ],
             "styles": [
               "src/styles.scss"
@@ -46,7 +54,7 @@
           },
           "configurations": {
             "production": {
-              "baseHref": "/CoberturaViewer/",
+              "baseHref": "/",
               "optimization": true,
               "fileReplacements": [
                 {
@@ -106,18 +114,22 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/public/favicon.ico",
-              "src/public/assets",
-              "src/public/404.html"
+              {
+                "glob": "**/*",
+                "input": "src/public",
+                "output": "/"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/env",
+                "output": "/env"
+              }
             ],
             "styles": [
               "src/styles.scss"
             ],
             "scripts": []
           }
-        },
-        "deploy": {
-          "builder": "angular-cli-ghpages:deploy"
         }
       }
     }
