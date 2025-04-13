@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, delay, switchMap, tap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../../env/env.develop';
 import { ToastService } from '../../services/utils/toast.service';
@@ -48,8 +48,8 @@ export class AuthService {
   }
 
   /**
- * Handle the OAuth callback from GitHub
- */
+   * Handle the OAuth callback from GitHub
+   */
   handleAuthCallback(code: string, state: string): Observable<User> {
     console.log('Handling auth callback with code', code.substring(0, 5) + '...');
 
@@ -74,79 +74,115 @@ export class AuthService {
 
     this.toastService.showInfo('Authenticating', 'Completing your sign-in...');
 
-    // Log that we're going to get a token
-    console.log('About to get GitHub token for code:', code.substring(0, 5) + '...');
+    // Call the backend to exchange code for token and get user data
+    return this.http.get<{ user: any, token: string }>(`${environment.apiBaseUrl}/auth/github/callback?code=${code}`).pipe(
+      tap(response => console.log('Got response from backend:', response)),
+      switchMap(response => {
+        const { user, token } = response;
 
-    // For demo purposes, we'll use a mock implementation
-    return this.getGitHubToken(code).pipe(
-      switchMap(token => {
-        console.log('Token obtained:', token ? 'YES (length: ' + token.length + ')' : 'NO');
-
-        if (!token) {
-          console.error('Failed to get access token');
-          return throwError(() => new Error('Failed to get access token'));
+        if (!user || !token) {
+          console.error('Invalid response from server');
+          return throwError(() => new Error('Invalid authentication response'));
         }
 
         // Store token
         localStorage.setItem('access_token', token);
         console.log('Token stored in localStorage');
 
-        // Get user details
-        return this.getGitHubUserDetails(token);
-      }),
-      tap(user => {
-        console.log('User details obtained:', user);
-        console.log('Setting user in service and localStorage');
-        this.currentUserSubject.next(user);
-        localStorage.setItem('current_user', JSON.stringify(user));
+        // Map GitHub user to our User model
+        const githubUser: User = {
+          id: user.id.toString(),
+          login: user.login,
+          name: user.name || user.login,
+          email: user.email || `${user.login}@users.noreply.github.com`,
+          avatar: user.avatar_url,
+          provider: 'github',
+          roles: ['user'],
+          accessToken: token,
+          bio: user.bio,
+          location: user.location,
+          company: user.company,
+          profileUrl: user.html_url,
+          createdAt: user.created_at,
+          followers: user.followers,
+          following: user.following,
+          publicRepos: user.public_repos,
+          publicGists: user.public_gists
+        };
 
-        // Check if user is now properly stored
-        const storedUser = localStorage.getItem('current_user');
-        console.log('Verified user in localStorage:', storedUser ? 'YES' : 'NO');
+        // Store user and return
+        this.currentUserSubject.next(githubUser);
+        localStorage.setItem('current_user', JSON.stringify(githubUser));
+
+        return of(githubUser);
       }),
       catchError(error => {
         console.error('Error in auth callback:', error);
+        this.toastService.showError('Authentication Failed', 'Unable to complete GitHub authentication');
         return throwError(() => error);
       })
     );
   }
 
   /**
- * Exchange code for access token
- * Note: In a production app, this would be done server-side for security
- */
-  private getGitHubToken(code: string): Observable<string> {
-    console.log('Getting GitHub token for code', code.substring(0, 5) + '...');
+   * Refresh GitHub user data
+   */
+  refreshGitHubData(): Observable<User> {
+    const token = this.getAccessToken();
 
-    // For demo purposes, we'll simulate a successful token response
-    // In production, this would be a call to your backend API
-    return of(`github_mock_token_${Math.random().toString(36).substring(2)}`).pipe(
-      delay(800)  // Simulate network delay
-    );
-  }
+    if (!token) {
+      this.toastService.showError('Authentication Error', 'No valid token found. Please log in again.');
+      return throwError(() => new Error('No valid token found'));
+    }
 
+    return this.http.get<{ user: any }>(`${environment.apiBaseUrl}/auth/github/refresh`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).pipe(
+      map(response => {
+        const user = response.user;
 
-  /**
- * Get GitHub user details using access token
- */
-  private getGitHubUserDetails(token: string): Observable<User> {
-    console.log('Getting GitHub user details with token', token.substring(0, 10) + '...');
+        // Map GitHub user to our User model
+        const githubUser: User = {
+          id: user.id.toString(),
+          login: user.login,
+          name: user.name || user.login,
+          email: user.email || `${user.login}@users.noreply.github.com`,
+          avatar: user.avatar_url,
+          provider: 'github',
+          roles: this.getCurrentUser()?.roles || ['user'], // Preserve current roles
+          accessToken: token,
+          bio: user.bio,
+          location: user.location,
+          company: user.company,
+          profileUrl: user.html_url,
+          createdAt: user.created_at,
+          followers: user.followers,
+          following: user.following,
+          publicRepos: user.public_repos,
+          publicGists: user.public_gists
+        };
 
-    // For demo purposes, create a mock GitHub user
-    // In production, this would call the GitHub API
-    const mockUser: User = {
-      id: `gh_${Math.random().toString(36).substring(2, 10)}`,
-      login: 'github_user',
-      name: 'GitHub User',
-      email: 'github_user@example.com',
-      avatar: 'https://avatars.githubusercontent.com/u/9919?s=200&v=4', // GitHub logo
-      provider: 'github' as const,
-      roles: ['user'],
-      accessToken: token
-    };
+        // Update stored user data
+        this.currentUserSubject.next(githubUser);
+        localStorage.setItem('current_user', JSON.stringify(githubUser));
 
-    return of(mockUser).pipe(
-      delay(500)  // Simulate network delay
+        return githubUser;
+      }),
+      catchError(error => {
+        console.error('Error refreshing GitHub data:', error);
+
+        // If token is expired/invalid, prompt for login
+        if (error.status === 401) {
+          this.toastService.showError('Session Expired', 'Your session has expired. Please log in again.');
+          this.logout();
+        } else {
+          this.toastService.showError('Refresh Failed', 'Could not refresh GitHub data. Please try again later.');
+        }
+
+        return throwError(() => error);
+      })
     );
   }
 

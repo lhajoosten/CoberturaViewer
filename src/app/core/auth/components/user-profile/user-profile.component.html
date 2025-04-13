@@ -1,23 +1,67 @@
 <div class="profile-container" *ngIf="user">
     <div class="profile-header">
         <h1>Your Profile</h1>
-        <button class="logout-btn" (click)="logout()">
-            <i class="fas fa-sign-out-alt"></i>
-            Sign Out
-        </button>
+        <div class="header-actions">
+            <button class="refresh-btn" (click)="refreshGitHubData()" [disabled]="loading">
+                <i class="fas" [ngClass]="loading ? 'fa-spin fa-circle-notch' : 'fa-sync-alt'"></i>
+                Refresh GitHub Data
+            </button>
+            <a *ngIf="user.profileUrl" [href]="user.profileUrl" target="_blank" class="view-github-btn">
+                <i class="fab fa-github"></i>
+                View on GitHub
+            </a>
+            <button class="logout-btn" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Sign Out
+            </button>
+        </div>
     </div>
 
     <div class="profile-card">
         <div class="profile-avatar">
             <img [src]="user.avatar || 'assets/images/default-avatar.png'" [alt]="user.name">
-            <div class="provider-badge" [class]="user.provider">
-                <i class="fab" [ngClass]="user.provider === 'github' ? 'fa-github' : 'fa-microsoft'"></i>
+            <div class="provider-badge github">
+                <i class="fab fa-github"></i>
             </div>
         </div>
 
         <div class="profile-details">
             <h2>{{ user.name }}</h2>
+            <p class="user-login" *ngIf="user.login">&#64;{{ user.login }}</p>
             <p class="user-email">{{ user.email }}</p>
+            <p class="user-bio" *ngIf="user.bio">{{ user.bio }}</p>
+
+            <div class="user-meta">
+                <span class="user-meta-item" *ngIf="user.location">
+                    <i class="fas fa-map-marker-alt"></i> {{ user.location }}
+                </span>
+                <span class="user-meta-item" *ngIf="user.company">
+                    <i class="fas fa-building"></i> {{ user.company }}
+                </span>
+                <span class="user-meta-item" *ngIf="user.createdAt">
+                    <i class="fas fa-calendar-alt"></i> Joined {{ user.createdAt | date:'mediumDate' }}
+                    <span *ngIf="accountAge">({{ accountAge }} ago)</span>
+                </span>
+            </div>
+
+            <div class="github-stats" *ngIf="user.followers !== undefined || user.publicRepos !== undefined">
+                <div class="stat-item" *ngIf="user.followers !== undefined">
+                    <span class="stat-value">{{ user.followers }}</span>
+                    <span class="stat-label">Followers</span>
+                </div>
+                <div class="stat-item" *ngIf="user.following !== undefined">
+                    <span class="stat-value">{{ user.following }}</span>
+                    <span class="stat-label">Following</span>
+                </div>
+                <div class="stat-item" *ngIf="user.publicRepos !== undefined">
+                    <span class="stat-value">{{ user.publicRepos }}</span>
+                    <span class="stat-label">Repositories</span>
+                </div>
+                <div class="stat-item" *ngIf="user.publicGists !== undefined">
+                    <span class="stat-value">{{ user.publicGists }}</span>
+                    <span class="stat-label">Gists</span>
+                </div>
+            </div>
 
             <div class="user-roles">
                 <span class="role-badge" *ngFor="let role of user.roles">{{ role }}</span>
@@ -34,31 +78,84 @@
             </div>
             <div class="profile-field">
                 <span class="field-label">Authentication Provider</span>
-                <span class="field-value">{{ user.provider | titlecase }}</span>
+                <span class="field-value">
+                    <i class="fab fa-github"></i> GitHub
+                </span>
+            </div>
+            <div class="profile-field" *ngIf="user.createdAt">
+                <span class="field-label">GitHub Account Created</span>
+                <span class="field-value">{{ user.createdAt | date:'medium' }}</span>
             </div>
             <div class="profile-field">
-                <span class="field-label">Account Created</span>
-                <span class="field-value">{{ '2025-04-12' | date:'medium' }}</span>
+                <span class="field-label">App Sign-In</span>
+                <span class="field-value">{{ appLoginDate | date:'medium' }}</span>
             </div>
         </section>
 
         <section class="profile-section">
-            <h3>Preferences</h3>
-            <div class="preference-option">
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="toggle-slider"></span>
-                    Receive email notifications
-                </label>
+            <h3>Application Preferences</h3>
+
+            <div class="preference-section">
+                <h4>Notifications & Automation</h4>
+                <div class="preference-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox" [(ngModel)]="preferences.emailNotifications">
+                        <span class="toggle-slider"></span>
+                        Receive email notifications
+                    </label>
+                </div>
+                <div class="preference-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox" [(ngModel)]="preferences.autoSaveReports">
+                        <span class="toggle-slider"></span>
+                        Save reports automatically
+                    </label>
+                </div>
             </div>
-            <div class="preference-option">
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="toggle-slider"></span>
-                    Save reports automatically
-                </label>
+
+            <div class="preference-section">
+                <h4>Appearance</h4>
+                <div class="preference-option">
+                    <label class="toggle-switch">
+                        <input type="checkbox" [(ngModel)]="preferences.darkMode">
+                        <span class="toggle-slider"></span>
+                        Dark mode
+                    </label>
+                </div>
+
+                <div class="preference-option">
+                    <label>Dashboard Layout</label>
+                    <div class="radio-group">
+                        <label *ngFor="let layout of layouts" class="radio-option">
+                            <input type="radio" [value]="layout.value" [(ngModel)]="preferences.dashboardLayout">
+                            <span>{{ layout.label }}</span>
+                        </label>
+                    </div>
+                </div>
             </div>
+
+            <div class="preference-section">
+                <h4>Language & Region</h4>
+                <div class="preference-option">
+                    <label>Interface Language</label>
+                    <select [(ngModel)]="preferences.language" class="form-select">
+                        <option *ngFor="let lang of languages" [value]="lang.code">{{ lang.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="save-preferences-btn" (click)="savePreferences()" [disabled]="loading">
+                <i class="fas" [ngClass]="loading ? 'fa-spin fa-circle-notch' : 'fa-save'"></i>
+                Save Preferences
+            </button>
         </section>
     </div>
 </div>
-<p>user-profile works!</p>
+
+<div class="profile-not-found" *ngIf="!user">
+    <div class="not-found-content">
+        <i class="fas fa-user-slash"></i>
+        <h2>User Profile Not Found</h2>
+        <p>Please <a routerLink="/login">sign in</a> to view your profile.</p>
+    </div>
+</div>

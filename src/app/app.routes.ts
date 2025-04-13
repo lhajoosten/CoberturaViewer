@@ -7,8 +7,7 @@ import { AuthService } from './core/auth/services/auth.service';
 import { UnauthenticatedGuard } from './core/guards/unauthenticated.guard';
 
 export const routes: Routes = [
-
-    // Auth callback - needs special handling
+    // Auth callback - specific route for callback
     {
         path: 'auth/callback',
         loadComponent: () => import('./core/auth/components/auth-callback.component')
@@ -28,8 +27,8 @@ export const routes: Routes = [
             },
             {
                 path: 'login',
-                loadChildren: () => import('./core/auth/auth.module')
-                    .then(m => m.AuthModule)
+                loadComponent: () => import('./core/auth/components/login/login.component')
+                    .then(m => m.LoginComponent)
             },
         ]
     },
@@ -46,8 +45,9 @@ export const routes: Routes = [
                     .then(m => m.DashboardComponent)
             },
             {
-                path: 'profile',
-                loadChildren: () => import('./core/auth/auth.module').then(m => m.AuthModule)
+                path: 'user/profile',
+                loadComponent: () => import('./core/auth/components/user-profile/user-profile.component')
+                    .then(m => m.UserProfileComponent)
             },
             {
                 path: 'upload',

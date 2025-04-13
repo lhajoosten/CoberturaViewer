@@ -6,5 +6,5 @@ export const environment = {
         redirectUri: 'http://localhost:4200/auth/callback',
         scope: 'read:user user:email'
     },
-    apiBaseUrl: '/api'
+    apiBaseUrl: 'http://localhost:3000/api'
 };

@@ -285,6 +285,6 @@ export class HeaderComponent implements OnInit {
    */
   goToProfile(): void {
     this.isUserMenuOpen = false;
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/user/profile']);
   }
 }
