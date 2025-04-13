@@ -2,9 +2,8 @@ export const environment = {
     production: true,
     github: {
         clientId: 'Ov23liUghCDZkiBqtV6L',
-        clientSecret: '',
-        redirectUri: 'https://your-production-url.com/auth/callback',
+        redirectUri: 'https://lhajoosten.github.io/CoberturaViewer/auth/callback',
         scope: 'read:user user:email'
     },
-    apiBaseUrl: '/api'
+    apiBaseUrl: 'https://o-auth-github-cobertura-ap3pev4ib-lucs-projects-55fbeb36.vercel.app/api'
 };

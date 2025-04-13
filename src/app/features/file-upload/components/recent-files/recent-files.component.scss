@@ -16,20 +16,28 @@
 }
 
 @mixin responsive-padding($sm: 0.5rem, $md: 0.75rem, $lg: 1rem) {
-  padding: $sm;
+  & {
+    padding: $sm;
+  }
+
   @media (min-width: 576px) {
     padding: $md;
   }
+
   @media (min-width: 768px) {
     padding: $lg;
   }
 }
 
 @mixin responsive-font($sm: 0.8rem, $md: 0.9rem, $lg: 1rem) {
-  font-size: $sm;
+  & {
+    font-size: $sm;
+  }
+
   @media (min-width: 576px) {
     font-size: $md;
   }
+
   @media (min-width: 768px) {
     font-size: $lg;
   }
@@ -38,6 +46,7 @@
 @mixin responsive-shadow {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.3s ease;
+
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
@@ -56,10 +65,10 @@
   position: relative;
 
   h1 {
-    @include responsive-font(1.5rem, 1.75rem, 2rem);
     font-weight: 600;
     margin-bottom: var(--spacing-sm);
     color: var(--color-text-primary);
+    @include responsive-font(1.5rem, 1.75rem, 2rem);
 
     @media (min-width: 768px) {
       background: linear-gradient(90deg, var(--color-primary) 0%, #7c91ff 100%);
@@ -69,8 +78,10 @@
   }
 
   .description {
+    & {
+      color: var(--color-text-secondary);
+    }
     @include responsive-font(0.95rem, 1rem, 1.1rem);
-    color: var(--color-text-secondary);
   }
 
   &::after {
@@ -182,6 +193,7 @@
     &-track {
       background: var(--color-bg-tertiary);
     }
+
     &-thumb {
       background-color: var(--color-border-default);
       border-radius: 6px;
@@ -197,12 +209,14 @@
 
   // Table headers
   th {
-    background-color: var(--color-bg-tertiary);
+    & {
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background-color: var(--color-bg-tertiary);
+    }
     @include responsive-font(0.8rem, 0.85rem, 0.9rem);
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
 
     .th-content {
       @include flex-center;
@@ -230,16 +244,20 @@
   .name-column {
     width: 40%;
   }
+
   .date-column {
     width: 25%;
   }
+
   .size-column {
     width: 10%;
   }
+
   .coverage-column {
     text-align: center;
     width: 5%;
   }
+
   .actions-column {
     text-align: center;
     width: 12.5%;
@@ -268,9 +286,11 @@
     &:hover {
       background-color: var(--color-bg-tertiary);
     }
+
     &:active {
       background-color: rgba(var(--color-primary-rgb), 0.05);
     }
+
     &:nth-child(even) {
       background-color: rgba(0, 0, 0, 0.02);
     }
@@ -280,7 +300,10 @@
   th,
   td {
     @include responsive-padding(0.75rem 0.5rem, 1rem 0.75rem, 1.2rem 1rem);
-    text-align: left;
+
+    & {
+      text-align: left;
+    }
   }
 
   tr {
@@ -300,17 +323,21 @@
     @media (min-width: 576px) {
       max-width: 200px;
     }
+
     @media (min-width: 768px) {
       max-width: 250px;
     }
+
     @media (min-width: 992px) {
       max-width: 350px;
     }
 
     .file-icon {
-      color: var(--color-text-secondary);
+      & {
+        color: var(--color-text-secondary);
+        min-width: 16px;
+      }
       @include responsive-font(0.9rem, 1rem, 1.1rem);
-      min-width: 16px;
     }
   }
 
@@ -328,17 +355,17 @@
     text-align: center;
 
     .coverage-badge {
+      display: inline-block;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      text-align: center;
+      transition: all var(--animation-speed) ease;
       @include responsive-font(0.75rem, 0.8rem, 0.85rem);
       @include responsive-padding(
         0.15rem 0.35rem,
         0.2rem 0.4rem,
         0.25rem 0.5rem
       );
-      display: inline-block;
-      border-radius: var(--border-radius);
-      font-weight: 500;
-      text-align: center;
-      transition: all var(--animation-speed) ease;
     }
 
     &.high-coverage {
@@ -424,6 +451,7 @@
         &::after {
           border: 1px solid var(--color-primary);
         }
+
         &:active {
           transform: scale(0.98);
         }
@@ -442,6 +470,7 @@
         &::after {
           border: 1px solid #f44336;
         }
+
         &:active {
           transform: scale(0.98);
         }
@@ -463,49 +492,58 @@
   @include responsive-padding(3rem 1rem, 4rem 1rem, 6rem 1rem);
 
   .no-files-icon {
+    & {
+      color: var(--color-text-tertiary);
+      margin-bottom: var(--spacing-lg);
+      opacity: 0.5;
+      animation: pulse 2s infinite;
+    }
     @include responsive-font(3.5rem, 4rem, 5rem);
-    color: var(--color-text-tertiary);
-    margin-bottom: var(--spacing-lg);
-    opacity: 0.5;
-    animation: pulse 2s infinite;
   }
 
   h2 {
+    & {
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
     @include responsive-font(1.25rem, 1.4rem, 1.5rem);
-    margin-bottom: 0.5rem;
-    font-weight: 500;
   }
 
   p {
-    color: var(--color-text-secondary);
+    & {
+      color: var(--color-text-secondary);
+      margin-bottom: 1.5rem;
+      max-width: 500px;
+    }
     @include responsive-font(0.95rem, 1rem, 1.1rem);
-    margin-bottom: 1.5rem;
-    max-width: 500px;
 
     @media (min-width: 576px) {
       margin-bottom: 2rem;
     }
+
     @media (min-width: 768px) {
       margin-bottom: 2.5rem;
     }
   }
 
   .upload-button-large {
+    & {
+      background-color: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all var(--animation-speed) ease;
+      box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
+      width: 100%;
+      justify-content: center;
+    }
     @include responsive-font(1rem, 1.05rem, 1.1rem);
     @include responsive-padding(0.75rem 1.5rem, 0.85rem 1.75rem, 1rem 2rem);
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    transition: all var(--animation-speed) ease;
-    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
-    width: 100%;
-    justify-content: center;
 
     @media (min-width: 576px) {
       width: auto;
@@ -542,14 +580,16 @@
   animation: fadeIn var(--animation-speed) ease;
 
   .spinner {
+    & {
+      margin-bottom: var(--spacing-lg);
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--color-primary);
+      border-left-color: var(--color-primary);
+      animation: spin 1s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+      box-shadow: 0 0 20px rgba(var(--color-primary-rgb), 0.5);
+    }
     @include responsive-padding(50px, 55px, 60px);
-    margin-bottom: var(--spacing-lg);
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    border-top-color: var(--color-primary);
-    border-left-color: var(--color-primary);
-    animation: spin 1s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
-    box-shadow: 0 0 20px rgba(var(--color-primary-rgb), 0.5);
 
     @media (min-width: 576px) {
       border-width: 5px;
@@ -557,11 +597,13 @@
   }
 
   p {
+    & {
+      color: white;
+      font-weight: 500;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      animation: fadeInUp 0.5s ease;
+    }
     @include responsive-font(1rem, 1.1rem, 1.2rem);
-    color: white;
-    font-weight: 500;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    animation: fadeInUp 0.5s ease;
   }
 }
 
@@ -609,16 +651,20 @@
   .files-table-container {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   }
+
   .file-row:hover {
     background-color: rgba(255, 255, 255, 0.05);
   }
+
   .files-table tbody tr:nth-child(even) {
     background-color: rgba(255, 255, 255, 0.02);
   }
+
   .no-files-container {
     border-color: rgba(255, 255, 255, 0.1);
     background-color: rgba(255, 255, 255, 0.03);
   }
+
   .loading-overlay {
     background-color: rgba(0, 0, 0, 0.75);
   }
