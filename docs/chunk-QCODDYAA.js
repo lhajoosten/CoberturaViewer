@@ -1,1 +1,0 @@
-import"./chunk-EQDQRRRY.js";var t=[{path:"",loadComponent:()=>import("./chunk-UJJ56MW7.js").then(o=>o.VisualizationContainerComponent)},{path:"treemap",loadComponent:()=>import("./chunk-GCLWF5JC.js").then(o=>o.TreemapComponent)},{path:"sunburst",loadComponent:()=>import("./chunk-62UJH266.js").then(o=>o.SunburstComponent)}];export{t as visualizationRoutes};

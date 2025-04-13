@@ -1,1 +1,0 @@
-import"./chunk-EQDQRRRY.js";var e=[{path:"",loadComponent:()=>import("./chunk-J7IL3K6B.js").then(o=>o.FileUploaderComponent)},{path:"recent-files",loadComponent:()=>import("./chunk-KBCRA4QX.js").then(o=>o.RecentFilesComponent)}];export{e as fileRoutes};
